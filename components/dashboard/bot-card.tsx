@@ -1,0 +1,138 @@
+"use client"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare } from "lucide-react"
+import type { Bot as BotType } from "@/lib/types"
+
+interface BotCardProps {
+  bot: BotType
+  onEdit: (bot: BotType) => void
+  onDelete: (botId: number) => void
+  onToggleStatus: (botId: number, status: "active" | "inactive") => void
+  onChat?: (bot: BotType) => void
+}
+
+export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCardProps) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-green-100 text-green-800 border-green-200"
+      case "inactive":
+        return "bg-gray-100 text-gray-800 border-gray-200"
+      case "draft":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200"
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  }
+
+  return (
+    <Card className="hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-accent/10 rounded-lg">
+              <Bot className="h-5 w-5 text-accent" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">{bot.name}</CardTitle>
+              <CardDescription className="mt-1">{bot.description}</CardDescription>
+            </div>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onEdit(bot)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onToggleStatus(bot.id, bot.status === "active" ? "inactive" : "active")}>
+                {bot.status === "active" ? (
+                  <>
+                    <Pause className="h-4 w-4 mr-2" />
+                    Deactivate
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Activate
+                  </>
+                )}
+              </DropdownMenuItem>
+              {bot.deployment_url && (
+                <DropdownMenuItem asChild>
+                  <a href={bot.deployment_url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Live
+                  </a>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Badge className={getStatusColor(bot.status)}>
+              {bot.status.charAt(0).toUpperCase() + bot.status.slice(1)}
+            </Badge>
+            {bot.is_deployed && (
+              <Badge variant="outline" className="text-green-600 border-green-200">
+                Deployed
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-muted-foreground">Model</p>
+              <p className="font-medium">{bot.model}</p>
+            </div>
+            <div>
+              <p className="text-muted-foreground">Temperature</p>
+              <p className="font-medium">{bot.temperature}</p>
+            </div>
+          </div>
+
+          <div className="text-sm text-muted-foreground">Created {formatDate(bot.created_at)}</div>
+          
+          {/* Chat Button */}
+          {onChat && (
+            <div className="pt-3">
+              <Button 
+                onClick={() => onChat(bot)} 
+                className="w-full"
+                variant="outline"
+                size="sm"
+              >
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Chat with Bot
+              </Button>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}

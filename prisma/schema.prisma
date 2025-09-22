@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  password_hash String
+  name          String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  bots          Bot[]
+  conversations Conversation[]
+
+  @@map("users")
+}
+
+// Bot model for chatbot management
+model Bot {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  name           String
+  description    String?
+  system_prompt  String?
+  model          String   @default("deepseek-chat")
+  temperature    Float    @default(0.7)
+  max_tokens     Int      @default(1000)
+  status         String   @default("draft") // draft, active, inactive
+  is_deployed    Boolean  @default(false)
+  deployment_url String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  // Relations
+  user               User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  knowledge_documents KnowledgeDocument[]
+  conversations      Conversation[]
+  analytics          BotAnalytics[]
+  settings           BotSettings[]
+
+  @@map("bots")
+}
+
+// Knowledge base documents
+model KnowledgeDocument {
+  id         Int      @id @default(autoincrement())
+  bot_id     Int
+  title      String
+  content    String
+  file_type  String?
+  file_size  Int?
+  status     String   @default("processing") // processing, indexed, error
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  bot Bot @relation(fields: [bot_id], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_documents")
+}
+
+// Chat conversations
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  bot_id     Int
+  user_id    Int
+  title      String?
+  is_test    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  bot       Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@map("conversations")
+}
+
+// Individual messages in conversations
+model Message {
+  id               Int      @id @default(autoincrement())
+  conversation_id  Int
+  role             String   // user, assistant, system
+  content          String
+  tokens_used      Int?
+  response_time_ms Int?
+  created_at       DateTime @default(now())
+
+  // Relations
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// Analytics data for bot performance
+model BotAnalytics {
+  id                        Int      @id @default(autoincrement())
+  bot_id                    Int
+  date                      DateTime @db.Date
+  total_conversations       Int      @default(0)
+  total_messages            Int      @default(0)
+  total_tokens_used         Int      @default(0)
+  avg_response_time_ms      Float?
+  user_satisfaction_score   Float?
+  created_at                DateTime @default(now())
+
+  // Relations
+  bot Bot @relation(fields: [bot_id], references: [id], onDelete: Cascade)
+
+  @@unique([bot_id, date])
+  @@map("bot_analytics")
+}
+
+// Bot settings and configuration
+model BotSettings {
+  id           Int      @id @default(autoincrement())
+  bot_id       Int
+  setting_key  String
+  setting_value String?
+  is_encrypted Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relations
+  bot Bot @relation(fields: [bot_id], references: [id], onDelete: Cascade)
+
+  @@unique([bot_id, setting_key])
+  @@map("bot_settings")
+}
