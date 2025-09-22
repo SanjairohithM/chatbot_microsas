@@ -102,7 +102,20 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    
+    // Only send the fields that are stored in the database according to Prisma schema
+    const botData = {
+      name: formData.name,
+      description: formData.description,
+      system_prompt: formData.system_prompt,
+      model: formData.model,
+      temperature: formData.temperature,
+      max_tokens: formData.max_tokens,
+      status: "draft" as const,
+      is_deployed: false,
+    }
+    
+    onSave(botData)
     onOpenChange(false)
     // Reset form if creating new bot
     if (!editingBot) {

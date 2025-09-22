@@ -1,4 +1,11 @@
 // Shared types for the application
+export interface User {
+  id: number
+  email: string
+  name: string
+  created_at: string
+}
+
 export interface Bot {
   id: number
   user_id: number

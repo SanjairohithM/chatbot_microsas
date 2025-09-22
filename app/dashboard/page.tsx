@@ -26,8 +26,28 @@ export default function DashboardPage() {
       return
     }
 
-    // Load mock data
-    setBots(mockBots.filter((bot) => bot.user_id === user?.id))
+    // Load bots from API
+    const loadBots = async () => {
+      if (!user) return
+      
+      try {
+        const response = await fetch(`/api/bots?userId=${user.id}`)
+        if (response.ok) {
+          const result = await response.json()
+          setBots(result.data)
+        } else {
+          console.error('Failed to load bots')
+          // Fallback to mock data for development
+          setBots(mockBots.filter((bot) => bot.user_id === user.id))
+        }
+      } catch (error) {
+        console.error('Error loading bots:', error)
+        // Fallback to mock data for development
+        setBots(mockBots.filter((bot) => bot.user_id === user.id))
+      }
+    }
+
+    loadBots()
   }, [user, isLoading, router])
 
   const filteredBots = bots.filter(
@@ -36,18 +56,32 @@ export default function DashboardPage() {
       bot.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const handleCreateBot = (botData: Partial<BotType>) => {
-    const newBot: BotType = {
-      id: Math.max(...bots.map((b) => b.id), 0) + 1,
-      user_id: user!.id,
-      status: "draft",
-      is_deployed: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      ...botData,
-    } as BotType
+  const handleCreateBot = async (botData: Partial<BotType>) => {
+    try {
+      const response = await fetch('/api/bots', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user!.id,
+          ...botData,
+        }),
+      })
 
-    setBots([...bots, newBot])
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create bot')
+      }
+
+      const result = await response.json()
+      const newBot = result.data
+
+      setBots([...bots, newBot])
+    } catch (error) {
+      console.error('Error creating bot:', error)
+      // You could show a toast notification here
+    }
   }
 
   const handleEditBot = (bot: BotType) => {
@@ -55,15 +89,32 @@ export default function DashboardPage() {
     setIsCreateDialogOpen(true)
   }
 
-  const handleUpdateBot = (botData: Partial<BotType>) => {
+  const handleUpdateBot = async (botData: Partial<BotType>) => {
     if (!editingBot) return
 
-    setBots(
-      bots.map((bot) =>
-        bot.id === editingBot.id ? { ...bot, ...botData, updated_at: new Date().toISOString() } : bot,
-      ),
-    )
-    setEditingBot(null)
+    try {
+      const response = await fetch(`/api/bots/${editingBot.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(botData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to update bot')
+      }
+
+      const result = await response.json()
+      const updatedBot = result.data
+
+      setBots(bots.map((bot) => (bot.id === editingBot.id ? updatedBot : bot)))
+      setEditingBot(null)
+    } catch (error) {
+      console.error('Error updating bot:', error)
+      // You could show a toast notification here
+    }
   }
 
   const handleDeleteBot = (botId: number) => {
