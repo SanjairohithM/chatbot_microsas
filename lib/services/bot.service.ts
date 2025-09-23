@@ -156,34 +156,62 @@ export class BotService {
    */
   static async updateBot(id: number, updates: UpdateBotRequest): Promise<Bot | null> {
     try {
+      console.log('BotService.updateBot called with:', { id, updates })
+      
       // Check if bot exists
       const existingBot = await db.bot.findUnique({
         where: { id }
       })
 
       if (!existingBot) {
+        console.log('Bot not found with id:', id)
         return null
       }
+
+      console.log('Existing bot found:', existingBot)
 
       // Validate updates
       if (updates.name !== undefined && (!updates.name || updates.name.trim().length === 0)) {
         throw new Error('Bot name cannot be empty')
       }
 
+      // Prepare update data
+      const updateData: any = {}
+      
+      if (updates.name) {
+        updateData.name = updates.name.trim()
+      }
+      if (updates.description !== undefined) {
+        updateData.description = updates.description?.trim() || ''
+      }
+      if (updates.system_prompt !== undefined) {
+        updateData.system_prompt = updates.system_prompt?.trim() || ''
+      }
+      if (updates.model) {
+        updateData.model = updates.model
+      }
+      if (updates.temperature !== undefined) {
+        updateData.temperature = updates.temperature
+      }
+      if (updates.max_tokens !== undefined) {
+        updateData.max_tokens = updates.max_tokens
+      }
+      if (updates.status !== undefined) {
+        updateData.status = updates.status
+      }
+      if (updates.is_deployed !== undefined) {
+        updateData.is_deployed = updates.is_deployed
+      }
+      if (updates.deployment_url !== undefined) {
+        updateData.deployment_url = updates.deployment_url
+      }
+
+      console.log('Update data prepared:', updateData)
+
       // Update bot
       const bot = await db.bot.update({
         where: { id },
-        data: {
-          ...(updates.name && { name: updates.name.trim() }),
-          ...(updates.description !== undefined && { description: updates.description?.trim() || '' }),
-          ...(updates.system_prompt !== undefined && { system_prompt: updates.system_prompt?.trim() || '' }),
-          ...(updates.model && { model: updates.model }),
-          ...(updates.temperature !== undefined && { temperature: updates.temperature }),
-          ...(updates.max_tokens !== undefined && { max_tokens: updates.max_tokens }),
-          ...(updates.status && { status: updates.status }),
-          ...(updates.is_deployed !== undefined && { is_deployed: updates.is_deployed }),
-          ...(updates.deployment_url !== undefined && { deployment_url: updates.deployment_url }),
-        },
+        data: updateData,
         include: {
           user: {
             select: {
@@ -195,6 +223,7 @@ export class BotService {
         }
       })
 
+      console.log('Bot updated successfully:', bot)
       return this.mapBotToResponse(bot)
     } catch (error) {
       console.error('BotService.updateBot error:', error)

@@ -68,32 +68,69 @@ export default function ChatPage() {
       return
     }
 
-    // Load mock data
-    const userBots = mockBots.filter((bot) => bot.user_id === user?.id && bot.status === "active")
-    setBots(userBots)
+    // Load bots and conversations from API
+    const loadData = async () => {
+      if (!user) return
 
-    // Load conversations for user's bots
-    const botIds = userBots.map((bot) => bot.id)
-    const userConversations = mockConversations.filter((conv) => botIds.includes(conv.bot_id))
-    setConversations(userConversations)
+      try {
+        // Load user's active bots
+        const botsResponse = await fetch(`/api/bots?userId=${user.id}&status=active`)
+        if (botsResponse.ok) {
+          const botsResult = await botsResponse.json()
+          setBots(botsResult.data)
+          
+          // Auto-select bot from URL parameter or first available bot
+          const botIdFromUrl = searchParams.get('botId')
+          if (botIdFromUrl && botsResult.data.find((bot: Bot) => bot.id.toString() === botIdFromUrl)) {
+            setSelectedBotId(botIdFromUrl)
+          } else if (botsResult.data.length > 0 && !selectedBotId) {
+            setSelectedBotId(botsResult.data[0].id.toString())
+          }
+        }
 
-    // Auto-select bot from URL parameter or first available bot
-    const botIdFromUrl = searchParams.get('botId')
-    if (botIdFromUrl && userBots.find(bot => bot.id.toString() === botIdFromUrl)) {
-      setSelectedBotId(botIdFromUrl)
-    } else if (userBots.length > 0 && !selectedBotId) {
-      setSelectedBotId(userBots[0].id.toString())
+        // Load conversations
+        const conversationsResponse = await fetch(`/api/conversations?userId=${user.id}`)
+        if (conversationsResponse.ok) {
+          const conversationsResult = await conversationsResponse.json()
+          setConversations(conversationsResult.data)
+        }
+      } catch (error) {
+        console.error('Failed to load chat data:', error)
+        // Fallback to mock data for development
+        const userBots = mockBots.filter((bot) => bot.user_id === user.id && bot.status === "active")
+        setBots(userBots)
+        const botIds = userBots.map((bot) => bot.id)
+        const userConversations = mockConversations.filter((conv) => botIds.includes(conv.bot_id))
+        setConversations(userConversations)
+      }
     }
+
+    loadData()
   }, [user, authLoading, router, selectedBotId, searchParams])
 
   useEffect(() => {
     // Load messages for selected conversation
-    if (selectedConversationId) {
-      const conversationMessages = mockMessages.filter((msg) => msg.conversation_id === selectedConversationId)
-      setMessages(conversationMessages)
-    } else {
-      setMessages([])
+    const loadMessages = async () => {
+      if (selectedConversationId) {
+        try {
+          const response = await fetch(`/api/conversations/${selectedConversationId}/messages`)
+          if (response.ok) {
+            const result = await response.json()
+            setMessages(result.data)
+          } else {
+            console.error('Failed to load messages')
+            setMessages([])
+          }
+        } catch (error) {
+          console.error('Error loading messages:', error)
+          setMessages([])
+        }
+      } else {
+        setMessages([])
+      }
     }
+
+    loadMessages()
   }, [selectedConversationId])
 
   useEffect(() => {
@@ -104,41 +141,47 @@ export default function ChatPage() {
   const selectedBot = bots.find((bot) => bot.id === Number.parseInt(selectedBotId))
   const selectedConversation = conversations.find((conv) => conv.id === selectedConversationId)
 
-  const handleNewConversation = () => {
-    if (!selectedBot) return
+  const handleNewConversation = async () => {
+    if (!selectedBot || !user) return
 
-    const newConversation: Conversation = {
-      id: Math.max(...conversations.map((c) => c.id), 0) + 1,
-      bot_id: selectedBot.id,
-      user_id: user!.id,
-      title: "New Conversation",
-      is_test: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    try {
+      const response = await fetch('/api/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          botId: selectedBot.id,
+          userId: user.id,
+          title: 'New Conversation',
+          isTest: false
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        const newConversation = result.data
+        
+        setConversations([newConversation, ...conversations])
+        setSelectedConversationId(newConversation.id)
+        setMessages([])
+      } else {
+        console.error('Failed to create conversation')
+      }
+    } catch (error) {
+      console.error('Error creating conversation:', error)
     }
-
-    setConversations([newConversation, ...conversations])
-    setSelectedConversationId(newConversation.id)
-
-    // Add system message
-    const systemMessage: Message = {
-      id: Math.max(...messages.map((m) => m.id), 0) + 1,
-      conversation_id: newConversation.id,
-      role: "system",
-      content: "Test conversation started",
-      created_at: new Date().toISOString(),
-    }
-
-    setMessages([systemMessage])
   }
 
   const handleSendMessage = async (content: string) => {
-    if (!selectedConversationId || !selectedBot) return
+    if (!selectedBot || !user) return
 
-    // Add user message
+    console.log('Sending message:', { content, selectedBot: selectedBot.id, userId: user.id, conversationId: selectedConversationId })
+
+    // Add user message to UI immediately
     const userMessage: Message = {
-      id: Math.max(...messages.map((m) => m.id), 0) + 1,
-      conversation_id: selectedConversationId,
+      id: Date.now(), // Temporary ID
+      conversation_id: selectedConversationId || 0,
       role: "user",
       content,
       created_at: new Date().toISOString(),
@@ -149,28 +192,43 @@ export default function ChatPage() {
     setIsLoading(true)
 
     try {
-      // Send message to DeepSeek API
-      const response = await sendMessageWithBot(updatedMessages, selectedBot)
+      // Send message to API
+      console.log('Calling sendMessageWithBot with:', { updatedMessages, selectedBot, userId: user.id, selectedConversationId })
+      const response = await sendMessageWithBot(
+        updatedMessages, 
+        selectedBot, 
+        user.id, 
+        selectedConversationId
+      )
+
+      console.log('Received response from API:', response)
 
       // Add assistant response
       const assistantMessage: Message = {
-        id: Math.max(...messages.map((m) => m.id), userMessage.id) + 1,
-        conversation_id: selectedConversationId,
+        id: response.messageId || Date.now() + 1,
+        conversation_id: response.conversationId || selectedConversationId || 0,
         role: "assistant",
         content: response.message,
         tokens_used: response.usage?.total_tokens,
-        response_time_ms: undefined, // Could be calculated if needed
+        response_time_ms: response.response_time_ms,
         created_at: new Date().toISOString(),
       }
 
+      console.log('Adding assistant message to UI:', assistantMessage)
       setMessages((prev) => [...prev, assistantMessage])
+
+      // Update conversation ID if it was created
+      if (response.conversationId && response.conversationId !== selectedConversationId) {
+        console.log('Updating conversation ID from', selectedConversationId, 'to', response.conversationId)
+        setSelectedConversationId(response.conversationId)
+      }
 
       // Update conversation title if it's the first user message
       if (selectedConversation?.title === "New Conversation") {
         const newTitle = content.length > 50 ? content.substring(0, 50) + "..." : content
         setConversations((prev) =>
           prev.map((conv) =>
-            conv.id === selectedConversationId
+            conv.id === (response.conversationId || selectedConversationId)
               ? { ...conv, title: newTitle, updated_at: new Date().toISOString() }
               : conv,
           ),
@@ -181,8 +239,8 @@ export default function ChatPage() {
       
       // Add error message
       const errorMessage: Message = {
-        id: Math.max(...messages.map((m) => m.id), userMessage.id) + 1,
-        conversation_id: selectedConversationId,
+        id: Date.now() + 2,
+        conversation_id: selectedConversationId || 0,
         role: "assistant",
         content: "Sorry, I encountered an error while processing your request. Please try again.",
         created_at: new Date().toISOString(),
@@ -194,20 +252,49 @@ export default function ChatPage() {
     }
   }
 
-  const handleDeleteConversation = (conversationId: number) => {
-    setConversations(conversations.filter((conv) => conv.id !== conversationId))
-    if (selectedConversationId === conversationId) {
-      setSelectedConversationId(null)
-      setMessages([])
+  const handleDeleteConversation = async (conversationId: number) => {
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setConversations(conversations.filter((conv) => conv.id !== conversationId))
+        if (selectedConversationId === conversationId) {
+          setSelectedConversationId(null)
+          setMessages([])
+        }
+      } else {
+        console.error('Failed to delete conversation')
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error)
     }
   }
 
-  const handleRenameConversation = (conversationId: number, newTitle: string) => {
-    setConversations(
-      conversations.map((conv) =>
-        conv.id === conversationId ? { ...conv, title: newTitle, updated_at: new Date().toISOString() } : conv,
-      ),
-    )
+  const handleRenameConversation = async (conversationId: number, newTitle: string) => {
+    try {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: newTitle }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setConversations(
+          conversations.map((conv) =>
+            conv.id === conversationId ? result.data : conv,
+          ),
+        )
+      } else {
+        console.error('Failed to rename conversation')
+      }
+    } catch (error) {
+      console.error('Error renaming conversation:', error)
+    }
   }
 
   if (authLoading) {

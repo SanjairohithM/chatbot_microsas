@@ -121,8 +121,37 @@ export default function DashboardPage() {
     setBots(bots.filter((bot) => bot.id !== botId))
   }
 
-  const handleToggleStatus = (botId: number, status: "active" | "inactive") => {
-    setBots(bots.map((bot) => (bot.id === botId ? { ...bot, status, updated_at: new Date().toISOString() } : bot)))
+  const handleToggleStatus = async (botId: number, status: "active" | "inactive") => {
+    try {
+      console.log('Updating bot status:', { botId, status })
+      
+      const response = await fetch(`/api/bots/${botId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Error response:', errorData)
+        throw new Error(errorData.error || 'Failed to update bot status')
+      }
+
+      const result = await response.json()
+      console.log('Update result:', result)
+      const updatedBot = result.data
+
+      setBots(bots.map((bot) => (bot.id === botId ? updatedBot : bot)))
+      console.log('Bot status updated successfully')
+    } catch (error) {
+      console.error('Error updating bot status:', error)
+      // You could show a toast notification here
+    }
   }
 
   const handleChat = (bot: BotType) => {

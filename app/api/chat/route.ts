@@ -1,20 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { deepSeekAPI } from '@/lib/deepseek-api'
 import { config } from '@/lib/config'
-import { ServerMessageService } from '@/lib/server-database'
+import { ConversationService } from '@/lib/services/conversation.service'
+import { BotService } from '@/lib/services/bot.service'
+import { ApiResponse } from '@/lib/utils/api-response'
+import { validateRequest } from '@/lib/middleware/validation'
+import { logger } from '@/lib/utils/logger'
 import type { DeepSeekMessage } from '@/lib/deepseek-api'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { messages, botConfig, conversationId } = body
+    const { messages, botConfig, conversationId, botId, userId } = body
+
+    logger.apiRequest('POST', '/api/chat', userId)
 
     // Validate request
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Messages array is required' },
-        { status: 400 }
-      )
+    const validation = validateRequest({
+      messages: { required: true, type: 'array' },
+      botId: { required: true, type: 'number' },
+      userId: { required: true, type: 'number' },
+      conversationId: { type: 'number' }
+    }, body)
+
+    if (!validation.isValid) {
+      return ApiResponse.badRequest('Validation failed', validation.errors)
     }
 
     // Validate messages format
@@ -31,10 +41,16 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Use bot configuration or defaults
-    const model = botConfig?.model || config.deepseek.defaultModel
-    const temperature = botConfig?.temperature || config.deepseek.defaultTemperature
-    const maxTokens = botConfig?.max_tokens || config.deepseek.defaultMaxTokens
+    // Get bot configuration
+    const bot = await BotService.getBotById(botId)
+    if (!bot) {
+      return ApiResponse.notFound('Bot not found')
+    }
+
+    // Use bot configuration or provided config
+    const model = botConfig?.model || bot.model
+    const temperature = botConfig?.temperature || bot.temperature
+    const maxTokens = botConfig?.max_tokens || bot.max_tokens
 
     const startTime = Date.now()
 
@@ -50,24 +66,45 @@ export async function POST(request: NextRequest) {
     // Extract the assistant's message
     const assistantMessage = response.choices[0]?.message?.content || 'Sorry, I could not generate a response.'
 
-    // Save the assistant's message to database if conversationId is provided
-    if (conversationId) {
-      try {
-        await ServerMessageService.create(
-          conversationId,
-          'assistant',
-          assistantMessage,
-          response.usage?.total_tokens,
-          responseTime
-        )
-      } catch (dbError) {
-        console.error('Failed to save message to database:', dbError)
-        // Don't fail the request if database save fails
-      }
+    // Save messages to database
+    let currentConversationId = conversationId
+
+    // Create conversation if it doesn't exist
+    if (!currentConversationId) {
+      const conversation = await ConversationService.createConversation({
+        botId,
+        userId,
+        title: 'New Conversation',
+        isTest: false
+      })
+      currentConversationId = conversation.id
     }
 
-    return NextResponse.json({
+    // Save user message (last message should be user message)
+    const lastMessage = validMessages[validMessages.length - 1]
+    if (lastMessage.role === 'user') {
+      await ConversationService.createMessage({
+        conversationId: currentConversationId,
+        role: 'user',
+        content: lastMessage.content
+      })
+    }
+
+    // Save assistant response
+    const savedMessage = await ConversationService.createMessage({
+      conversationId: currentConversationId,
+      role: 'assistant',
+      content: assistantMessage,
+      tokensUsed: response.usage?.total_tokens,
+      responseTimeMs: responseTime
+    })
+
+    logger.apiResponse('POST', '/api/chat', 200, responseTime)
+
+    return ApiResponse.success('Message sent successfully', {
       message: assistantMessage,
+      conversationId: currentConversationId,
+      messageId: savedMessage.id,
       usage: response.usage,
       model: response.model,
       finish_reason: response.choices[0]?.finish_reason,
@@ -75,14 +112,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Chat API error:', error)
+    logger.apiError('POST', '/api/chat', error as Error)
     
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Internal server error',
-        message: 'Sorry, I encountered an error while processing your request.'
-      },
-      { status: 500 }
+    return ApiResponse.internalServerError(
+      error instanceof Error ? error.message : 'Internal server error'
     )
   }
 }

@@ -9,6 +9,9 @@ export interface ChatRequest {
     role: 'system' | 'user' | 'assistant'
     content: string
   }>
+  botId: number
+  userId: number
+  conversationId?: number
   botConfig?: {
     model?: string
     temperature?: number
@@ -18,6 +21,8 @@ export interface ChatRequest {
 
 export interface ChatResponse {
   message: string
+  conversationId?: number
+  messageId?: number
   usage?: {
     prompt_tokens: number
     completion_tokens: number
@@ -25,6 +30,7 @@ export interface ChatResponse {
   }
   model?: string
   finish_reason?: string
+  response_time_ms?: number
 }
 
 export interface UseChatOptions {
@@ -56,9 +62,24 @@ export function useChat(options: UseChatOptions = {}) {
         throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
-      const data: ChatResponse = await response.json()
-      options.onSuccess?.(data)
-      return data
+      const responseData = await response.json()
+      
+      // Handle the API response structure
+      if (responseData.success && responseData.data) {
+        const data: ChatResponse = {
+          message: responseData.data.message,
+          conversationId: responseData.data.conversationId,
+          messageId: responseData.data.messageId,
+          usage: responseData.data.usage,
+          model: responseData.data.model,
+          finish_reason: responseData.data.finish_reason,
+          response_time_ms: responseData.data.response_time_ms
+        }
+        options.onSuccess?.(data)
+        return data
+      } else {
+        throw new Error(responseData.message || 'Invalid response format')
+      }
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
@@ -72,7 +93,9 @@ export function useChat(options: UseChatOptions = {}) {
 
   const sendMessageWithBot = useCallback(async (
     messages: Message[],
-    bot: Bot
+    bot: Bot,
+    userId: number,
+    conversationId?: number
   ): Promise<ChatResponse> => {
     const chatMessages = messages.map(msg => ({
       role: msg.role as 'system' | 'user' | 'assistant',
@@ -89,6 +112,9 @@ export function useChat(options: UseChatOptions = {}) {
 
     return sendMessage({
       messages: chatMessages,
+      botId: bot.id,
+      userId,
+      conversationId,
       botConfig: {
         model: bot.model,
         temperature: bot.temperature,

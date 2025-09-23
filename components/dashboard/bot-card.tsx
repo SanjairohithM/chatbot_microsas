@@ -50,18 +50,39 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <MoreHorizontal className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            {/* Test button for activation */}
+            {bot.status === "draft" && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  console.log('Test activate button clicked for bot:', bot.id)
+                  onToggleStatus(bot.id, "active")
+                }}
+              >
+                <Play className="h-4 w-4 mr-1" />
+                Activate
               </Button>
-            </DropdownMenuTrigger>
+            )}
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit(bot)}>
                 <Settings className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onToggleStatus(bot.id, bot.status === "active" ? "inactive" : "active")}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Dropdown menu item clicked for bot:', bot.id, 'current status:', bot.status)
+                const newStatus = bot.status === "active" ? "inactive" : "active"
+                console.log('Setting status to:', newStatus)
+                onToggleStatus(bot.id, newStatus)
+              }}>
                 {bot.status === "active" ? (
                   <>
                     <Pause className="h-4 w-4 mr-2" />
@@ -70,7 +91,7 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                 ) : (
                   <>
                     <Play className="h-4 w-4 mr-2" />
-                    Activate
+                    {bot.status === "draft" ? "Activate" : "Activate"}
                   </>
                 )}
               </DropdownMenuItem>
@@ -87,7 +108,8 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
       </CardHeader>
 
@@ -125,9 +147,10 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                 className="w-full"
                 variant="outline"
                 size="sm"
+                disabled={bot.status === "draft"}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                Chat with Bot
+                {bot.status === "draft" ? "Activate Bot to Chat" : "Chat with Bot"}
               </Button>
             </div>
           )}
