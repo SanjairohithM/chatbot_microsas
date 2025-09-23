@@ -123,7 +123,7 @@ export const ValidationRules = {
   },
   systemPrompt: {
     type: 'string' as const,
-    maxLength: 5000
+    maxLength: 50000
   },
   temperature: {
     type: 'number' as const,

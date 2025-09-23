@@ -17,7 +17,7 @@ export class BotController {
         userId: { required: true, type: 'number' },
         name: { required: true, type: 'string', minLength: 1, maxLength: 255 },
         description: { type: 'string', maxLength: 1000 },
-        system_prompt: { type: 'string', maxLength: 5000 },
+        system_prompt: { type: 'string', maxLength: 50000 },
         model: { type: 'string', enum: ['deepseek-chat', 'deepseek-coder'] },
         temperature: { type: 'number', min: 0, max: 2 },
         max_tokens: { type: 'number', min: 100, max: 4000 },
@@ -110,7 +110,7 @@ export class BotController {
       const validation = validateRequest({
         name: { type: 'string', minLength: 1, maxLength: 255 },
         description: { type: 'string', maxLength: 1000 },
-        system_prompt: { type: 'string', maxLength: 5000 },
+        system_prompt: { type: 'string', maxLength: 50000 },
         model: { type: 'string', enum: ['deepseek-chat', 'deepseek-coder'] },
         temperature: { type: 'number', min: 0, max: 2 },
         max_tokens: { type: 'number', min: 100, max: 4000 },

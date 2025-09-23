@@ -3,6 +3,7 @@ import { deepSeekAPI } from '@/lib/deepseek-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
+import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -54,8 +55,33 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now()
 
+    // Get document context for the user's query
+    const lastUserMessage = validMessages.filter(msg => msg.role === 'user').pop()
+    let documentContext = ''
+    
+    if (lastUserMessage) {
+      documentContext = await DocumentSearchService.getContextForQuery(botId, lastUserMessage.content)
+    }
+
+    // Enhance system prompt with document context
+    let enhancedMessages = [...validMessages]
+    if (documentContext && enhancedMessages.length > 0) {
+      // Find system message or create one
+      const systemMessageIndex = enhancedMessages.findIndex(msg => msg.role === 'system')
+      const systemPrompt = bot.system_prompt || 'You are a helpful assistant.'
+      
+      if (systemMessageIndex >= 0) {
+        enhancedMessages[systemMessageIndex].content = `${systemPrompt}\n\n${documentContext}`
+      } else {
+        enhancedMessages.unshift({
+          role: 'system',
+          content: `${systemPrompt}\n\n${documentContext}`
+        })
+      }
+    }
+
     // Generate response from DeepSeek
-    const response = await deepSeekAPI.generateResponse(validMessages, {
+    const response = await deepSeekAPI.generateResponse(enhancedMessages, {
       model,
       temperature,
       max_tokens: maxTokens

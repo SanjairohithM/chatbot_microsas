@@ -8,7 +8,7 @@ import { Sidebar } from "@/components/dashboard/sidebar"
 import { BotCard } from "@/components/dashboard/bot-card"
 import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
 import { useAuth } from "@/hooks/use-auth"
-import type { Bot as BotType } from "@/lib/types"
+import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 import { mockBots } from "@/lib/mock-data"
 import { Plus, Search } from "lucide-react"
 
@@ -56,8 +56,9 @@ export default function DashboardPage() {
       bot.description.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const handleCreateBot = async (botData: Partial<BotType>) => {
+  const handleCreateBot = async (botData: Partial<BotType>, documents?: KnowledgeDocument[]) => {
     try {
+      // First, create the bot
       const response = await fetch('/api/bots', {
         method: 'POST',
         headers: {
@@ -76,6 +77,58 @@ export default function DashboardPage() {
 
       const result = await response.json()
       const newBot = result.data
+
+      // If documents were uploaded, save them to the database
+      if (documents && documents.length > 0) {
+        try {
+          const documentPromises = documents.map(async doc => {
+            const response = await fetch('/api/knowledge-documents', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                bot_id: newBot.id,
+                title: doc.title,
+                content: doc.content,
+                file_url: doc.file_url,
+                file_type: doc.file_type,
+                file_size: doc.file_size,
+                status: 'processing'
+              })
+            })
+            
+            if (response.ok) {
+              const result = await response.json()
+              const savedDoc = result.data
+              
+              // Process the document if it has a file URL
+              if (savedDoc.file_url && savedDoc.file_url !== '') {
+                try {
+                  await fetch('/api/documents/process', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      documentId: savedDoc.id
+                    })
+                  })
+                } catch (processError) {
+                  console.error('Error processing document:', processError)
+                }
+              }
+            }
+          })
+
+          await Promise.all(documentPromises)
+          console.log('All documents saved and processed successfully')
+        } catch (docError) {
+          console.error('Error saving documents:', docError)
+          // Bot was created successfully, but documents failed
+          // You could show a warning notification here
+        }
+      }
 
       setBots([...bots, newBot])
     } catch (error) {

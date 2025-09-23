@@ -54,15 +54,17 @@ model Bot {
 
 // Knowledge base documents
 model KnowledgeDocument {
-  id         Int      @id @default(autoincrement())
-  bot_id     Int
-  title      String
-  content    String
-  file_type  String?
-  file_size  Int?
-  status     String   @default("processing") // processing, indexed, error
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  bot_id          Int
+  title           String
+  content         String   @db.Text // Extracted text content
+  file_url        String?  // URL to the stored file
+  file_type       String?
+  file_size       Int?
+  status          String   @default("processing") // processing, indexed, error
+  processing_error String? // Error message if processing failed
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   // Relations
   bot Bot @relation(fields: [bot_id], references: [id], onDelete: Cascade)

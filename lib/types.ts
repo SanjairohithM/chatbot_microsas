@@ -27,9 +27,11 @@ export interface KnowledgeDocument {
   bot_id: number
   title: string
   content: string
-  file_type: string
-  file_size: number
+  file_url?: string
+  file_type?: string
+  file_size?: number
   status: "processing" | "indexed" | "error"
+  processing_error?: string
   created_at: string
   updated_at: string
 }

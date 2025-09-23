@@ -22,13 +22,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle } from "lucide-react"
-import type { Bot as BotType } from "@/lib/types"
+import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle, X } from "lucide-react"
+import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 
 interface CreateBotDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (bot: Partial<BotType>) => void
+  onSave: (bot: Partial<BotType>, documents?: KnowledgeDocument[]) => void
   editingBot?: BotType | null
 }
 
@@ -57,6 +57,10 @@ export function CreateBotDialog({ open, onOpenChange, onSave, editingBot }: Crea
 
   const [isScraping, setIsScraping] = useState(false)
   const [scrapeStatus, setScrapeStatus] = useState<"idle" | "success" | "error">("idle")
+  
+  // Document upload state
+  const [uploadedDocuments, setUploadedDocuments] = useState<KnowledgeDocument[]>([])
+  const [isCreatingBot, setIsCreatingBot] = useState(false)
 
   const handleScrapeWebsite = async () => {
     if (!formData.website_url) return
@@ -100,43 +104,63 @@ Be polite, professional, and helpful. If you don't know something, politely say 
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle document upload
+  const handleDocumentUploaded = (document: KnowledgeDocument) => {
+    setUploadedDocuments(prev => [...prev, document])
+  }
+
+  // Handle document removal
+  const handleDocumentRemoved = (documentId: number) => {
+    setUploadedDocuments(prev => prev.filter(doc => doc.id !== documentId))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsCreatingBot(true)
     
-    // Only send the fields that are stored in the database according to Prisma schema
-    const botData = {
-      name: formData.name,
-      description: formData.description,
-      system_prompt: formData.system_prompt,
-      model: formData.model,
-      temperature: formData.temperature,
-      max_tokens: formData.max_tokens,
-      status: "draft" as const,
-      is_deployed: false,
-    }
-    
-    onSave(botData)
-    onOpenChange(false)
-    // Reset form if creating new bot
-    if (!editingBot) {
-      setFormData({
-        name: "",
-        description: "",
-        system_prompt: "",
-        model: "deepseek-chat",
-        temperature: 0.7,
-        max_tokens: 1000,
-        website_url: "",
-        website_content: "",
-        auto_scrape: true,
-        bot_avatar: "",
-        primary_color: "#3b82f6",
-        secondary_color: "#1e40af",
-        enable_memory: true,
-        max_conversation_length: 50,
-        response_style: "professional",
-        language: "en",
-      })
+    try {
+      // Only send the fields that are stored in the database according to Prisma schema
+      const botData = {
+        name: formData.name,
+        description: formData.description,
+        system_prompt: formData.system_prompt,
+        model: formData.model,
+        temperature: formData.temperature,
+        max_tokens: formData.max_tokens,
+        status: "draft" as const,
+        is_deployed: false,
+      }
+      
+      // Pass both bot data and uploaded documents
+      onSave(botData, uploadedDocuments)
+      onOpenChange(false)
+      
+      // Reset form if creating new bot
+      if (!editingBot) {
+        setFormData({
+          name: "",
+          description: "",
+          system_prompt: "",
+          model: "deepseek-chat",
+          temperature: 0.7,
+          max_tokens: 1000,
+          website_url: "",
+          website_content: "",
+          auto_scrape: true,
+          bot_avatar: "",
+          primary_color: "#3b82f6",
+          secondary_color: "#1e40af",
+          enable_memory: true,
+          max_conversation_length: 50,
+          response_style: "professional",
+          language: "en",
+        })
+        setUploadedDocuments([])
+      }
+    } catch (error) {
+      console.error('Error creating bot:', error)
+    } finally {
+      setIsCreatingBot(false)
     }
   }
 
@@ -360,12 +384,105 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       value={formData.system_prompt}
                       onChange={(e) => setFormData({ ...formData, system_prompt: e.target.value })}
                       placeholder="You are a helpful customer support assistant..."
-                      rows={6}
+                      rows={4}
                       required
                     />
                     <p className="text-xs text-muted-foreground">
                       This defines your bot's personality and behavior. Include website content here for context.
                     </p>
+                  </div>
+
+                  {/* Document Upload Section - Moved up for better visibility */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Upload Documents</Label>
+                      <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+                        <FileText className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground mb-2">Add documents to enhance your bot's knowledge</p>
+                        <Input
+                          type="file"
+                          accept=".txt,.pdf,.docx,.md"
+                          className="max-w-xs mx-auto"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            console.log('File selected:', file.name)
+                            
+                            try {
+                              // Upload file to server
+                              const formData = new FormData()
+                              formData.append('file', file)
+                              
+                              const uploadResponse = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formData
+                              })
+                              
+                              if (!uploadResponse.ok) {
+                                throw new Error('Upload failed')
+                              }
+                              
+                              const uploadData = await uploadResponse.json()
+                              
+                              // Create document with file URL
+                              const tempDocument: KnowledgeDocument = {
+                                id: Date.now(),
+                                bot_id: 0,
+                                title: file.name,
+                                content: 'Processing...', // Will be updated after processing
+                                file_url: uploadData.data.fileUrl,
+                                file_type: uploadData.data.fileType,
+                                file_size: uploadData.data.fileSize,
+                                status: 'processing',
+                                created_at: new Date().toISOString(),
+                                updated_at: new Date().toISOString()
+                              }
+                              
+                              handleDocumentUploaded(tempDocument)
+                              
+                            } catch (error) {
+                              console.error('Upload error:', error)
+                              alert('Failed to upload file. Please try again.')
+                            }
+                          }
+                        }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">Supported: TXT, PDF, DOCX, MD (Max 10MB)</p>
+                    </div>
+
+                    {/* Direct Content Input */}
+                    <div className="space-y-2">
+                      <Label htmlFor="document_content">Or paste content directly</Label>
+                      <Textarea
+                        id="document_content"
+                        placeholder="Paste your document content here..."
+                        rows={3}
+                        onChange={(e) => {
+                          let content = e.target.value
+                          if (content.trim()) {
+                            // Sanitize content to remove null bytes and invalid UTF-8 sequences
+                            content = content
+                              .replace(/\0/g, '') // Remove null bytes
+                              .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+                              .trim()
+                            
+                            const tempDocument: KnowledgeDocument = {
+                              id: Date.now(),
+                              bot_id: 0,
+                              title: 'Pasted Content',
+                              content: content,
+                              file_type: 'text',
+                              file_size: content.length,
+                              status: 'processing',
+                              created_at: new Date().toISOString(),
+                              updated_at: new Date().toISOString()
+                            }
+                            handleDocumentUploaded(tempDocument)
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -400,6 +517,33 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       </Select>
                     </div>
                   </div>
+
+                  {/* Document Preview */}
+                  {uploadedDocuments.length > 0 && (
+                    <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+                      <p className="text-sm font-medium mb-2">
+                        Documents to be saved with bot: {uploadedDocuments.length}
+                      </p>
+                      <div className="space-y-1">
+                        {uploadedDocuments.map((doc) => (
+                          <div key={doc.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <FileText className="h-3 w-3" />
+                            <span>{doc.title}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {doc.file_type}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDocumentRemoved(doc.id)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -553,11 +697,18 @@ Be polite, professional, and helpful. If you don't know something, politely say 
           </Tabs>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isCreatingBot}>
               Cancel
             </Button>
-            <Button type="submit" className="min-w-[120px]">
-              {editingBot ? "Update Bot" : "Create Bot"}
+            <Button type="submit" className="min-w-[120px]" disabled={isCreatingBot}>
+              {isCreatingBot ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {editingBot ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                editingBot ? "Update Bot" : "Create Bot"
+              )}
             </Button>
           </DialogFooter>
         </form>
