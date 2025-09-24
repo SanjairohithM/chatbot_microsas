@@ -75,16 +75,18 @@ export class DocumentProcessorService {
   }
 
   /**
-   * Process PDF files (simplified - in production, use a proper PDF library)
+   * Process PDF files using pdf-parse library
    */
   private static async processPdfFile(filePath: string): Promise<string> {
-    // For now, return a placeholder. In production, you'd use a library like pdf-parse
-    // const pdfParse = require('pdf-parse')
-    // const dataBuffer = await readFile(filePath)
-    // const data = await pdfParse(dataBuffer)
-    // return data.text
-    
-    return `PDF Document: ${filePath}\n\nNote: PDF text extraction requires additional setup. For now, this is a placeholder.`
+    try {
+      const pdfParse = require('pdf-parse')
+      const dataBuffer = await readFile(filePath)
+      const data = await pdfParse(dataBuffer)
+      return data.text
+    } catch (error) {
+      console.error('PDF processing error:', error)
+      return `PDF Document: ${filePath}\n\nError processing PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+    }
   }
 
   /**

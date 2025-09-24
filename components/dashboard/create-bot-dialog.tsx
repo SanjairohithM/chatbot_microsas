@@ -166,7 +166,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-none h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
@@ -179,33 +179,33 @@ Be polite, professional, and helpful. If you don't know something, politely say 
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="basic" className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
+          <Tabs defaultValue="basic" className="w-full flex-1 flex flex-col">
+            <TabsList className="grid w-full grid-cols-5 gap-2 p-1">
+              <TabsTrigger value="basic" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <Bot className="h-4 w-4" />
                 Basic
               </TabsTrigger>
-              <TabsTrigger value="website" className="flex items-center gap-2">
+              <TabsTrigger value="website" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <Globe className="h-4 w-4" />
                 Website
               </TabsTrigger>
-              <TabsTrigger value="knowledge" className="flex items-center gap-2">
+              <TabsTrigger value="knowledge" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <FileText className="h-4 w-4" />
                 Knowledge
               </TabsTrigger>
-              <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <TabsTrigger value="appearance" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <Palette className="h-4 w-4" />
                 Appearance
               </TabsTrigger>
-              <TabsTrigger value="advanced" className="flex items-center gap-2">
+              <TabsTrigger value="advanced" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <Settings className="h-4 w-4" />
                 Advanced
               </TabsTrigger>
             </TabsList>
 
             {/* Basic Configuration */}
-            <TabsContent value="basic" className="space-y-6">
+            <TabsContent value="basic" className="space-y-6 flex-1 overflow-y-auto">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -288,7 +288,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Website Integration */}
-            <TabsContent value="website" className="space-y-6">
+            <TabsContent value="website" className="space-y-6 flex-1 overflow-y-auto">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -365,7 +365,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Knowledge Base */}
-            <TabsContent value="knowledge" className="space-y-6">
+            <TabsContent value="knowledge" className="space-y-6 flex-1 overflow-y-auto">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -549,7 +549,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Appearance */}
-            <TabsContent value="appearance" className="space-y-6">
+            <TabsContent value="appearance" className="space-y-6 flex-1 overflow-y-auto">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -640,7 +640,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Advanced Settings */}
-            <TabsContent value="advanced" className="space-y-6">
+            <TabsContent value="advanced" className="space-y-6 flex-1 overflow-y-auto">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

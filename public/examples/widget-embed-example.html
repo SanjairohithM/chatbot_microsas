@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Chatbot Widget Integration Example</h1>
+        
+        <p>This page demonstrates how to integrate a chatbot widget into your website. The widget appears as a floating chat button in the bottom-right corner.</p>
+        
+        <h2>Method 1: Simple Script Tag (Recommended)</h2>
+        <p>Add this script tag to your HTML head section:</p>
+        
+        <div class="code-block">
+&lt;script src="https://your-domain.com/widgets/chatbot-widget.js" 
+        data-bot-id="<span class="highlight">YOUR_BOT_ID</span>"
+        data-primary-color="#3b82f6"
+        data-secondary-color="#1e40af"
+        data-position="bottom-right"
+        data-size="medium"
+        data-show-avatar="true"
+        data-show-title="true"
+        data-auto-open="false"
+        data-api-url="https://your-domain.com/api/chat"
+        data-bot-name="<span class="highlight">Your Bot Name</span>"&gt;&lt;/script&gt;
+        </div>
+        
+        <h2>Method 2: JavaScript Initialization</h2>
+        <p>For more control, you can initialize the widget programmatically:</p>
+        
+        <div class="code-block">
+&lt;script src="https://your-domain.com/widgets/chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ChatbotWidget.init({
+    botId: '<span class="highlight">YOUR_BOT_ID</span>',
+    primaryColor: '#3b82f6',
+    secondaryColor: '#1e40af',
+    position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left
+    size: 'medium', // small, medium, large
+    showAvatar: true,
+    showTitle: true,
+    autoOpen: false,
+    apiUrl: 'https://your-domain.com/api/chat',
+    botName: '<span class="highlight">Your Bot Name</span>'
+  });
+&lt;/script&gt;
+        </div>
+        
+        <h2>Method 3: Iframe Embed</h2>
+        <p>For a fixed chat window, use an iframe:</p>
+        
+        <div class="code-block">
+&lt;iframe 
+  src="https://your-domain.com/embed/<span class="highlight">YOUR_BOT_ID</span>?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+  width="350" 
+  height="500" 
+  frameborder="0"
+  style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+  title="Chatbot"&gt;
+&lt;/iframe&gt;
+        </div>
+        
+        <h2>Configuration Options</h2>
+        <ul>
+            <li><strong>botId</strong>: Your bot's unique identifier (required)</li>
+            <li><strong>primaryColor</strong>: Main color for buttons and user messages (hex color)</li>
+            <li><strong>secondaryColor</strong>: Secondary color for avatar and accents (hex color)</li>
+            <li><strong>position</strong>: Widget position (bottom-right, bottom-left, top-right, top-left)</li>
+            <li><strong>size</strong>: Widget size (small: 300x400, medium: 350x500, large: 400x600)</li>
+            <li><strong>showAvatar</strong>: Show bot avatar in header (true/false)</li>
+            <li><strong>showTitle</strong>: Show bot name in header (true/false)</li>
+            <li><strong>autoOpen</strong>: Automatically open chat on page load (true/false)</li>
+            <li><strong>apiUrl</strong>: Your chat API endpoint URL</li>
+            <li><strong>botName</strong>: Display name for the bot</li>
+        </ul>
+        
+        <h2>JavaScript API</h2>
+        <p>You can control the widget programmatically:</p>
+        
+        <div class="code-block">
+// Open the chat widget
+ChatbotWidget.open();
+
+// Close the chat widget
+ChatbotWidget.close();
+
+// Toggle the chat widget
+ChatbotWidget.toggle();
+
+// Send a message programmatically
+ChatbotWidget.sendMessage();
+
+// Destroy the widget
+ChatbotWidget.destroy();
+        </div>
+        
+        <h2>Styling</h2>
+        <p>The widget is designed to be non-intrusive and responsive. It automatically adapts to your website's design while maintaining its own styling to ensure consistency across different sites.</p>
+        
+        <p><strong>Note:</strong> Replace <span class="highlight">YOUR_BOT_ID</span> and <span class="highlight">Your Bot Name</span> with your actual bot ID and name from your dashboard.</p>
+    </div>
+
+    <!-- Example widget integration -->
+    <script src="/widgets/chatbot-widget.js" 
+            data-bot-id="1"
+            data-primary-color="#3b82f6"
+            data-secondary-color="#1e40af"
+            data-position="bottom-right"
+            data-size="medium"
+            data-show-avatar="true"
+            data-show-title="true"
+            data-auto-open="false"
+            data-api-url="/api/chat"
+            data-bot-name="Support Bot">
+    </script>
+</body>
+</html>
+

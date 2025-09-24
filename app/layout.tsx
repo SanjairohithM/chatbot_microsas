@@ -8,9 +8,9 @@ import { Suspense } from "react"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "Convox",
+  description: "Convox is a platform for building and deploying chatbots.",
+  generator: "convox.ai",
 }
 
 export default function RootLayout({

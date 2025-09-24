@@ -1,9 +1,11 @@
 "use client"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare } from "lucide-react"
+import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare, Code } from "lucide-react"
+import { WidgetExportDialog } from "@/components/dashboard/embeddable-widget"
 import type { Bot as BotType } from "@/lib/types"
 
 interface BotCardProps {
@@ -15,6 +17,8 @@ interface BotCardProps {
 }
 
 export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCardProps) {
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -68,46 +72,52 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => onEdit(bot)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {
-                console.log('Dropdown menu item clicked for bot:', bot.id, 'current status:', bot.status)
-                const newStatus = bot.status === "active" ? "inactive" : "active"
-                console.log('Setting status to:', newStatus)
-                onToggleStatus(bot.id, newStatus)
-              }}>
-                {bot.status === "active" ? (
-                  <>
-                    <Pause className="h-4 w-4 mr-2" />
-                    Deactivate
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4 mr-2" />
-                    {bot.status === "draft" ? "Activate" : "Activate"}
-                  </>
-                )}
-              </DropdownMenuItem>
-              {bot.deployment_url && (
-                <DropdownMenuItem asChild>
-                  <a href={bot.deployment_url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Live
-                  </a>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => onEdit(bot)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Edit
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
+                <DropdownMenuItem onClick={() => {
+                  console.log('Dropdown menu item clicked for bot:', bot.id, 'current status:', bot.status)
+                  const newStatus = bot.status === "active" ? "inactive" : "active"
+                  console.log('Setting status to:', newStatus)
+                  onToggleStatus(bot.id, newStatus)
+                }}>
+                  {bot.status === "active" ? (
+                    <>
+                      <Pause className="h-4 w-4 mr-2" />
+                      Deactivate
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      {bot.status === "draft" ? "Activate" : "Activate"}
+                    </>
+                  )}
+                </DropdownMenuItem>
+                {bot.status === "active" && (
+                  <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+                    <Code className="h-4 w-4 mr-2" />
+                    Export Widget
+                  </DropdownMenuItem>
+                )}
+                {bot.deployment_url && (
+                  <DropdownMenuItem asChild>
+                    <a href={bot.deployment_url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Live
+                    </a>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-destructive">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
@@ -139,9 +149,9 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
 
           <div className="text-sm text-muted-foreground">Created {formatDate(bot.created_at)}</div>
           
-          {/* Chat Button */}
-          {onChat && (
-            <div className="pt-3">
+          {/* Action Buttons */}
+          <div className="pt-3 space-y-2">
+            {onChat && (
               <Button 
                 onClick={() => onChat(bot)} 
                 className="w-full"
@@ -152,10 +162,29 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                 <MessageSquare className="h-4 w-4 mr-2" />
                 {bot.status === "draft" ? "Activate Bot to Chat" : "Chat with Bot"}
               </Button>
-            </div>
-          )}
+            )}
+            
+            {bot.status === "active" && (
+              <Button 
+                onClick={() => setIsExportDialogOpen(true)} 
+                className="w-full"
+                variant="default"
+                size="sm"
+              >
+                <Code className="h-4 w-4 mr-2" />
+                Export Widget
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
+      
+      {/* Export Dialog */}
+      <WidgetExportDialog
+        bot={bot}
+        open={isExportDialogOpen}
+        onOpenChange={setIsExportDialogOpen}
+      />
     </Card>
   )
 }

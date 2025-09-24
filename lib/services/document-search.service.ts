@@ -12,13 +12,23 @@ export class DocumentSearchService {
    */
   static async searchDocuments(botId: number, query: string, limit: number = 5): Promise<SearchResult[]> {
     try {
+      console.log(`[DocumentSearch] Searching documents for bot ${botId} with query: "${query}"`)
+      
       // Get all indexed documents for the bot
-      const documents = await KnowledgeDocumentService.getKnowledgeDocumentsByBotId(botId)
+      const documents = await KnowledgeDocumentService.getDocumentsByBotId(botId)
+      console.log(`[DocumentSearch] Found ${documents.length} total documents for bot ${botId}`)
       
-      // Filter only indexed documents
-      const indexedDocuments = documents.filter(doc => doc.status === 'indexed' && doc.content)
+      // Debug: Log document details
+      documents.forEach((doc, index) => {
+        console.log(`[DocumentSearch] Document ${index + 1}: "${doc.title}" - Status: ${doc.status} - Content length: ${doc.content ? doc.content.length : 0}`)
+      })
       
-      if (indexedDocuments.length === 0) {
+      // Filter documents with content (be more lenient with status)
+      const availableDocuments = documents.filter(doc => doc.content && doc.content.trim().length > 0)
+      console.log(`[DocumentSearch] Found ${availableDocuments.length} documents with content`)
+      
+      if (availableDocuments.length === 0) {
+        console.log(`[DocumentSearch] No documents with content found for bot ${botId}`)
         return []
       }
 
@@ -26,7 +36,7 @@ export class DocumentSearchService {
       const results: SearchResult[] = []
       const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 2)
 
-      for (const document of indexedDocuments) {
+      for (const document of availableDocuments) {
         const content = document.content.toLowerCase()
         let relevanceScore = 0
         let matchedContent = ''
@@ -70,9 +80,12 @@ export class DocumentSearchService {
       }
 
       // Sort by relevance score and return top results
-      return results
+      const finalResults = results
         .sort((a, b) => b.relevanceScore - a.relevanceScore)
         .slice(0, limit)
+      
+      console.log(`[DocumentSearch] Returning ${finalResults.length} search results`)
+      return finalResults
 
     } catch (error) {
       console.error('Document search error:', error)
@@ -85,9 +98,11 @@ export class DocumentSearchService {
    */
   static async getContextForQuery(botId: number, query: string): Promise<string> {
     try {
+      console.log(`[DocumentSearch] Getting context for bot ${botId} with query: "${query}"`)
       const results = await this.searchDocuments(botId, query, 3)
       
       if (results.length === 0) {
+        console.log(`[DocumentSearch] No context found for query: "${query}"`)
         return ''
       }
 
@@ -99,6 +114,7 @@ export class DocumentSearchService {
         context += `${result.matchedContent}\n\n`
       }
 
+      console.log(`[DocumentSearch] Generated context with ${results.length} results`)
       return context
 
     } catch (error) {
