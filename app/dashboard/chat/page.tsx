@@ -173,10 +173,10 @@ export default function ChatPage() {
     }
   }
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, imageUrl?: string) => {
     if (!selectedBot || !user) return
 
-    console.log('Sending message:', { content, selectedBot: selectedBot.id, userId: user.id, conversationId: selectedConversationId })
+    console.log('Sending message:', { content, imageUrl, selectedBot: selectedBot.id, userId: user.id, conversationId: selectedConversationId })
 
     // Add user message to UI immediately
     const userMessage: Message = {
@@ -184,6 +184,7 @@ export default function ChatPage() {
       conversation_id: selectedConversationId || 0,
       role: "user",
       content,
+      image_url: imageUrl,
       created_at: new Date().toISOString(),
     }
 
@@ -209,6 +210,7 @@ export default function ChatPage() {
         conversation_id: response.conversationId || selectedConversationId || 0,
         role: "assistant",
         content: response.message,
+        image_analysis: response.image_analysis,
         tokens_used: response.usage?.total_tokens,
         response_time_ms: response.response_time_ms,
         created_at: new Date().toISOString(),

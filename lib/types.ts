@@ -51,6 +51,8 @@ export interface Message {
   conversation_id: number
   role: "user" | "assistant" | "system"
   content: string
+  image_url?: string
+  image_analysis?: string
   tokens_used?: number
   response_time_ms?: number
   created_at: string

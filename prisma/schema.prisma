@@ -96,6 +96,8 @@ model Message {
   conversation_id  Int
   role             String   // user, assistant, system
   content          String
+  image_url        String?  // URL to uploaded image
+  image_analysis   String?  // AI analysis of the image
   tokens_used      Int?
   response_time_ms Int?
   created_at       DateTime @default(now())

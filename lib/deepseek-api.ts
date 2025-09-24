@@ -169,6 +169,7 @@ export class DeepSeekAPI {
       throw error
     }
   }
+
 }
 
 // Default instance

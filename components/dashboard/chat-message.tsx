@@ -40,7 +40,21 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
             isUser ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground border border-border",
           )}
         >
+          {message.image_url && (
+            <div className="mb-2">
+              <img 
+                src={message.image_url} 
+                alt="Uploaded image" 
+                className="max-w-xs max-h-48 rounded-lg object-cover"
+              />
+            </div>
+          )}
           <p className="whitespace-pre-wrap">{message.content}</p>
+          {message.image_analysis && (
+            <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
+              <strong>Image Analysis:</strong> {message.image_analysis}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">

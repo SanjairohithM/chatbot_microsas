@@ -8,6 +8,7 @@ export interface ChatRequest {
   messages: Array<{
     role: 'system' | 'user' | 'assistant'
     content: string
+    image_url?: string
   }>
   botId: number
   userId: number
@@ -65,15 +66,15 @@ export function useChat(options: UseChatOptions = {}) {
       const responseData = await response.json()
       
       // Handle the API response structure
-      if (responseData.success && responseData.data) {
+      if (responseData.success) {
         const data: ChatResponse = {
-          message: responseData.data.message,
-          conversationId: responseData.data.conversationId,
-          messageId: responseData.data.messageId,
-          usage: responseData.data.usage,
-          model: responseData.data.model,
-          finish_reason: responseData.data.finish_reason,
-          response_time_ms: responseData.data.response_time_ms
+          message: responseData.message,
+          conversationId: responseData.conversationId,
+          messageId: responseData.messageId,
+          usage: responseData.usage,
+          model: responseData.model,
+          finish_reason: responseData.finish_reason,
+          response_time_ms: responseData.response_time_ms
         }
         options.onSuccess?.(data)
         return data
@@ -99,7 +100,8 @@ export function useChat(options: UseChatOptions = {}) {
   ): Promise<ChatResponse> => {
     const chatMessages = messages.map(msg => ({
       role: msg.role as 'system' | 'user' | 'assistant',
-      content: msg.content
+      content: msg.content,
+      image_url: msg.image_url
     }))
 
     // Add system prompt if it's the first message and no system message exists

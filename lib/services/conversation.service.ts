@@ -12,6 +12,8 @@ export interface CreateMessageRequest {
   conversationId: number
   role: 'user' | 'assistant' | 'system'
   content: string
+  imageUrl?: string
+  imageAnalysis?: string
   tokensUsed?: number
   responseTimeMs?: number
 }
@@ -219,6 +221,8 @@ export class ConversationService {
           conversation_id: data.conversationId,
           role: data.role,
           content: data.content,
+          image_url: data.imageUrl,
+          image_analysis: data.imageAnalysis,
           tokens_used: data.tokensUsed,
           response_time_ms: data.responseTimeMs,
         },
@@ -278,6 +282,8 @@ export class ConversationService {
       conversation_id: message.conversation_id,
       role: message.role as 'user' | 'assistant' | 'system',
       content: message.content,
+      image_url: message.image_url || undefined,
+      image_analysis: message.image_analysis || undefined,
       tokens_used: message.tokens_used || undefined,
       response_time_ms: message.response_time_ms || undefined,
       created_at: message.created_at.toISOString(),
