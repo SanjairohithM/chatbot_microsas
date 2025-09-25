@@ -34,6 +34,8 @@ model Bot {
   status              String              @default("draft")
   is_deployed         Boolean             @default(false)
   deployment_url      String?
+  interaction_mode    String              @default("chat") // "chat" or "faq"
+  faq_questions       String?             // JSON string of FAQ questions and answers
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
   analytics           BotAnalytics[]
