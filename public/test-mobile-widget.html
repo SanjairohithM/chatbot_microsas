@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Widget Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .demo-section h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        .iframe-container {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background-color: #fafafa;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mobile Chatbot Widget Test</h1>
+        
+        <div class="demo-section">
+            <h2>Standard Iframe Embed</h2>
+            <p>This is the regular iframe embed that shows the chat interface directly:</p>
+            <div class="iframe-container">
+                <iframe 
+                    src="/embed/1?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+                    width="350" 
+                    height="500" 
+                    frameborder="0"
+                    style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+                    title="Standard Chatbot">
+                </iframe>
+            </div>
+            <div class="code-block">
+&lt;iframe 
+  src="/embed/<span class="highlight">1</span>?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+  width="350" 
+  height="500" 
+  frameborder="0"
+  style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+  title="Standard Chatbot"&gt;
+&lt;/iframe&gt;
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>Floating Chat Button (Center Modal)</h2>
+            <p>This version shows a small floating chat button that opens a chat window in the center of the screen when clicked. The chat button stays in the bottom-right corner, but the chat opens in the center. Perfect for embedding on external websites:</p>
+            <div class="code-block">
+&lt;iframe 
+  src="/embed/<span class="highlight">1</span>/mobile?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+  width="80px" 
+  height="80px" 
+  frameborder="0"
+  style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
+  title="Chat Button"&gt;
+&lt;/iframe&gt;
+            </div>
+            <p><strong>Note:</strong> The chat button will appear in the bottom-right corner of this page. Click it to see the chat interface open in the center of the screen!</p>
+            
+            <!-- Actual floating chat button for demonstration -->
+            <iframe 
+                src="/embed/1/mobile?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+                width="80px" 
+                height="80px" 
+                frameborder="0"
+                style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
+                title="Chat Button">
+            </iframe>
+        </div>
+
+        <div class="demo-section">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Chat Icon:</strong> A floating chat button that appears in the bottom-right corner</li>
+                <li><strong>Center Modal:</strong> Chat opens in the center of the screen, not in the button space</li>
+                <li><strong>Overlay Background:</strong> Semi-transparent background when chat is open</li>
+                <li><strong>Responsive:</strong> Adapts to different screen sizes</li>
+                <li><strong>Customizable:</strong> Colors and appearance can be customized via theme parameters</li>
+                <li><strong>Easy Integration:</strong> Simple iframe embed code</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>Usage Instructions</h2>
+            <ol>
+                <li>Replace <span class="highlight">1</span> in the iframe src with your actual bot ID</li>
+                <li>Customize the theme colors by modifying the theme parameter</li>
+                <li>Adjust the iframe width and height as needed for your layout</li>
+                <li>Test on both desktop and mobile devices</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

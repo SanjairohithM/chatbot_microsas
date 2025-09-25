@@ -251,6 +251,19 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
 </iframe>`
   }
 
+  const generateMobileIframeEmbed = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `<iframe 
+  src="${baseUrl}/embed/${bot.id}/mobile?theme=${encodeURIComponent(JSON.stringify(customization))}" 
+  width="80px" 
+  height="80px" 
+  frameborder="0"
+  style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
+  title="${bot.name} Chat Button">
+</iframe>`
+  }
+
   const generateReactComponent = () => {
     return `import React, { useState, useEffect } from 'react';
 
@@ -488,26 +501,53 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             </TabsContent>
 
             <TabsContent value="iframe" className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium">Iframe Embed Code</label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(generateIframeEmbed())}
-                      className="flex items-center gap-2"
-                    >
-                      <Copy className="h-4 w-4" />
-                      Copy
-                    </Button>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Standard Iframe Embed</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateIframeEmbed())}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
                   </div>
+                  <ScrollArea className="h-32 w-full rounded border p-3">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {generateIframeEmbed()}
+                    </pre>
+                  </ScrollArea>
                 </div>
-                <ScrollArea className="h-32 w-full rounded border p-3">
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
-                    {generateIframeEmbed()}
-                  </pre>
-                </ScrollArea>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Mobile Iframe Embed (Chat Icon)</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateMobileIframeEmbed())}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-32 w-full rounded border p-3">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {generateMobileIframeEmbed()}
+                    </pre>
+                  </ScrollArea>
+                  <p className="text-xs text-muted-foreground">
+                    This version shows a floating chat button that opens a chat window in the center of the screen when clicked. The button stays in the bottom-right corner, but the chat opens in the center. Perfect for embedding on external websites.
+                  </p>
+                </div>
               </div>
             </TabsContent>
 
@@ -549,7 +589,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             <h4 className="font-medium text-sm mb-2">Integration Instructions:</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div>• <strong>JavaScript Widget:</strong> Add the script tag to your HTML head section</div>
-              <div>• <strong>Iframe Embed:</strong> Insert the iframe code where you want the chat to appear</div>
+              <div>• <strong>Standard Iframe:</strong> Insert the iframe code where you want the chat to appear</div>
+              <div>• <strong>Mobile Iframe:</strong> Shows a floating chat button that opens a chat window in the center of the screen (perfect for external websites)</div>
               <div>• <strong>React Component:</strong> Import and use the component in your React application</div>
               <div>• <strong>API Integration:</strong> Use the REST API endpoints for custom implementations</div>
             </div>

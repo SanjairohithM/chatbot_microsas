@@ -193,7 +193,7 @@ export function WidgetEmbedCode({ bot }: { bot: Bot }) {
   })();
 </script>
 
-<!-- Or use this iframe embed -->
+<!-- Standard iframe embed -->
 <iframe 
   src="${window.location.origin}/embed/${bot.id}" 
   width="350" 
@@ -201,6 +201,16 @@ export function WidgetEmbedCode({ bot }: { bot: Bot }) {
   frameborder="0"
   style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
   title="${bot.name} Chatbot">
+</iframe>
+
+<!-- Floating chat button (perfect for external websites) -->
+<iframe 
+  src="${window.location.origin}/embed/${bot.id}/mobile" 
+  width="80px" 
+  height="80px" 
+  frameborder="0"
+  style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
+  title="${bot.name} Chat Button">
 </iframe>`
 
   const copyToClipboard = async () => {

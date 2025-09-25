@@ -33,13 +33,25 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md">
-        {isLogin ? (
-          <LoginForm onToggleMode={() => setIsLogin(false)} />
-        ) : (
-          <SignupForm onToggleMode={() => setIsLogin(true)} />
-        )}
+    <div className="h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
+      {/* Left side - Image */}
+      <div className="hidden lg:block relative h-full">
+        <img 
+          src="/images/loginrobo.jpg" 
+          alt="AI Chatbot" 
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      {/* Right side - Form */}
+      <div className="flex items-center justify-center bg-white h-full px-12">
+        <div className="w-full max-w-sm">
+          {isLogin ? (
+            <LoginForm onToggleMode={() => setIsLogin(false)} />
+          ) : (
+            <SignupForm onToggleMode={() => setIsLogin(true)} />
+          )}
+        </div>
       </div>
     </div>
   )
