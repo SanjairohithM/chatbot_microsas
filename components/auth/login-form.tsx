@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/hooks/use-auth"
+import { Separator } from "@/components/ui/separator"
+import { signIn as nextAuthSignIn } from "next-auth/react"
 
 interface LoginFormProps {
   onToggleMode: () => void
@@ -70,6 +72,18 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
+
+        <div className="my-4">
+          <Separator className="mb-4" />
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => nextAuthSignIn("google", { callbackUrl: "/dashboard" })}
+          >
+            Continue with Google
+          </Button>
+        </div>
 
         <div className="mt-4 text-center text-sm">
           <span className="text-muted-foreground">Don't have an account? </span>

@@ -1,7 +1,20 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { type AuthState, signIn, signUp, signOut, getCurrentUser } from "@/lib/auth"
+import { createContext, useContext, useMemo, type ReactNode } from "react"
+import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react"
+
+export interface User {
+  id: number | string
+  email: string
+  name: string
+  created_at?: string
+}
+
+export interface AuthState {
+  user: User | null
+  isLoading: boolean
+  error: string | null
+}
 
 interface AuthContextType extends AuthState {
   signIn: (email: string, password: string) => Promise<void>
@@ -12,69 +25,58 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>({
-    user: null,
-    isLoading: true,
-    error: null,
-  })
+  const { data: session, status } = useSession()
 
-  useEffect(() => {
-    // Check for existing session on mount
-    const user = getCurrentUser()
-    setState({
+  const value = useMemo<AuthContextType>(() => {
+    const sessionUser = session?.user as any
+    const user: User | null = sessionUser
+      ? {
+          id: sessionUser.id ?? sessionUser.email,
+          email: sessionUser.email,
+          name: sessionUser.name ?? "User",
+        }
+      : null
+
+    return {
       user,
-      isLoading: false,
+      isLoading: status === "loading",
       error: null,
-    })
-  }, [])
-
-  const handleSignIn = async (email: string, password: string) => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
-    try {
-      const user = await signIn(email, password)
-      setState({ user, isLoading: false, error: null })
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : "Sign in failed",
-      }))
-      throw error
+      signIn: async (email: string, password: string) => {
+        const res = await nextAuthSignIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })
+        if (res?.error) {
+          throw new Error(res.error)
+        }
+      },
+      signUp: async (email: string, password: string, name: string) => {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name }),
+        })
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}))
+          throw new Error(data.error || 'Sign up failed')
+        }
+        const res = await nextAuthSignIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        })
+        if (res?.error) {
+          throw new Error(res.error)
+        }
+      },
+      signOut: () => {
+        nextAuthSignOut({ redirect: true, callbackUrl: "/auth" })
+      },
     }
-  }
+  }, [session, status])
 
-  const handleSignUp = async (email: string, password: string, name: string) => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }))
-    try {
-      const user = await signUp(email, password, name)
-      setState({ user, isLoading: false, error: null })
-    } catch (error) {
-      setState((prev) => ({
-        ...prev,
-        isLoading: false,
-        error: error instanceof Error ? error.message : "Sign up failed",
-      }))
-      throw error
-    }
-  }
-
-  const handleSignOut = () => {
-    signOut()
-    setState({ user: null, isLoading: false, error: null })
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        signIn: handleSignIn,
-        signUp: handleSignUp,
-        signOut: handleSignOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
