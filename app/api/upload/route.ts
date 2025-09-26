@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), 'uploads')
+    // Create secure uploads directory outside public folder
+    const uploadsDir = join(process.cwd(), 'secure-uploads')
     if (!existsSync(uploadsDir)) {
       await mkdir(uploadsDir, { recursive: true })
     }
@@ -41,8 +41,8 @@ export async function POST(request: NextRequest) {
     // Save file
     await writeFile(filepath, buffer)
 
-    // Return file URL
-    const fileUrl = `/uploads/${filename}`
+    // Return secure file URL (not directly accessible)
+    const fileUrl = `/api/secure-file/${filename}`
 
     return NextResponse.json({
       success: true,

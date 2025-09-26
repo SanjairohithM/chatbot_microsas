@@ -4,6 +4,8 @@ import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
+import { PineconeService } from '@/lib/services/pinecone.service'
+import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -113,6 +115,7 @@ export async function POST(request: NextRequest) {
     let documentContext = ''
     let imageAnalysis = ''
     let searchResults = null
+    let conversationContext = ''
     
     if (lastUserMessage) {
       // Extract text content from the message (handle both string and array formats)
@@ -129,30 +132,100 @@ export async function POST(request: NextRequest) {
         imageUrl = imagePart?.image_url?.url || ''
       }
       
-      // Enhanced document search with detailed results
+      // Enhanced document search using Pinecone vector search
       try {
-        console.log(`[Chat API] Searching for context for bot ${botId} with message: "${messageText}"`)
+        console.log(`[Chat API] 🔍 Searching documents in Pinecone for bot ${botId} with message: "${messageText}"`)
         
-        // Get both context and detailed search results
-        const [context, detailedResults] = await Promise.all([
-          DocumentSearchService.getContextForQuery(botId, messageText),
-          DocumentSearchService.getDetailedSearchResults(botId, messageText, 3)
-        ])
+        // Search documents using Pinecone vector search
+        const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3)
         
-        documentContext = context
-        searchResults = detailedResults
-        
-        console.log(`[Chat API] Document context length: ${documentContext.length}`)
-        console.log(`[Chat API] Search results: ${detailedResults.results.length} matches found`)
-        console.log(`[Chat API] Search summary: ${detailedResults.summary.exactMatches} exact, ${detailedResults.summary.partialMatches} partial, ${detailedResults.summary.semanticMatches} semantic`)
-        
-        if (documentContext) {
-          console.log(`[Chat API] Document context preview: ${documentContext.substring(0, 200)}...`)
+        if (pineconeResults.length > 0) {
+          console.log(`[Chat API] ✅ Found ${pineconeResults.length} relevant document chunks in Pinecone`)
+          
+          // Build document context from Pinecone results
+          documentContext = `Relevant document information:\n`
+          pineconeResults.forEach((result, index) => {
+            documentContext += `${index + 1}. From "${result.title}" (chunk ${result.chunkIndex + 1}/${result.totalChunks}, relevance: ${(result.score * 100).toFixed(1)}%):\n`
+            documentContext += `${result.content}\n\n`
+          })
+          
+          // Create search results object for compatibility
+          searchResults = {
+            query: messageText,
+            results: pineconeResults.map(result => ({
+              document: { title: result.title, id: result.documentId },
+              matchedContent: result.content,
+              score: result.score,
+              matchType: 'vector_similarity'
+            })),
+            summary: {
+              exactMatches: 0,
+              partialMatches: 0,
+              semanticMatches: pineconeResults.length,
+              averageScore: pineconeResults.reduce((sum, r) => sum + r.score, 0) / pineconeResults.length
+            }
+          }
+          
+          console.log(`[Chat API] 📄 Document context length: ${documentContext.length} characters`)
+          console.log(`[Chat API] 📊 Pinecone search results: ${pineconeResults.length} chunks found`)
+          console.log(`[Chat API] 🎯 Average relevance score: ${(searchResults.summary.averageScore * 100).toFixed(1)}%`)
+          
+          if (documentContext) {
+            console.log(`[Chat API] 📝 Document context preview: ${documentContext.substring(0, 200)}...`)
+          }
+        } else {
+          console.log(`[Chat API] ⚠️ No relevant documents found in Pinecone for query: "${messageText}"`)
+          documentContext = ''
+          searchResults = null
         }
       } catch (error) {
-        console.error('Document search failed, continuing without context:', error)
-        documentContext = ''
-        searchResults = null
+        console.error('[Chat API] ❌ Pinecone document search failed, falling back to traditional search:', error)
+        
+        // Fallback to traditional document search
+        try {
+          const [context, detailedResults] = await Promise.all([
+            DocumentSearchService.getContextForQuery(botId, messageText),
+            DocumentSearchService.getDetailedSearchResults(botId, messageText, 3)
+          ])
+          
+          documentContext = context
+          searchResults = detailedResults
+          
+          console.log(`[Chat API] 📄 Fallback search - Document context length: ${documentContext.length}`)
+          console.log(`[Chat API] 📊 Fallback search results: ${detailedResults.results.length} matches found`)
+        } catch (fallbackError) {
+          console.error('[Chat API] ❌ Fallback document search also failed:', fallbackError)
+          documentContext = ''
+          searchResults = null
+        }
+      }
+
+      // Get conversation context from Pinecone if enabled
+      if (config.chat.useVectorSearch) {
+        try {
+          console.log(`[Chat API] Searching conversation context for bot ${botId}, user ${userId}`)
+          
+          // Search for relevant conversation history
+          const relevantMessages = await PineconeService.searchConversationContext(
+            botId,
+            userId,
+            messageText,
+            5
+          )
+          
+          if (relevantMessages.length > 0) {
+            conversationContext = `Previous conversation context:\n`
+            relevantMessages.forEach((msg, index) => {
+              conversationContext += `${index + 1}. ${msg.role}: ${msg.content.substring(0, 150)}${msg.content.length > 150 ? '...' : ''}\n`
+            })
+            console.log(`[Chat API] Found ${relevantMessages.length} relevant conversation messages`)
+          } else {
+            console.log(`[Chat API] No relevant conversation context found`)
+          }
+        } catch (error) {
+          console.error('Pinecone conversation search failed, continuing without context:', error)
+          conversationContext = ''
+        }
       }
 
       // Check if there's an image and provide helpful response
@@ -216,6 +289,18 @@ export async function POST(request: NextRequest) {
 - If you cannot find relevant information in the knowledge base, say so clearly
 - Prioritize exact matches over partial matches when available
 - Always cite specific information from the documents when possible`
+      }
+
+      // Add conversation context if available
+      if (conversationContext) {
+        enhancedPrompt += `\n\n${conversationContext}`
+        
+        // Add instructions for using conversation context
+        enhancedPrompt += `\n\nInstructions for using conversation context:
+- Reference previous conversations when relevant to provide continuity
+- Build upon previous topics and questions when appropriate
+- Maintain context across the conversation
+- If the user is asking follow-up questions, use the conversation history to provide better answers`
       }
       
       // Add image analysis if present
@@ -310,6 +395,59 @@ export async function POST(request: NextRequest) {
       responseTimeMs: responseTime
     })
 
+    // Store messages in Pinecone for vector search (if enabled)
+    if (config.chat.useVectorSearch) {
+      try {
+        // Store user message in Pinecone
+        if (lastMessage.role === 'user') {
+          // Extract message content for Pinecone storage
+          let userMessageContent = ''
+          if (typeof lastMessage.content === 'string') {
+            userMessageContent = lastMessage.content
+          } else if (Array.isArray(lastMessage.content)) {
+            const contentArray = lastMessage.content as any[]
+            const textPart = contentArray.find((part: any) => part.type === 'text')
+            userMessageContent = textPart?.text || ''
+          }
+
+          await PineconeService.storeChatMessage({
+            id: `user_${Date.now()}`,
+            conversationId: currentConversationId.toString(),
+            botId,
+            userId: userId || 1,
+            role: 'user',
+            content: userMessageContent,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              documentContext: documentContext.length > 0
+            }
+          })
+        }
+
+        // Store assistant response in Pinecone
+        await PineconeService.storeChatMessage({
+          id: `assistant_${savedMessage.id}`,
+          conversationId: currentConversationId.toString(),
+          botId,
+          userId: userId || 1,
+          role: 'assistant',
+          content: assistantMessage,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            tokensUsed: response.usage?.total_tokens,
+            responseTimeMs: responseTime,
+            model: response.model,
+            documentContext: documentContext.length > 0
+          }
+        })
+
+        console.log(`[Chat API] Messages stored in Pinecone for conversation ${currentConversationId}`)
+      } catch (error) {
+        console.error('Failed to store messages in Pinecone:', error)
+        // Don't fail the entire request if Pinecone storage fails
+      }
+    }
+
     logger.apiResponse('POST', '/api/chat', 200, responseTime)
 
     // Return response in format expected by both dashboard and widget
@@ -330,7 +468,17 @@ export async function POST(request: NextRequest) {
         matches_found: searchResults.results.length,
         summary: searchResults.summary,
         has_context: documentContext.length > 0
-      } : null
+      } : null,
+      // Conversation context information
+      conversation_context: config.chat.useVectorSearch ? {
+        has_context: conversationContext.length > 0,
+        context_length: conversationContext.length,
+        vector_search_enabled: true
+      } : {
+        has_context: false,
+        context_length: 0,
+        vector_search_enabled: false
+      }
     }
 
     // Create response with CORS headers
