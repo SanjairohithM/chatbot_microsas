@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { KnowledgeDocumentService } from '@/lib/services/knowledge-document.service'
+import { DocumentProcessorService } from '@/lib/services/document-processor.service'
+import { join } from 'path'
 
 export async function POST(
   request: NextRequest,
@@ -18,32 +20,57 @@ export async function POST(
     const results = []
 
     for (const doc of documents) {
-      if (doc.status !== 'indexed' && doc.content) {
-        // Update document status to indexed
-        const updatedDoc = await KnowledgeDocumentService.updateDocumentStatus(doc.id, 'indexed')
-        if (updatedDoc) {
-          processedCount++
+      if (doc.status !== 'indexed') {
+        try {
+          // Process the document if it has a file URL
+          if (doc.file_url) {
+            const filePath = join(process.cwd(), doc.file_url)
+            const processed = await DocumentProcessorService.processDocument(
+              filePath,
+              doc.title,
+              doc.file_type || 'txt'
+            )
+            
+            // Update the document with processed content
+            const updatedDoc = await KnowledgeDocumentService.updateKnowledgeDocument(doc.id, {
+              content: processed.content,
+              status: 'indexed'
+            })
+            
+            if (updatedDoc) {
+              processedCount++
+              results.push({
+                id: doc.id,
+                title: doc.title,
+                status: 'indexed',
+                contentLength: processed.content.length
+              })
+            }
+          } else {
+            results.push({
+              id: doc.id,
+              title: doc.title,
+              status: doc.status,
+              contentLength: doc.content ? doc.content.length : 0,
+              error: 'No file URL found'
+            })
+          }
+        } catch (error) {
+          console.error(`Error processing document ${doc.id}:`, error)
           results.push({
             id: doc.id,
             title: doc.title,
-            status: 'indexed',
-            contentLength: doc.content.length
+            status: 'error',
+            contentLength: doc.content ? doc.content.length : 0,
+            error: error instanceof Error ? error.message : 'Processing failed'
           })
         }
-      } else if (doc.status === 'indexed') {
+      } else {
         results.push({
           id: doc.id,
           title: doc.title,
           status: 'already_indexed',
           contentLength: doc.content ? doc.content.length : 0
-        })
-      } else {
-        results.push({
-          id: doc.id,
-          title: doc.title,
-          status: doc.status,
-          contentLength: doc.content ? doc.content.length : 0,
-          error: 'No content to index'
         })
       }
     }

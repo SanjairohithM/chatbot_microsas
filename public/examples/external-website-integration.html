@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Website Integration Example</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .warning {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .test-section {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 External Website Integration Guide</h1>
+        
+        <p>This page demonstrates how to integrate the chatbot widget into external websites. The widget should appear as a floating chat button in the bottom-right corner.</p>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Replace <span class="highlight">YOUR_DOMAIN</span> with your actual domain (e.g., https://your-chatbot-app.com) and <span class="highlight">YOUR_BOT_ID</span> with your actual bot ID.
+        </div>
+
+        <h2>Method 1: Simple Script Tag (Recommended)</h2>
+        <p>Add this script tag to your HTML head section:</p>
+        
+        <div class="code-block">
+&lt;script src="<span class="highlight">YOUR_DOMAIN</span>/widgets/chatbot-widget.js" 
+        data-bot-id="<span class="highlight">YOUR_BOT_ID</span>"
+        data-primary-color="#3b82f6"
+        data-secondary-color="#1e40af"
+        data-position="bottom-right"
+        data-size="medium"
+        data-show-avatar="true"
+        data-show-title="true"
+        data-auto-open="false"
+        data-api-url="<span class="highlight">YOUR_DOMAIN</span>/api/chat"
+        data-bot-name="<span class="highlight">Your Bot Name</span>"&gt;&lt;/script&gt;
+        </div>
+        
+        <h2>Method 2: JavaScript Initialization</h2>
+        <p>For more control, you can initialize the widget programmatically:</p>
+        
+        <div class="code-block">
+&lt;script src="<span class="highlight">YOUR_DOMAIN</span>/widgets/chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  ChatbotWidget.init({
+    botId: '<span class="highlight">YOUR_BOT_ID</span>',
+    primaryColor: '#3b82f6',
+    secondaryColor: '#1e40af',
+    position: 'bottom-right', // bottom-right, bottom-left, top-right, top-left
+    size: 'medium', // small, medium, large
+    showAvatar: true,
+    showTitle: true,
+    autoOpen: false,
+    apiUrl: '<span class="highlight">YOUR_DOMAIN</span>/api/chat',
+    botName: '<span class="highlight">Your Bot Name</span>'
+  });
+&lt;/script&gt;
+        </div>
+        
+        <h2>Method 3: Iframe Embed</h2>
+        <p>For a fixed chat window, use an iframe:</p>
+        
+        <div class="code-block">
+&lt;iframe 
+  src="<span class="highlight">YOUR_DOMAIN</span>/embed/<span class="highlight">YOUR_BOT_ID</span>?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%2C%22secondaryColor%22%3A%22%231e40af%22%7D" 
+  width="350" 
+  height="500" 
+  frameborder="0"
+  style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+  title="Chatbot"
+  allow="microphone; camera"&gt;
+&lt;/iframe&gt;
+        </div>
+
+        <h2>Method 4: Mobile Floating Button</h2>
+        <p>For a mobile-friendly floating chat button:</p>
+        
+        <div class="code-block">
+&lt;iframe 
+  src="<span class="highlight">YOUR_DOMAIN</span>/embed/<span class="highlight">YOUR_BOT_ID</span>/mobile?theme=%7B%22primaryColor%22%3A%22%233b82f6%22%7D" 
+  width="80px" 
+  height="80px" 
+  frameborder="0"
+  style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
+  title="Chat Button"
+  allow="microphone; camera"&gt;
+&lt;/iframe&gt;
+        </div>
+        
+        <h2>Configuration Options</h2>
+        <ul>
+            <li><strong>botId</strong>: Your bot's unique identifier (required)</li>
+            <li><strong>primaryColor</strong>: Main color for buttons and user messages (hex color)</li>
+            <li><strong>secondaryColor</strong>: Secondary color for avatar and accents (hex color)</li>
+            <li><strong>position</strong>: Widget position (bottom-right, bottom-left, top-right, top-left)</li>
+            <li><strong>size</strong>: Widget size (small: 300x400, medium: 350x500, large: 400x600)</li>
+            <li><strong>showAvatar</strong>: Show bot avatar in header (true/false)</li>
+            <li><strong>showTitle</strong>: Show bot name in header (true/false)</li>
+            <li><strong>autoOpen</strong>: Automatically open chat on page load (true/false)</li>
+            <li><strong>apiUrl</strong>: Your chat API endpoint URL (must be absolute URL)</li>
+            <li><strong>botName</strong>: Display name for the bot</li>
+        </ul>
+        
+        <h2>JavaScript API</h2>
+        <p>You can control the widget programmatically:</p>
+        
+        <div class="code-block">
+// Open the chat widget
+ChatbotWidget.open();
+
+// Close the chat widget
+ChatbotWidget.close();
+
+// Toggle the chat widget
+ChatbotWidget.toggle();
+
+// Send a message programmatically
+ChatbotWidget.sendMessage();
+
+// Destroy the widget
+ChatbotWidget.destroy();
+        </div>
+
+        <h2>Troubleshooting</h2>
+        
+        <h3>Widget Not Appearing</h3>
+        <ul>
+            <li>Check that the script tag is correctly placed in the HTML head</li>
+            <li>Verify the bot ID is correct and the bot exists</li>
+            <li>Ensure the API URL is accessible and uses absolute URLs</li>
+            <li>Check browser console for errors (F12 → Console)</li>
+            <li>Verify CORS headers are properly configured on your server</li>
+        </ul>
+
+        <h3>API Errors</h3>
+        <ul>
+            <li>Verify the bot is active and deployed</li>
+            <li>Check API endpoint configuration</li>
+            <li>Ensure proper CORS headers are set</li>
+            <li>Test the API directly: <code>YOUR_DOMAIN/api/chat</code></li>
+        </ul>
+
+        <h3>Styling Issues</h3>
+        <ul>
+            <li>The widget uses fixed positioning and high z-index</li>
+            <li>Check for CSS conflicts with your site's styles</li>
+            <li>Ensure the widget container has proper dimensions</li>
+        </ul>
+
+        <div class="test-section">
+            <h2>🧪 Test Integration</h2>
+            <p>Use this section to test your widget integration:</p>
+            
+            <div class="code-block">
+&lt;!-- Test widget integration --&gt;
+&lt;script src="<span class="highlight">YOUR_DOMAIN</span>/widgets/chatbot-widget.js" 
+        data-bot-id="<span class="highlight">YOUR_BOT_ID</span>"
+        data-primary-color="#3b82f6"
+        data-secondary-color="#1e40af"
+        data-position="bottom-right"
+        data-size="medium"
+        data-show-avatar="true"
+        data-show-title="true"
+        data-auto-open="false"
+        data-api-url="<span class="highlight">YOUR_DOMAIN</span>/api/chat"
+        data-bot-name="Test Bot"&gt;
+&lt;/script&gt;
+            </div>
+            
+            <p><strong>Expected Result:</strong> You should see a blue chat button in the bottom-right corner of this page.</p>
+        </div>
+
+        <div class="success">
+            <strong>✅ Integration Complete!</strong><br>
+            If you can see the chat button and it opens a chat window when clicked, your integration is working correctly.
+        </div>
+    </div>
+
+    <!-- Example widget integration - Replace with your actual domain and bot ID -->
+    <script src="/widgets/chatbot-widget.js" 
+            data-bot-id="1"
+            data-primary-color="#3b82f6"
+            data-secondary-color="#1e40af"
+            data-position="bottom-right"
+            data-size="medium"
+            data-show-avatar="true"
+            data-show-title="true"
+            data-auto-open="false"
+            data-api-url="/api/chat"
+            data-bot-name="Example Bot">
+    </script>
+</body>
+</html>

@@ -31,7 +31,7 @@
     showAvatar: true,
     showTitle: true,
     autoOpen: false,
-    apiUrl: '/api/chat'
+    apiUrl: 'https://your-domain.com/api/chat'
   };
 
   // Widget state

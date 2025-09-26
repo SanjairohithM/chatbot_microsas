@@ -216,25 +216,17 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
     
     return `<!-- ${bot.name} Chatbot Widget -->
-<script>
-(function() {
-  var config = {
-    botId: ${bot.id},
-    primaryColor: '${customization.primaryColor}',
-    secondaryColor: '${customization.secondaryColor}',
-    position: '${customization.position}',
-    size: '${customization.size}',
-    showAvatar: ${customization.showAvatar},
-    showTitle: ${customization.showTitle},
-    autoOpen: ${customization.autoOpen}
-  };
-  
-  var script = document.createElement('script');
-  script.src = '${baseUrl}/api/widget/${bot.id}/script.js';
-  script.setAttribute('data-config', JSON.stringify(config));
-  script.async = true;
-  document.head.appendChild(script);
-})();
+<script src="${baseUrl}/widgets/chatbot-widget.js" 
+        data-bot-id="${bot.id}"
+        data-primary-color="${customization.primaryColor}"
+        data-secondary-color="${customization.secondaryColor}"
+        data-position="${customization.position}"
+        data-size="${customization.size}"
+        data-show-avatar="${customization.showAvatar}"
+        data-show-title="${customization.showTitle}"
+        data-auto-open="${customization.autoOpen}"
+        data-api-url="${baseUrl}/api/chat"
+        data-bot-name="${bot.name}">
 </script>`
   }
 
@@ -247,7 +239,8 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
   height="500" 
   frameborder="0"
   style="border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
-  title="${bot.name} Chatbot">
+  title="${bot.name} Chatbot"
+  allow="microphone; camera">
 </iframe>`
   }
 
@@ -260,7 +253,8 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
   height="80px" 
   frameborder="0"
   style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; border: none;"
-  title="${bot.name} Chat Button">
+  title="${bot.name} Chat Button"
+  allow="microphone; camera">
 </iframe>`
   }
 

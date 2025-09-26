@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Process the document
-    const filePath = join(process.cwd(), 'public', document.file_url)
+    const filePath = join(process.cwd(), document.file_url)
     const processed = await DocumentProcessorService.processDocument(
       filePath,
       document.title,

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Site Test - Chatbot Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 External Site Integration Test</h1>
+        
+        <div class="status info">
+            <strong>Test Environment:</strong> External site testing chatbot widget integration
+        </div>
+        
+        <div class="status warning">
+            <strong>⚠️ Important:</strong> This page simulates an external website. Make sure your chatbot server is running on <code>http://localhost:3000</code>
+        </div>
+        
+        <h2>Integration Code:</h2>
+        <div class="code-block">
+&lt;script src="http://localhost:3000/widgets/chatbot-widget.js" 
+        data-bot-id="3"
+        data-primary-color="#3b82f6"
+        data-secondary-color="#1e40af"
+        data-position="bottom-right"
+        data-size="medium"
+        data-show-avatar="true"
+        data-show-title="true"
+        data-auto-open="false"
+        data-api-url="http://localhost:3000/api/chat"
+        data-bot-name="makeeasy"&gt;
+&lt;/script&gt;
+        </div>
+        
+        <h2>Test Controls:</h2>
+        <button class="test-button" onclick="testWidget()">Test Widget</button>
+        <button class="test-button" onclick="testAPI()">Test API Direct</button>
+        <button class="test-button" onclick="testCORS()">Test CORS</button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+        
+        <h2>Test Log:</h2>
+        <div id="log" class="log">
+            <div>Test log will appear here...</div>
+        </div>
+        
+        <h2>Expected Results:</h2>
+        <ul>
+            <li>✅ Blue chat button should appear in bottom-right corner</li>
+            <li>✅ Clicking button should open chat window</li>
+            <li>✅ Sending message should get response from chatbot</li>
+            <li>✅ No CORS errors in console</li>
+        </ul>
+        
+        <div class="status info">
+            <strong>Instructions:</strong>
+            <ol>
+                <li>Make sure your chatbot server is running on <code>http://localhost:3000</code></li>
+                <li>Look for the blue chat button in the bottom-right corner</li>
+                <li>Click the button to open the chat widget</li>
+                <li>Type a message and press Enter or click Send</li>
+                <li>Check the test log above for any errors</li>
+                <li>Open browser DevTools (F12) to see console errors</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Widget Integration Test -->
+    <script src="http://localhost:3000/widgets/chatbot-widget.js" 
+            data-bot-id="3"
+            data-primary-color="#3b82f6"
+            data-secondary-color="#1e40af"
+            data-position="bottom-right"
+            data-size="medium"
+            data-show-avatar="true"
+            data-show-title="true"
+            data-auto-open="false"
+            data-api-url="http://localhost:3000/api/chat"
+            data-bot-name="makeeasy">
+    </script>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(`[EXTERNAL-TEST] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function testAPI() {
+            log('Testing direct API call...');
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        botId: 3,
+                        message: 'Hello, this is a test message from external site',
+                        conversationId: null
+                    })
+                });
+                
+                log(`API Response Status: ${response.status}`);
+                const data = await response.json();
+                log(`API Response Data: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    log('✅ Direct API test successful!');
+                } else {
+                    log('❌ Direct API test failed!');
+                }
+            } catch (error) {
+                log(`❌ Direct API test error: ${error.message}`);
+                if (error.message.includes('CORS')) {
+                    log('🔍 This is a CORS error - check server configuration');
+                }
+            }
+        }
+
+        async function testCORS() {
+            log('Testing CORS preflight...');
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                log(`CORS OPTIONS Response Status: ${response.status}`);
+                log(`CORS Headers: ${JSON.stringify([...response.headers.entries()], null, 2)}`);
+                
+                if (response.status === 200) {
+                    log('✅ CORS preflight test successful!');
+                } else {
+                    log('❌ CORS preflight test failed!');
+                }
+            } catch (error) {
+                log(`❌ CORS preflight test error: ${error.message}`);
+            }
+        }
+
+        function testWidget() {
+            log('Testing widget functionality...');
+            
+            // Check if widget element exists
+            const widget = document.getElementById('chatbot-widget-3');
+            if (widget) {
+                log('✅ Widget element found in DOM');
+                
+                // Check if ChatbotWidget global object exists
+                if (typeof ChatbotWidget !== 'undefined') {
+                    log('✅ ChatbotWidget global object is available');
+                    log('Available methods: ' + Object.keys(ChatbotWidget).join(', '));
+                } else {
+                    log('❌ ChatbotWidget global object is NOT available');
+                }
+            } else {
+                log('❌ Widget element not found in DOM');
+            }
+        }
+
+        // Initialize test
+        document.addEventListener('DOMContentLoaded', function() {
+            log('External test page loaded');
+            log('Current origin: ' + window.location.origin);
+            log('Target API: http://localhost:3000/api/chat');
+            
+            // Wait for widget to load
+            setTimeout(() => {
+                testWidget();
+            }, 2000);
+        });
+
+        // Override console.log to capture widget logs
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            if (args[0] && args[0].includes && args[0].includes('ChatbotWidget')) {
+                log(args.join(' '));
+            }
+        };
+
+        // Capture fetch errors
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args).catch(error => {
+                log(`❌ Fetch error: ${error.message}`);
+                throw error;
+            });
+        };
+    </script>
+</body>
+</html>

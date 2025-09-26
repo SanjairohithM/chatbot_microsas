@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Site - Chatbot Integration</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 External Website</h1>
+        
+        <div class="content">
+            <p>This is a sample external website that demonstrates chatbot widget integration. The chatbot widget should appear as a floating button in the bottom-right corner.</p>
+            
+            <p>This page is served from a different origin than the chatbot server, which tests the cross-origin integration.</p>
+        </div>
+        
+        <div class="status info">
+            <strong>Chatbot Integration Test</strong><br>
+            Look for the blue chat button in the bottom-right corner!
+        </div>
+        
+        <h2>Test Controls:</h2>
+        <button class="test-button" onclick="testWidget()">Test Widget</button>
+        <button class="test-button" onclick="testAPI()">Test API</button>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+        
+        <h2>Debug Log:</h2>
+        <div id="log" class="log">
+            <div>Debug log will appear here...</div>
+        </div>
+        
+        <div class="content">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Make sure your chatbot server is running on <code>http://localhost:3000</code></li>
+                <li>Look for the blue chat button in the bottom-right corner</li>
+                <li>Click the button to open the chat widget</li>
+                <li>Type a message and press Enter or click Send</li>
+                <li>Check the debug log above for any errors</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Chatbot Widget Integration -->
+    <script src="http://localhost:3000/widgets/chatbot-widget.js" 
+            data-bot-id="3"
+            data-primary-color="#3b82f6"
+            data-secondary-color="#1e40af"
+            data-position="bottom-right"
+            data-size="medium"
+            data-show-avatar="true"
+            data-show-title="true"
+            data-auto-open="false"
+            data-api-url="http://localhost:3000/api/chat"
+            data-bot-name="makeeasy">
+    </script>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(`[EXTERNAL-SITE] ${message}`);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function testAPI() {
+            log('Testing API connection...');
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        botId: 3,
+                        message: 'Hello from external site!',
+                        conversationId: null
+                    })
+                });
+                
+                const data = await response.json();
+                log(`API Response: ${response.status} - ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success) {
+                    log('✅ API test successful!');
+                } else {
+                    log('❌ API test failed!');
+                }
+            } catch (error) {
+                log(`❌ API test error: ${error.message}`);
+            }
+        }
+
+        function testWidget() {
+            log('Testing widget...');
+            
+            const widget = document.getElementById('chatbot-widget-3');
+            if (widget) {
+                log('✅ Widget element found');
+                
+                if (typeof ChatbotWidget !== 'undefined') {
+                    log('✅ ChatbotWidget object available');
+                } else {
+                    log('❌ ChatbotWidget object not found');
+                }
+            } else {
+                log('❌ Widget element not found');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('External site loaded');
+            log('Origin: ' + window.location.origin);
+            
+            setTimeout(() => {
+                testWidget();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

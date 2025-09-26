@@ -58,10 +58,19 @@ export class BotController {
         return ApiResponse.notFound('Bot not found')
       }
 
-      return ApiResponse.success('Bot retrieved successfully', bot)
+      const response = ApiResponse.success('Bot retrieved successfully', bot)
+      // Add CORS headers for widget integration
+      response.headers.set('Access-Control-Allow-Origin', '*')
+      response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
+      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+      return response
     } catch (error) {
       console.error('BotController.getBotById error:', error)
-      return ApiResponse.internalServerError('Failed to retrieve bot')
+      const errorResponse = ApiResponse.internalServerError('Failed to retrieve bot')
+      // Add CORS headers to error response
+      errorResponse.headers.set('Access-Control-Allow-Origin', '*')
+      errorResponse.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
+      return errorResponse
     }
   }
 

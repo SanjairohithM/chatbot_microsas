@@ -12,7 +12,15 @@ import type { DeepSeekMessage } from '@/lib/deepseek-api'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { messages, message, botConfig, conversationId, botId, userId } = body
+    let { messages, message, botConfig, conversationId, botId, userId } = body
+
+    // Convert botId to number if it's a string (from widget)
+    if (typeof botId === 'string') {
+      botId = parseInt(botId, 10)
+      if (isNaN(botId)) {
+        return ApiResponse.badRequest('Invalid bot ID format')
+      }
+    }
 
     logger.apiRequest('POST', '/api/chat', userId)
 
@@ -100,10 +108,11 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now()
 
-    // Get document context for the user's query
+    // Get enhanced document context for the user's query
     const lastUserMessage = validMessages.filter(msg => msg.role === 'user').pop()
     let documentContext = ''
     let imageAnalysis = ''
+    let searchResults = null
     
     if (lastUserMessage) {
       // Extract text content from the message (handle both string and array formats)
@@ -113,22 +122,37 @@ export async function POST(request: NextRequest) {
       if (typeof lastUserMessage.content === 'string') {
         messageText = lastUserMessage.content
       } else if (Array.isArray(lastUserMessage.content)) {
-        const textPart = lastUserMessage.content.find(part => part.type === 'text')
-        const imagePart = lastUserMessage.content.find(part => part.type === 'image_url')
+        const contentArray = lastUserMessage.content as any[]
+        const textPart = contentArray.find((part: any) => part.type === 'text')
+        const imagePart = contentArray.find((part: any) => part.type === 'image_url')
         messageText = textPart?.text || ''
         imageUrl = imagePart?.image_url?.url || ''
       }
       
+      // Enhanced document search with detailed results
       try {
         console.log(`[Chat API] Searching for context for bot ${botId} with message: "${messageText}"`)
-        documentContext = await DocumentSearchService.getContextForQuery(botId, messageText)
+        
+        // Get both context and detailed search results
+        const [context, detailedResults] = await Promise.all([
+          DocumentSearchService.getContextForQuery(botId, messageText),
+          DocumentSearchService.getDetailedSearchResults(botId, messageText, 3)
+        ])
+        
+        documentContext = context
+        searchResults = detailedResults
+        
         console.log(`[Chat API] Document context length: ${documentContext.length}`)
+        console.log(`[Chat API] Search results: ${detailedResults.results.length} matches found`)
+        console.log(`[Chat API] Search summary: ${detailedResults.summary.exactMatches} exact, ${detailedResults.summary.partialMatches} partial, ${detailedResults.summary.semanticMatches} semantic`)
+        
         if (documentContext) {
           console.log(`[Chat API] Document context preview: ${documentContext.substring(0, 200)}...`)
         }
       } catch (error) {
         console.error('Document search failed, continuing without context:', error)
         documentContext = ''
+        searchResults = null
       }
 
       // Check if there's an image and provide helpful response
@@ -151,10 +175,11 @@ export async function POST(request: NextRequest) {
         return msg
       } else if (Array.isArray(msg.content)) {
         // Convert multimodal content to text
-        const textParts = msg.content.filter(part => part.type === 'text')
-        const imageParts = msg.content.filter(part => part.type === 'image_url')
+        const contentArray = msg.content as any[]
+        const textParts = contentArray.filter((part: any) => part.type === 'text')
+        const imageParts = contentArray.filter((part: any) => part.type === 'image_url')
         
-        let textContent = textParts.map(part => part.text).join(' ')
+        let textContent = textParts.map((part: any) => part.text).join(' ')
         
         // Add image information to the text
         if (imageParts.length > 0) {
@@ -171,17 +196,42 @@ export async function POST(request: NextRequest) {
 
     // Enhance system prompt with document context and image analysis
     let enhancedMessages = [...textOnlyMessages]
-    if ((documentContext || imageAnalysis) && enhancedMessages.length > 0) {
+    
+    // Always add system prompt if bot has one, regardless of document context
+    if (enhancedMessages.length > 0) {
       // Find system message or create one
       const systemMessageIndex = enhancedMessages.findIndex(msg => msg.role === 'system')
       const systemPrompt = bot.system_prompt || 'You are a helpful assistant.'
       
       let enhancedPrompt = systemPrompt
+      
+      // Add document context with enhanced formatting
       if (documentContext) {
-        enhancedPrompt += `\n\nRelevant information from knowledge base:\n${documentContext}`
+        enhancedPrompt += `\n\n${documentContext}`
+        
+        // Add instructions for using the knowledge base
+        enhancedPrompt += `\n\nInstructions for using the knowledge base:
+- Use the information above to provide accurate, detailed answers
+- If the information is from the knowledge base, mention the source document
+- If you cannot find relevant information in the knowledge base, say so clearly
+- Prioritize exact matches over partial matches when available
+- Always cite specific information from the documents when possible`
       }
+      
+      // Add image analysis if present
       if (imageAnalysis) {
         enhancedPrompt += `\n\nImage Analysis: ${imageAnalysis}`
+      }
+      
+      // Add search result summary for better context
+      if (searchResults && searchResults.results.length > 0) {
+        enhancedPrompt += `\n\nSearch Results Summary:
+- Total documents searched: ${searchResults.totalDocuments}
+- Matches found: ${searchResults.results.length}
+- Exact matches: ${searchResults.summary.exactMatches}
+- Partial matches: ${searchResults.summary.partialMatches}
+- Semantic matches: ${searchResults.summary.semanticMatches}
+- Average relevance score: ${searchResults.summary.averageScore}`
       }
       
       if (systemMessageIndex >= 0) {
@@ -234,8 +284,9 @@ export async function POST(request: NextRequest) {
         messageContent = lastMessage.content
       } else if (Array.isArray(lastMessage.content)) {
         // Handle multimodal content (text + image)
-        const textPart = lastMessage.content.find(part => part.type === 'text')
-        const imagePart = lastMessage.content.find(part => part.type === 'image_url')
+        const contentArray = lastMessage.content as any[]
+        const textPart = contentArray.find((part: any) => part.type === 'text')
+        const imagePart = contentArray.find((part: any) => part.type === 'image_url')
         
         messageContent = textPart?.text || ''
         imageUrl = imagePart?.image_url?.url || ''
@@ -271,7 +322,15 @@ export async function POST(request: NextRequest) {
       model: response.model,
       finish_reason: response.choices[0]?.finish_reason,
       response_time_ms: responseTime,
-      image_analysis: imageAnalysis
+      image_analysis: imageAnalysis,
+      // Enhanced document search information
+      document_search: searchResults ? {
+        query: searchResults.query,
+        total_documents: searchResults.totalDocuments,
+        matches_found: searchResults.results.length,
+        summary: searchResults.summary,
+        has_context: documentContext.length > 0
+      } : null
     }
 
     // Create response with CORS headers
