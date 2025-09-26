@@ -28,7 +28,7 @@ model Bot {
   name                String
   description         String?
   system_prompt       String?
-  model               String              @default("deepseek-chat")
+  model               String              @default("gpt-4o-mini")
   temperature         Float               @default(0.7)
   max_tokens          Int                 @default(1000)
   status              String              @default("draft")

@@ -12,9 +12,8 @@ Create a `.env.local` file in your project root with the following content:
 # Database Configuration
 DATABASE_URL="postgresql://myuser:mypassword@127.0.0.1:5431/mydb?schema=public"
 
-# DeepSeek API Configuration
-DEEPSEEK_API_KEY=sk-f1ff59dc5a8c42fb850267e784b1864a
-DEEPSEEK_API_URL=https://api.deepseek.com/v1/chat/completions
+# OpenAI API Configuration
+OPENAI_API_KEY=sk-your-openai-key
 
 # Next.js Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000
@@ -41,8 +40,7 @@ JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 
 If environment variables are not set, the application will use the following defaults:
 - API Key: The one provided in your request
-- API URL: `https://api.deepseek.com/v1/chat/completions`
-- Default Model: `deepseek-chat`
+- Default Model: `gpt-4o-mini`
 
 ### 5. Database Setup
 

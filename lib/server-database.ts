@@ -65,7 +65,7 @@ export class ServerBotService {
         name: botData.name || 'New Bot',
         description: botData.description || '',
         system_prompt: botData.system_prompt || '',
-        model: botData.model || 'deepseek-chat',
+        model: botData.model || 'gpt-4o-mini',
         temperature: botData.temperature || 0.7,
         max_tokens: botData.max_tokens || 1000,
         status: botData.status || 'draft',

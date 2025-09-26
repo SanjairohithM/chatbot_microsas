@@ -59,7 +59,12 @@ export class BotService {
           name: botData.name.trim(),
           description: botData.description?.trim() || '',
           system_prompt: botData.system_prompt?.trim() || '',
-          model: botData.model || 'deepseek-chat',
+          model: ((): string => {
+            const requested = botData.model || 'gpt-4o-mini'
+            if (!requested) return 'gpt-4o-mini'
+            if (requested.includes('deepseek')) return 'gpt-4o-mini'
+            return requested
+          })(),
           temperature: botData.temperature || 0.7,
           max_tokens: botData.max_tokens || 1000,
           status: botData.status || 'draft',

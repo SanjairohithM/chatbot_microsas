@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { deepSeekAPI } from '@/lib/deepseek-api'
+import { openAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
@@ -9,7 +9,7 @@ import { PineconeDocumentService } from '@/lib/services/pinecone-document.servic
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
-import type { DeepSeekMessage } from '@/lib/deepseek-api'
+import type { OpenAIMessage } from '@/lib/openai-api'
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     logger.apiRequest('POST', '/api/chat', userId)
 
     // Handle both formats: messages array (dashboard) and single message (widget)
-    let validMessages: DeepSeekMessage[] = []
+    let validMessages: OpenAIMessage[] = []
     
     if (messages && Array.isArray(messages)) {
       // Dashboard format - array of messages
@@ -104,9 +104,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Use bot configuration or provided config
-    const model = botConfig?.model || bot.model
+    let model = botConfig?.model || bot.model
     const temperature = botConfig?.temperature || bot.temperature
     const maxTokens = botConfig?.max_tokens || bot.max_tokens
+
+    // Map legacy DeepSeek model names to OpenAI defaults
+    if (model === 'deepseek-chat' || model === 'deepseek-coder') {
+      model = 'gpt-4o-mini'
+    }
 
     const startTime = Date.now()
 
@@ -228,44 +233,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Check if there's an image and provide helpful response
+      // For OpenAI, we can send images directly in messages (no special analysis needed)
       if (imageUrl) {
-        try {
-          console.log(`[Chat API] Image detected: ${imageUrl}`)
-          // Since DeepSeek doesn't support images, provide a helpful response
-          imageAnalysis = `I can see you've shared an image (${imageUrl}), but I'm unable to view or analyze images directly. Please describe what you see in the image, and I'll be happy to help you with any questions about it!`
-          console.log(`[Chat API] Image analysis response prepared`)
-        } catch (error) {
-          console.error('Image processing failed:', error)
-          imageAnalysis = ''
-        }
+        console.log(`[Chat API] Image detected for multimodal message: ${imageUrl}`)
       }
     }
 
-    // Convert multimodal messages to text-only for DeepSeek (since it doesn't support images)
-    let textOnlyMessages = validMessages.map(msg => {
-      if (typeof msg.content === 'string') {
-        return msg
-      } else if (Array.isArray(msg.content)) {
-        // Convert multimodal content to text
-        const contentArray = msg.content as any[]
-        const textParts = contentArray.filter((part: any) => part.type === 'text')
-        const imageParts = contentArray.filter((part: any) => part.type === 'image_url')
-        
-        let textContent = textParts.map((part: any) => part.text).join(' ')
-        
-        // Add image information to the text
-        if (imageParts.length > 0) {
-          textContent += ` [User has shared ${imageParts.length} image(s). Please acknowledge this and ask them to describe what they see.]`
-        }
-        
-        return {
-          role: msg.role,
-          content: textContent
-        }
-      }
-      return msg
-    })
+    // OpenAI supports multimodal messages; keep as-is
+    let textOnlyMessages = validMessages
 
     // Enhance system prompt with document context and image analysis
     let enhancedMessages = [...textOnlyMessages]
@@ -329,8 +304,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate response from DeepSeek
-    const response = await deepSeekAPI.generateResponse(enhancedMessages, {
+    // Generate response from OpenAI
+    const response = await openAIAPI.generateChat(enhancedMessages as any, {
       model,
       temperature,
       max_tokens: maxTokens
@@ -339,7 +314,7 @@ export async function POST(request: NextRequest) {
     const responseTime = Date.now() - startTime
 
     // Extract the assistant's message
-    const assistantMessage = response.choices[0]?.message?.content || 'Sorry, I could not generate a response.'
+    const assistantMessage = response.message || 'Sorry, I could not generate a response.'
 
     // Save messages to database
     let currentConversationId = conversationId
@@ -458,7 +433,7 @@ export async function POST(request: NextRequest) {
       messageId: savedMessage.id,
       usage: response.usage,
       model: response.model,
-      finish_reason: response.choices[0]?.finish_reason,
+      finish_reason: response.finish_reason,
       response_time_ms: responseTime,
       image_analysis: imageAnalysis,
       // Enhanced document search information

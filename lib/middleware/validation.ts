@@ -141,6 +141,6 @@ export const ValidationRules = {
   },
   model: {
     type: 'string' as const,
-    enum: ['deepseek-chat', 'deepseek-coder']
+    enum: ['gpt-4o', 'gpt-4o-mini', 'gpt-4o-realtime-preview', 'o3-mini', 'o4-mini', 'gpt-4.1', 'gpt-3.5-turbo']
   }
 }

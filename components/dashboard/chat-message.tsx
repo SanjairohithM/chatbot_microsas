@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Bot, User } from "lucide-react"
+import { Bot, User, Volume2 } from "lucide-react"
 import type { Message } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -50,6 +50,33 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
             </div>
           )}
           <p className="whitespace-pre-wrap">{message.content}</p>
+          {!isUser && message.content && (
+            <div className="mt-2 flex justify-end">
+              <button
+                className="inline-flex items-center gap-1 text-xs opacity-70 hover:opacity-100"
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/audio/tts', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ text: message.content })
+                    })
+                    if (!res.ok) return
+                    const blob = await res.blob()
+                    const url = URL.createObjectURL(blob)
+                    const audio = new Audio(url)
+                    audio.play()
+                  } catch (e) {
+                    console.error('TTS playback failed:', e)
+                  }
+                }}
+                title="Play voice"
+              >
+                <Volume2 className="h-3 w-3" />
+                <span>Listen</span>
+              </button>
+            </div>
+          )}
           {message.image_analysis && (
             <div className="mt-2 p-2 bg-muted/50 rounded text-xs">
               <strong>Image Analysis:</strong> {message.image_analysis}

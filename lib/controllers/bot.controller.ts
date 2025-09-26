@@ -10,6 +10,13 @@ export class BotController {
   static async createBot(request: NextRequest) {
     try {
       const body = await request.json()
+      // Normalize legacy model names to OpenAI defaults before validation
+      if (body && typeof body.model === 'string' && body.model.includes('deepseek')) {
+        body.model = 'gpt-4o-mini'
+      }
+      if (!body.model) {
+        body.model = 'gpt-4o-mini'
+      }
       const { userId, ...botData } = body
 
       // Validate request
@@ -18,7 +25,7 @@ export class BotController {
         name: { required: true, type: 'string', minLength: 1, maxLength: 255 },
         description: { type: 'string', maxLength: 1000 },
         system_prompt: { type: 'string', maxLength: 50000 },
-        model: { type: 'string', enum: ['deepseek-chat', 'deepseek-coder'] },
+        model: { type: 'string', enum: ['gpt-4o', 'gpt-4o-mini', 'o3-mini', 'gpt-3.5-turbo'] },
         temperature: { type: 'number', min: 0, max: 2 },
         max_tokens: { type: 'number', min: 100, max: 4000 },
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
@@ -114,13 +121,17 @@ export class BotController {
       }
 
       const updates = await request.json()
+      // Normalize legacy model names to OpenAI defaults before validation
+      if (updates && typeof updates.model === 'string' && updates.model.includes('deepseek')) {
+        updates.model = 'gpt-4o-mini'
+      }
 
       // Validate updates
       const validation = validateRequest({
         name: { type: 'string', minLength: 1, maxLength: 255 },
         description: { type: 'string', maxLength: 1000 },
         system_prompt: { type: 'string', maxLength: 50000 },
-        model: { type: 'string', enum: ['deepseek-chat', 'deepseek-coder'] },
+        model: { type: 'string', enum: ['gpt-4o', 'gpt-4o-mini', 'o3-mini', 'gpt-3.5-turbo'] },
         temperature: { type: 'number', min: 0, max: 2 },
         max_tokens: { type: 'number', min: 100, max: 4000 },
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },

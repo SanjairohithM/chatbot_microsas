@@ -360,7 +360,7 @@ export default function DeploymentPage() {
       {"role": "user", "content": "Hello!"}
     ],
     "botConfig": {
-      "model": "deepseek-chat",
+      "model": "gpt-4o-mini",
       "temperature": 0.7
     }
   }'`}

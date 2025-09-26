@@ -2,11 +2,10 @@
 // In production, these values should come from environment variables
 
 export const config = {
-  // DeepSeek API Configuration
-  deepseek: {
-    apiKey: process.env.DEEPSEEK_API_KEY || "sk-f1ff59dc5a8c42fb850267e784b1864a",
-    apiUrl: process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/v1/chat/completions",
-    defaultModel: "deepseek-chat",
+  // OpenAI API Configuration
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    defaultModel: 'gpt-4o-mini',
     defaultTemperature: 0.7,
     defaultMaxTokens: 1000,
   },

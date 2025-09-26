@@ -3,9 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const envContent = `# DeepSeek API Configuration
-DEEPSEEK_API_KEY=sk-f1ff59dc5a8c42fb850267e784b1864a
-DEEPSEEK_API_URL=https://api.deepseek.com/v1/chat/completions
+const envContent = `# OpenAI API Configuration
+OPENAI_API_KEY=sk-your-openai-key
 
 # Next.js Configuration
 NEXT_PUBLIC_APP_URL=http://localhost:3000

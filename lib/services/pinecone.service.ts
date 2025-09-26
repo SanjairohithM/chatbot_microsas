@@ -1,6 +1,6 @@
 import { Pinecone } from '@pinecone-database/pinecone'
 import { config } from '@/lib/config'
-import { deepSeekAPI } from '@/lib/deepseek-api'
+import { openAIAPI } from '@/lib/openai-api'
 
 export interface ChatMessage {
   id: string
@@ -44,7 +44,7 @@ export class PineconeService {
         apiKey: config.pinecone.apiKey
       })
 
-      console.log('[Pinecone] Using DeepSeek API for embeddings')
+      console.log('[Pinecone] Using OpenAI embeddings')
 
       // Create index if it doesn't exist
       await this.createIndexIfNotExists()
@@ -105,42 +105,21 @@ export class PineconeService {
   }
 
   /**
-   * Generate embedding for text using DeepSeek API
+   * Generate embedding for text using OpenAI embeddings (with fallback)
    */
   private static async generateEmbedding(text: string): Promise<number[]> {
     try {
       console.log(`[Pinecone] 🔍 Generating embedding for text: "${text.substring(0, 100)}..."`)
-      
-      // Use DeepSeek to extract semantic features
-      const response = await deepSeekAPI.generateResponse([
-        {
-          role: 'system',
-          content: 'You are a semantic feature extractor. Analyze the given text and extract key semantic features. Respond with a simple list of 20-30 key concepts, themes, and topics separated by commas.'
-        },
-        {
-          role: 'user',
-          content: `Extract semantic features from this text: "${text}"`
-        }
-      ], {
-        model: 'deepseek-chat',
-        temperature: 0.1,
-        max_tokens: 200
-      })
-
-      if (response.success && response.data) {
-        const content = response.data.choices[0]?.message?.content || ''
-        console.log(`[Pinecone] 📝 DeepSeek extracted features: ${content.substring(0, 100)}...`)
-        
-        // Convert the semantic features to an embedding
-        const embedding = this.convertFeaturesToEmbedding(text, content)
-        console.log(`[Pinecone] ✅ Generated embedding using DeepSeek features`)
-        return embedding
+      const openAIEmbedding = await openAIAPI.createEmbedding(text, config.pinecone.embeddingModel)
+      if (openAIEmbedding && openAIEmbedding.length > 0) {
+        // Project 1536-dim embedding down to 512 dims expected by index
+        const projected = this.projectEmbedding(openAIEmbedding, 512)
+        return projected
       }
-      
-      console.warn('[Pinecone] DeepSeek feature extraction failed, using fallback')
+      console.warn('[Pinecone] OpenAI embedding empty, using fallback')
       return this.generateFallbackEmbedding(text)
     } catch (error) {
-      console.error('[Pinecone] Error generating embedding with DeepSeek:', error)
+      console.error('[Pinecone] Error generating embedding with OpenAI:', error)
       console.warn('[Pinecone] Falling back to simple embedding')
       return this.generateFallbackEmbedding(text)
     }
@@ -181,6 +160,21 @@ export class PineconeService {
     // Normalize the embedding
     const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0))
     return embedding.map(val => magnitude > 0 ? val / magnitude : 0)
+  }
+
+  /**
+   * Project a high-dimensional embedding to the index dimension deterministically
+   */
+  private static projectEmbedding(vector: number[], targetDim: number): number[] {
+    if (vector.length === targetDim) return vector
+    const projected = new Array(targetDim).fill(0)
+    for (let i = 0; i < vector.length; i++) {
+      const idx = i % targetDim
+      projected[idx] += vector[i]
+    }
+    // Normalize
+    const magnitude = Math.sqrt(projected.reduce((s, v) => s + v * v, 0))
+    return projected.map(v => (magnitude > 0 ? v / magnitude : 0))
   }
 
   /**

@@ -37,7 +37,7 @@ export function CreateBotDialog({ open, onOpenChange, onSave, editingBot }: Crea
     name: editingBot?.name || "",
     description: editingBot?.description || "",
     system_prompt: editingBot?.system_prompt || "",
-    model: editingBot?.model || "deepseek-chat",
+    model: editingBot?.model || "gpt-4o-mini",
     temperature: editingBot?.temperature || 0.7,
     max_tokens: editingBot?.max_tokens || 1000,
     // Website integration
@@ -141,7 +141,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
           name: "",
           description: "",
           system_prompt: "",
-          model: "deepseek-chat",
+          model: "gpt-4o-mini",
           temperature: 0.7,
           max_tokens: 1000,
           website_url: "",
@@ -236,8 +236,10 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-                          <SelectItem value="deepseek-coder">DeepSeek Coder</SelectItem>
+                          <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                          <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
+                          <SelectItem value="o3-mini">o3-mini</SelectItem>
+                          <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
