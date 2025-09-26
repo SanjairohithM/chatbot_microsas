@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Analytics } from "@vercel/analytics/next"
-import { AuthProvider } from "@/hooks/use-auth"
+import { SessionAuthProvider } from "@/components/session-auth-provider"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -22,7 +22,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <Suspense fallback={<div>Loading...</div>}>
-          <AuthProvider>{children}</AuthProvider>
+          <SessionAuthProvider>{children}</SessionAuthProvider>
         </Suspense>
         <Analytics />
       </body>
