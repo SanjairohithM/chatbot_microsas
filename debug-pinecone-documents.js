@@ -1,7 +1,7 @@
 const { Pinecone } = require('@pinecone-database/pinecone');
 
 // Configuration
-const PINECONE_API_KEY = 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY || 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
 const INDEX_NAME = 'chatbot';
 
 async function debugPineconeDocuments() {

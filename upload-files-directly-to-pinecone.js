@@ -86,7 +86,7 @@ async function uploadFilesDirectlyToPinecone() {
         
         // Store in Pinecone
         console.log(`   🌲 Storing in Pinecone...`);
-        const response = await fetch('http://localhost:3000/api/documents/process', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/documents/process`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ documentId: document.id })
@@ -117,7 +117,7 @@ async function uploadFilesDirectlyToPinecone() {
 
     // Test document search
     console.log('\n🔍 Testing document search...');
-    const searchResponse = await fetch('http://localhost:3000/api/search-documents-pinecone', {
+    const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/search-documents-pinecone`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 

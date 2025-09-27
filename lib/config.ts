@@ -12,11 +12,14 @@ export const config = {
   
   // Pinecone Configuration
   pinecone: {
-    apiKey: process.env.PINECONE_API_KEY || "pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V",
-    indexName: "chatbot",
-    cloud: "aws",
-    region: "us-east-1",
-    embeddingModel: "text-embedding-3-small"
+    apiKey: process.env.PINECONE_API_KEY || (() => {
+      console.warn('⚠️ PINECONE_API_KEY not found in environment variables')
+      return ''
+    })(),
+    indexName: process.env.PINECONE_INDEX_NAME || "chatbot",
+    cloud: process.env.PINECONE_CLOUD || "aws",
+    region: process.env.PINECONE_REGION || "us-east-1",
+    embeddingModel: process.env.PINECONE_EMBEDDING_MODEL || "text-embedding-3-small"
   },
   
   // Application Configuration

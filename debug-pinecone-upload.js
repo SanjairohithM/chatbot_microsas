@@ -26,7 +26,7 @@ async function debugPineconeUpload() {
     console.log('\n🔍 Testing /api/upload-to-pinecone endpoint...');
     
     try {
-      const testResponse = await fetch('http://localhost:3000/api/upload-to-pinecone', {
+      const testResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/upload-to-pinecone`, {
         method: 'GET'
       });
       
@@ -62,7 +62,7 @@ async function debugPineconeUpload() {
       console.log(`   - Bot ID: 25`);
       console.log(`   - Content Type: application/pdf`);
       
-      const response = await fetch('http://localhost:3000/api/upload-to-pinecone', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/upload-to-pinecone`, {
         method: 'POST',
         body: formData,
         headers: formData.getHeaders()
@@ -97,7 +97,7 @@ async function debugPineconeUpload() {
     console.log('\n🔍 Checking current Pinecone content for bot 25...');
     
     try {
-      const searchResponse = await fetch('http://localhost:3000/api/search-documents-pinecone', {
+      const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/search-documents-pinecone`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

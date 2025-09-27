@@ -296,11 +296,15 @@ export class PineconeDocumentService {
       // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query)
       
-      // Search for relevant document chunks
+      // Search for relevant document chunks (exclude chat messages)
       const searchResponse = await index.query({
         vector: queryEmbedding,
         filter: {
-          botId: { $eq: botId }
+          $and: [
+            { botId: { $eq: botId } },
+            { documentId: { $exists: true } }, // Only get document chunks, not chat messages
+            { chunkIndex: { $exists: true } }  // Ensure it's a document chunk
+          ]
         },
         topK: limit,
         includeMetadata: true

@@ -6,7 +6,7 @@ async function verifyPineconeWorking() {
   try {
     // Test 1: Ask about previous conversation
     console.log('📝 Test 1: Asking about previous conversation...');
-    const response1 = await fetch('http://localhost:3000/api/chat', {
+    const response1 = await fetch('${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ async function verifyPineconeWorking() {
 
     // Test 2: Ask a follow-up question
     console.log('📝 Test 2: Follow-up question...');
-    const response2 = await fetch('http://localhost:3000/api/chat', {
+    const response2 = await fetch('${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ async function verifyPineconeWorking() {
 
     // Test 3: Test with different bot
     console.log('📝 Test 3: Testing with different bot (botId 11)...');
-    const response3 = await fetch('http://localhost:3000/api/chat', {
+    const response3 = await fetch('${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -34,7 +34,10 @@ export interface DeepSeekResponse {
 }
 
 // Configuration - in production, these should come from environment variables
-const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "sk-f1ff59dc5a8c42fb850267e784b1864a"
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || (() => {
+  console.warn('⚠️ DEEPSEEK_API_KEY not found in environment variables')
+  return ''
+})()
 const DEEPSEEK_API_URL = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/v1/chat/completions"
 
 export class DeepSeekAPI {

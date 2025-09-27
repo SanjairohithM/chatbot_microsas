@@ -1,7 +1,7 @@
 const { Pinecone } = require('@pinecone-database/pinecone');
 
 // Configuration
-const PINECONE_API_KEY = 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY || 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
 const INDEX_NAME = 'chatbot';
 
 async function clearPineconeAndStoreDocuments() {
@@ -39,7 +39,16 @@ async function clearPineconeAndStoreDocuments() {
 
     // 2. Get documents from the database
     console.log('\n📚 Getting documents from database...');
-    const documentsResponse = await fetch('http://localhost:3000/api/knowledge-documents?botId=11');
+    // Get Bot ID from environment or command line argument
+    const botId = process.env.TARGET_BOT_ID ? parseInt(process.env.TARGET_BOT_ID, 10) : (process.argv[2] ? parseInt(process.argv[2], 10) : null);
+    
+    if (!botId) {
+      console.log('❌ Bot ID is required. Set TARGET_BOT_ID environment variable or pass as argument.');
+      console.log('Usage: node clear-pinecone-and-store-documents.js [BOT_ID]');
+      return;
+    }
+    
+    const documentsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/knowledge-documents?botId=${botId}`);
     const documentsData = await documentsResponse.json();
     
     if (documentsData.success && documentsData.data.length > 0) {
@@ -51,7 +60,7 @@ async function clearPineconeAndStoreDocuments() {
           console.log(`Content length: ${document.content.length} characters`);
           
           // Process the document to store it in Pinecone
-          const processResponse = await fetch('http://localhost:3000/api/documents/process', {
+          const processResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/documents/process`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ documentId: document.id })

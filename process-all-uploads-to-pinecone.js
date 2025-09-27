@@ -25,8 +25,15 @@ async function processAllUploadsToPinecone() {
       return;
     }
 
-    // Use Bot ID 11 (test document bot)
-    const botId = 11;
+    // Get Bot ID from environment or command line argument
+    const botId = process.env.TARGET_BOT_ID ? parseInt(process.env.TARGET_BOT_ID, 10) : (process.argv[2] ? parseInt(process.argv[2], 10) : null);
+    
+    if (!botId) {
+      console.log('❌ Bot ID is required. Set TARGET_BOT_ID environment variable or pass as argument.');
+      console.log('Usage: node process-all-uploads-to-pinecone.js [BOT_ID]');
+      console.log('   or: TARGET_BOT_ID=11 node process-all-uploads-to-pinecone.js');
+      return;
+    }
     console.log(`🤖 Using Bot ID: ${botId}`);
 
     // Clear existing Pinecone vectors for this bot
@@ -34,7 +41,7 @@ async function processAllUploadsToPinecone() {
     const { Pinecone } = require('@pinecone-database/pinecone');
     
     const pc = new Pinecone({
-      apiKey: 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V'
+      apiKey: process.env.PINECONE_API_KEY || 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V'
     });
 
     const index = pc.index('chatbot');
@@ -117,7 +124,7 @@ async function processAllUploadsToPinecone() {
         
         // Store in Pinecone
         console.log(`   🌲 Storing in Pinecone...`);
-        const response = await fetch('http://localhost:3000/api/documents/process', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/documents/process`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ documentId: document.id })
@@ -147,7 +154,7 @@ async function processAllUploadsToPinecone() {
 
     // Test document search
     console.log('\n🔍 Testing document search...');
-    const searchResponse = await fetch('http://localhost:3000/api/search-documents-pinecone', {
+    const searchResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/search-documents-pinecone`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 

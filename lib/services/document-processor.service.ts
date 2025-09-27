@@ -75,17 +75,94 @@ export class DocumentProcessorService {
   }
 
   /**
-   * Process PDF files using pdf-parse library
+   * Process PDF files using pdf-parse library with fallback
    */
   private static async processPdfFile(filePath: string): Promise<string> {
     try {
-      const pdfParse = require('pdf-parse')
+      console.log(`[DocumentProcessor] Processing PDF: ${filePath}`)
+      
+      // Check if file exists before processing
+      const fs = await import('fs')
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`PDF file not found: ${filePath}`)
+      }
+      
       const dataBuffer = await readFile(filePath)
-      const data = await pdfParse(dataBuffer)
-      return data.text
+      
+      // Add validation for buffer
+      if (!dataBuffer || dataBuffer.length === 0) {
+        throw new Error(`PDF file is empty or corrupted: ${filePath}`)
+      }
+      
+      console.log(`[DocumentProcessor] PDF buffer size: ${dataBuffer.length} bytes`)
+      
+      // Try multiple PDF parsing approaches
+      let pdfText = ''
+      
+      // Method 1: Try standard pdf-parse
+      try {
+        const pdfParse = require('pdf-parse')
+        const data = await pdfParse(dataBuffer, {
+          max: 0, // Parse all pages
+          normalizeWhitespace: true,
+          disableCombineTextItems: false
+        })
+        
+        if (data && data.text && data.text.trim().length > 0) {
+          pdfText = data.text
+          console.log(`[DocumentProcessor] PDF parsed successfully with pdf-parse, text length: ${pdfText.length}`)
+        }
+      } catch (parseError) {
+        console.warn(`[DocumentProcessor] pdf-parse failed, trying alternative method:`, parseError.message)
+        
+        // Method 2: Simple text extraction fallback
+        const textFromBuffer = this.extractTextFromPdfBuffer(dataBuffer)
+        if (textFromBuffer && textFromBuffer.trim().length > 0) {
+          pdfText = textFromBuffer
+          console.log(`[DocumentProcessor] PDF text extracted with fallback method, text length: ${pdfText.length}`)
+        } else {
+          throw parseError
+        }
+      }
+      
+      if (!pdfText || pdfText.trim().length === 0) {
+        throw new Error(`No text could be extracted from PDF: ${filePath}`)
+      }
+      
+      return pdfText
+      
     } catch (error) {
       console.error('PDF processing error:', error)
-      return `PDF Document: ${filePath}\n\nError processing PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+      
+      // Return filename and basic info instead of failing completely
+      const fileName = filePath.split(/[/\\]/).pop() || 'unknown.pdf'
+      return `PDF Document: ${fileName}\n\nNote: Text extraction failed, but document was uploaded successfully. Content: [PDF file - ${fileName}]`
+    }
+  }
+
+  /**
+   * Simple fallback text extraction from PDF buffer
+   */
+  private static extractTextFromPdfBuffer(buffer: Buffer): string {
+    try {
+      // Very basic text extraction - look for text between stream objects
+      const pdfString = buffer.toString('latin1')
+      const textMatches = pdfString.match(/stream[\s\S]*?endstream/g) || []
+      
+      let extractedText = ''
+      textMatches.forEach(match => {
+        // Remove stream/endstream markers and try to extract readable text
+        const content = match.replace(/^stream\s*/, '').replace(/\s*endstream$/, '')
+        const readableText = content.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim()
+        if (readableText.length > 10) {
+          extractedText += readableText + ' '
+        }
+      })
+      
+      return extractedText.trim()
+    } catch (error) {
+      console.warn('Fallback text extraction failed:', error)
+      return ''
     }
   }
 

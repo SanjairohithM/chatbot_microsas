@@ -1,7 +1,7 @@
 const { Pinecone } = require('@pinecone-database/pinecone');
 
 // Configuration
-const PINECONE_API_KEY = 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
+const PINECONE_API_KEY = process.env.PINECONE_API_KEY || 'pcsk_4w6uv3_EKThZtWRWMFUDzKKS5mncjXN7AWHp2pQRQWFHH2Jfgy3nYZ3T55kWLfu519Bz5V';
 const INDEX_NAME = 'chatbot';
 
 async function debugPineconeSearch() {
@@ -39,18 +39,21 @@ async function debugPineconeSearch() {
       console.log(`   Content: "${match.metadata?.content?.substring(0, 100)}..."`);
     });
 
+    // Get Bot ID from environment or use default
+    const botId = process.env.TARGET_BOT_ID ? parseInt(process.env.TARGET_BOT_ID, 10) : (process.argv[2] ? parseInt(process.argv[2], 10) : 1);
+    
     // 3. Test search with different filters
-    console.log('\n🔍 Testing search with botId filter...');
+    console.log(`\n🔍 Testing search with botId ${botId} filter...`);
     const botSearch = await index.query({
       vector: Array(512).fill(0), // Dummy vector
       filter: {
-        botId: { $eq: 11 }
+        botId: { $eq: botId }
       },
       topK: 5,
       includeMetadata: true
     });
 
-    console.log(`Found ${botSearch.matches?.length || 0} vectors for botId 11:`);
+    console.log(`Found ${botSearch.matches?.length || 0} vectors for botId ${botId}:`);
     botSearch.matches?.forEach((match, index) => {
       console.log(`\n${index + 1}. ID: ${match.id}`);
       console.log(`   BotId: ${match.metadata?.botId}`);
@@ -58,18 +61,21 @@ async function debugPineconeSearch() {
       console.log(`   Role: ${match.metadata?.role}`);
     });
 
+    // Get User ID from environment or use default
+    const userId = process.env.TARGET_USER_ID || process.argv[3] || 'default-user';
+    
     // 4. Test search with userId filter
-    console.log('\n🔍 Testing search with userId filter...');
+    console.log(`\n🔍 Testing search with userId ${userId} filter...`);
     const userSearch = await index.query({
       vector: Array(512).fill(0), // Dummy vector
       filter: {
-        userId: { $eq: 1 }
+        userId: { $eq: userId }
       },
       topK: 5,
       includeMetadata: true
     });
 
-    console.log(`Found ${userSearch.matches?.length || 0} vectors for userId 1:`);
+    console.log(`Found ${userSearch.matches?.length || 0} vectors for userId ${userId}:`);
     userSearch.matches?.forEach((match, index) => {
       console.log(`\n${index + 1}. ID: ${match.id}`);
       console.log(`   BotId: ${match.metadata?.botId}`);
