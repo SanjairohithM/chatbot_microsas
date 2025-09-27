@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Pinecone Document Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #fafafa;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 5px;
+            margin: 0 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .log-area {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌲 Pinecone Document Upload Test</h1>
+        <p>This page allows you to test direct document upload to Pinecone vector database.</p>
+        
+        <div class="section">
+            <h3>📄 Upload Document</h3>
+            <div>
+                <label>Bot ID: <input type="number" id="botId" value="23" min="1"></label>
+                <span class="info">(Use your bot ID from the dashboard)</span>
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <p>📁 Drag and drop a PDF file here, or click to select</p>
+                <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.md" style="display: none;">
+                <button onclick="document.getElementById('fileInput').click()">Choose File</button>
+            </div>
+            
+            <div>
+                <button id="uploadBtn" onclick="uploadToPinecone()" disabled>🚀 Upload to Pinecone</button>
+                <button onclick="searchDocuments()">🔍 Search Documents</button>
+                <button onclick="testChat()">💬 Test Chat</button>
+                <button onclick="clearLogs()">🧹 Clear Logs</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h3>📋 Console Logs</h3>
+            <div id="logArea" class="log-area">Ready to upload documents to Pinecone...\n</div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            logArea.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        function clearLogs() {
+            document.getElementById('logArea').innerHTML = 'Logs cleared...\n';
+        }
+        
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+        
+        function handleFileSelect(file) {
+            selectedFile = file;
+            log(`📄 File selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`, 'info');
+            uploadBtn.disabled = false;
+            uploadArea.innerHTML = `
+                <p>✅ File ready: ${file.name}</p>
+                <p>Size: ${(file.size / 1024).toFixed(1)} KB</p>
+                <button onclick="document.getElementById('fileInput').click()">Choose Different File</button>
+            `;
+        }
+        
+        async function uploadToPinecone() {
+            if (!selectedFile) {
+                log('❌ No file selected', 'error');
+                return;
+            }
+            
+            const botId = document.getElementById('botId').value;
+            if (!botId) {
+                log('❌ Please enter a Bot ID', 'error');
+                return;
+            }
+            
+            log('🚀 Starting upload to Pinecone...', 'info');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ Uploading...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('botId', botId);
+                
+                log(`📤 Uploading ${selectedFile.name} to bot ${botId}...`, 'info');
+                
+                const response = await fetch('/api/upload-to-pinecone', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Upload successful!', 'success');
+                    log(`📄 Document ID: ${result.data.documentId}`, 'success');
+                    log(`📝 Content Length: ${result.data.contentLength} characters`, 'success');
+                    log(`📊 Word Count: ${result.data.wordCount} words`, 'success');
+                    log(`🌲 Pinecone Stored: ${result.data.pineconeStored}`, 'success');
+                    log(`💾 Local File Stored: ${result.data.localFileStored}`, 'success');
+                    log(`⏰ Timestamp: ${result.data.timestamp}`, 'success');
+                } else {
+                    log(`❌ Upload failed: ${result.error}`, 'error');
+                    if (result.details) {
+                        log(`Details: ${result.details}`, 'error');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Upload error: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '🚀 Upload to Pinecone';
+            }
+        }
+        
+        async function searchDocuments() {
+            const botId = document.getElementById('botId').value;
+            if (!botId) {
+                log('❌ Please enter a Bot ID', 'error');
+                return;
+            }
+            
+            log('🔍 Searching documents in Pinecone...', 'info');
+            
+            try {
+                const response = await fetch('/api/search-documents-pinecone', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        botId: parseInt(botId),
+                        query: 'company information',
+                        limit: 5
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log(`✅ Found ${result.data.totalResults} documents`, 'success');
+                    result.data.results.forEach((doc, index) => {
+                        log(`${index + 1}. ${doc.title} (Score: ${(doc.score * 100).toFixed(1)}%)`, 'info');
+                        log(`   Content: "${doc.content.substring(0, 100)}..."`, 'info');
+                    });
+                } else {
+                    log(`❌ Search failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Search error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testChat() {
+            const botId = document.getElementById('botId').value;
+            if (!botId) {
+                log('❌ Please enter a Bot ID', 'error');
+                return;
+            }
+            
+            log('💬 Testing chat with document context...', 'info');
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: 'What services does the company provide?',
+                        botId: parseInt(botId),
+                        userId: 1
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    log('✅ Chat response received', 'success');
+                    log(`💬 Response: ${result.message.substring(0, 200)}...`, 'info');
+                    
+                    if (result.document_search) {
+                        log(`📄 Document matches: ${result.document_search.matches_found}`, 'info');
+                        log(`📊 Has context: ${result.document_search.has_context}`, 'info');
+                    }
+                } else {
+                    log(`❌ Chat failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Chat error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Initial log
+        log('🌲 Pinecone Document Upload Test Ready', 'success');
+        log('📋 Instructions:', 'info');
+        log('1. Enter your Bot ID (check your dashboard)', 'info');
+        log('2. Select a PDF, TXT, DOCX, or MD file', 'info');
+        log('3. Click "Upload to Pinecone" to store in vector database', 'info');
+        log('4. Use "Search Documents" to verify storage', 'info');
+        log('5. Use "Test Chat" to see document context in action', 'info');
+    </script>
+</body>
+</html>

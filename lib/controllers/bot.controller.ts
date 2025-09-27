@@ -17,7 +17,15 @@ export class BotController {
       if (!body.model) {
         body.model = 'gpt-4o-mini'
       }
-      const { userId, ...botData } = body
+      const { userId: userIdRaw, ...botData } = body
+      
+      // Convert userId to number if it's a string
+      const userId = typeof userIdRaw === 'string' ? parseInt(userIdRaw, 10) : userIdRaw
+      
+      // Check if userId conversion was successful
+      if (isNaN(userId) || userId <= 0) {
+        return ApiResponse.badRequest('Invalid user ID provided')
+      }
 
       // Validate request
       const validation = validateRequest({
@@ -31,7 +39,7 @@ export class BotController {
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
         is_deployed: { type: 'boolean' },
         deployment_url: { type: 'string', maxLength: 500 }
-      }, body)
+      }, { ...body, userId })
 
       if (!validation.isValid) {
         return ApiResponse.badRequest('Validation failed', validation.errors)
