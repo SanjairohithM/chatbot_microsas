@@ -6,8 +6,28 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
-import { Send, Minimize2, Maximize2, X } from 'lucide-react'
+import { Send, Minimize2, Maximize2, X, Mic, MicOff, Volume2 } from 'lucide-react'
 import type { Bot, Message } from '@/lib/types'
+
+// TypeScript declarations for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onstart: () => void;
+  onend: () => void;
+  onresult: (event: any) => void;
+  onerror: (event: any) => void;
+}
 
 export default function EmbedPage() {
   const params = useParams()
@@ -21,13 +41,24 @@ export default function EmbedPage() {
   const [isMinimized, setIsMinimized] = useState(false)
   const [conversationId, setConversationId] = useState<number | null>(null)
   
+  // Voice-related state
+  const [isListening, setIsListening] = useState(false)
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null)
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
+  
   // Get theme configuration from URL params
   const themeParam = searchParams.get('theme')
   let theme = {
     primaryColor: '#3b82f6',
     secondaryColor: '#1e40af',
     showAvatar: true,
-    showTitle: true
+    showTitle: true,
+    enableVoice: true,
+    voiceLanguage: 'en-US',
+    autoSpeak: false,
+    voiceRate: 1.0,
+    voicePitch: 1.0
   }
   
   if (themeParam) {
@@ -56,6 +87,85 @@ export default function EmbedPage() {
       loadBot()
     }
   }, [botId])
+
+  // Initialize voice functionality
+  useEffect(() => {
+    if (!theme.enableVoice) return;
+    
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = theme.voiceLanguage;
+      
+      recognitionInstance.onstart = () => {
+        setIsListening(true);
+      };
+      
+      recognitionInstance.onend = () => {
+        setIsListening(false);
+      };
+      
+      recognitionInstance.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript.trim()) {
+          setInputValue(transcript);
+          setTimeout(() => {
+            sendMessage();
+          }, 100);
+        }
+      };
+      
+      recognitionInstance.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+      
+      setRecognition(recognitionInstance);
+      setIsVoiceSupported(true);
+    }
+    
+    // Check for speech synthesis support
+    if ('speechSynthesis' in window) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, [theme.enableVoice, theme.voiceLanguage])
+
+  // Auto-speak new assistant messages
+  useEffect(() => {
+    if (!theme.autoSpeak || !speechSynthesis || messages.length === 0) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage.role === 'assistant') {
+      speakText(lastMessage.content);
+    }
+  }, [messages, theme.autoSpeak, speechSynthesis])
+
+  const toggleVoiceRecognition = () => {
+    if (!recognition || !isVoiceSupported) return;
+    
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  }
+
+  const speakText = (text: string) => {
+    if (!speechSynthesis || !theme.enableVoice) return;
+    
+    // Stop any current speech
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = theme.voiceLanguage;
+    utterance.rate = theme.voiceRate;
+    utterance.pitch = theme.voicePitch;
+    
+    speechSynthesis.speak(utterance);
+  }
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading || !bot) return
@@ -102,26 +212,43 @@ export default function EmbedPage() {
         if (data.conversationId) {
           setConversationId(data.conversationId)
         }
+        
+        // Auto-speak the response if enabled
+        if (theme.autoSpeak && theme.enableVoice) {
+          speakText(data.message);
+        }
       } else {
-        const errorMessage: Message = {
+        const errorMessage = 'Sorry, I encountered an error. Please try again.';
+        const errorMsg: Message = {
           id: Date.now() + 1,
           conversation_id: conversationId || 0,
           role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
+          content: errorMessage,
           created_at: new Date().toISOString()
         }
-        setMessages(prev => [...prev, errorMessage])
+        setMessages(prev => [...prev, errorMsg])
+        
+        // Auto-speak error message if enabled
+        if (theme.autoSpeak && theme.enableVoice) {
+          speakText(errorMessage);
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error)
-      const errorMessage: Message = {
+      const errorMessage = 'Sorry, I encountered an error. Please try again.';
+      const errorMsg: Message = {
         id: Date.now() + 1,
         conversation_id: conversationId || 0,
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again.',
+        content: errorMessage,
         created_at: new Date().toISOString()
       }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages(prev => [...prev, errorMsg])
+      
+      // Auto-speak error message if enabled
+      if (theme.autoSpeak && theme.enableVoice) {
+        speakText(errorMessage);
+      }
     } finally {
       setIsLoading(false)
     }
@@ -207,19 +334,32 @@ export default function EmbedPage() {
                       key={message.id}
                       className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
-                      <div
-                        className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                          message.role === 'user'
-                            ? 'text-white'
-                            : 'bg-gray-100 text-gray-900'
-                        }`}
-                        style={
-                          message.role === 'user'
-                            ? { backgroundColor: theme.primaryColor }
-                            : {}
-                        }
-                      >
-                        {message.content}
+                      <div className={`flex items-start gap-2 max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div
+                          className={`rounded-lg px-3 py-2 text-sm ${
+                            message.role === 'user'
+                              ? 'text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                          style={
+                            message.role === 'user'
+                              ? { backgroundColor: theme.primaryColor }
+                              : {}
+                          }
+                        >
+                          {message.content}
+                        </div>
+                        {message.role === 'assistant' && theme.enableVoice && speechSynthesis && (
+                          <Button
+                            onClick={() => speakText(message.content)}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+                            title="Play message"
+                          >
+                            <Volume2 className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))
@@ -249,6 +389,17 @@ export default function EmbedPage() {
                   disabled={isLoading}
                   className="flex-1"
                 />
+                {theme.enableVoice && isVoiceSupported && (
+                  <Button
+                    onClick={toggleVoiceRecognition}
+                    disabled={isLoading}
+                    size="sm"
+                    variant={isListening ? "destructive" : "outline"}
+                    title={isListening ? "Stop listening" : "Start voice input"}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </Button>
+                )}
                 <Button
                   onClick={sendMessage}
                   disabled={!inputValue.trim() || isLoading}

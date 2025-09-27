@@ -6,8 +6,28 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
-import { Send, MessageSquare, X } from 'lucide-react'
+import { Send, MessageSquare, X, Mic, MicOff, Volume2 } from 'lucide-react'
 import type { Bot, Message } from '@/lib/types'
+
+// TypeScript declarations for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onstart: () => void;
+  onend: () => void;
+  onresult: (event: any) => void;
+  onerror: (event: any) => void;
+}
 
 export default function MobileEmbedPage() {
   const params = useParams()
@@ -21,13 +41,24 @@ export default function MobileEmbedPage() {
   const [isOpen, setIsOpen] = useState(false)
   const [conversationId, setConversationId] = useState<number | null>(null)
   
+  // Voice-related state
+  const [isListening, setIsListening] = useState(false)
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null)
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
+  
   // Get theme configuration from URL params
   const themeParam = searchParams.get('theme')
   let theme = {
     primaryColor: '#3b82f6',
     secondaryColor: '#1e40af',
     showAvatar: true,
-    showTitle: true
+    showTitle: true,
+    enableVoice: true,
+    voiceLanguage: 'en-US',
+    autoSpeak: false,
+    voiceRate: 1.0,
+    voicePitch: 1.0
   }
   
   if (themeParam) {
@@ -56,6 +87,55 @@ export default function MobileEmbedPage() {
       loadBot()
     }
   }, [botId])
+
+  // Initialize voice functionality
+  useEffect(() => {
+    if (!theme.enableVoice) return;
+    
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognitionInstance = new SpeechRecognition();
+      recognitionInstance.continuous = false;
+      recognitionInstance.interimResults = false;
+      recognitionInstance.lang = theme.voiceLanguage;
+      
+      recognitionInstance.onstart = () => setIsListening(true);
+      recognitionInstance.onend = () => setIsListening(false);
+      recognitionInstance.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        if (transcript.trim()) {
+          setInputValue(transcript);
+          setTimeout(() => sendMessage(), 100);
+        }
+      };
+      recognitionInstance.onerror = () => setIsListening(false);
+      
+      setRecognition(recognitionInstance);
+      setIsVoiceSupported(true);
+    }
+    
+    // Check for speech synthesis support
+    if ('speechSynthesis' in window) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, [theme.enableVoice, theme.voiceLanguage])
+
+  const toggleVoiceRecognition = () => {
+    if (!recognition || !isVoiceSupported) return;
+    if (isListening) recognition.stop();
+    else recognition.start();
+  }
+
+  const speakText = (text: string) => {
+    if (!speechSynthesis || !theme.enableVoice) return;
+    speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = theme.voiceLanguage;
+    utterance.rate = theme.voiceRate;
+    utterance.pitch = theme.voicePitch;
+    speechSynthesis.speak(utterance);
+  }
 
   const sendMessage = async () => {
     if (!inputValue.trim() || isLoading || !bot) return
@@ -271,6 +351,17 @@ export default function MobileEmbedPage() {
                       disabled={isLoading}
                       className="flex-1"
                     />
+                    {theme.enableVoice && isVoiceSupported && (
+                      <Button
+                        onClick={toggleVoiceRecognition}
+                        disabled={isLoading}
+                        size="sm"
+                        variant={isListening ? "destructive" : "outline"}
+                        title={isListening ? "Stop listening" : "Start voice input"}
+                      >
+                        {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </Button>
+                    )}
                     <Button
                       onClick={sendMessage}
                       disabled={!inputValue.trim() || isLoading}

@@ -6,7 +6,7 @@ export interface ChatMessage {
   id: string
   conversationId: string
   botId: number
-  userId: number
+  userId: string | number
   role: 'user' | 'assistant'
   content: string
   timestamp: string
@@ -21,7 +21,7 @@ export interface ChatMessage {
 export interface ConversationContext {
   conversationId: string
   botId: number
-  userId: number
+  userId: string | number
   messages: ChatMessage[]
   summary?: string
   createdAt: string
@@ -253,7 +253,7 @@ export class PineconeService {
    */
   static async searchConversationContext(
     botId: number,
-    userId: number,
+    userId: string | number,
     query: string,
     limit: number = 5
   ): Promise<ChatMessage[]> {

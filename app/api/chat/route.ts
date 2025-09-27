@@ -9,6 +9,7 @@ import { PineconeDocumentService } from '@/lib/services/pinecone-document.servic
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
+import { db } from '@/lib/db'
 import type { OpenAIMessage } from '@/lib/openai-api'
 
 export async function POST(request: NextRequest) {
@@ -208,12 +209,21 @@ export async function POST(request: NextRequest) {
       // Get conversation context from Pinecone if enabled
       if (config.chat.useVectorSearch) {
         try {
-          console.log(`[Chat API] Searching conversation context for bot ${botId}, user ${userId}`)
+          // Get the effective user ID for conversation context search
+          let contextUserId = userId
+          if (!contextUserId) {
+            const defaultUser = await db.user.findFirst({
+              where: { email: 'widget@default.com' }
+            })
+            contextUserId = defaultUser?.id || 'widget-user'
+          }
+          
+          console.log(`[Chat API] Searching conversation context for bot ${botId}, user ${contextUserId}`)
           
           // Search for relevant conversation history
           const relevantMessages = await PineconeService.searchConversationContext(
             botId,
-            userId,
+            contextUserId,
             messageText,
             5
           )
@@ -321,8 +331,35 @@ export async function POST(request: NextRequest) {
 
     // Create conversation if it doesn't exist
     if (!currentConversationId) {
-      // For widget requests, use a default userId if not provided
-      const effectiveUserId = userId || 1 // Default user for widget conversations
+      // For widget requests, find or create a default user if not provided
+      let effectiveUserId = userId
+      
+      if (!effectiveUserId) {
+        // Try to find or create a default widget user
+        try {
+          let defaultUser = await db.user.findFirst({
+            where: { email: 'widget@default.com' }
+          })
+          
+          if (!defaultUser) {
+            // Create a default widget user
+            defaultUser = await db.user.create({
+              data: {
+                email: 'widget@default.com',
+                name: 'Widget User',
+                password_hash: 'widget-default-hash',
+                role: 'widget'
+              }
+            })
+            console.log('[Chat API] Created default widget user:', defaultUser.id)
+          }
+          
+          effectiveUserId = defaultUser.id
+        } catch (error) {
+          console.error('[Chat API] Failed to create/find default user:', error)
+          throw new Error('Unable to create conversation: user validation failed')
+        }
+      }
       
       const conversation = await ConversationService.createConversation({
         botId,
@@ -385,11 +422,20 @@ export async function POST(request: NextRequest) {
             userMessageContent = textPart?.text || ''
           }
 
+          // Get the effective user ID for Pinecone storage
+          let pineconeUserId = userId
+          if (!pineconeUserId) {
+            const defaultUser = await db.user.findFirst({
+              where: { email: 'widget@default.com' }
+            })
+            pineconeUserId = defaultUser?.id || 'widget-user'
+          }
+
           await PineconeService.storeChatMessage({
             id: `user_${Date.now()}`,
             conversationId: currentConversationId.toString(),
             botId,
-            userId: userId || 1,
+            userId: pineconeUserId,
             role: 'user',
             content: userMessageContent,
             timestamp: new Date().toISOString(),
@@ -400,11 +446,22 @@ export async function POST(request: NextRequest) {
         }
 
         // Store assistant response in Pinecone
+        // Get the effective user ID for Pinecone storage
+        let pineconeUserId = userId
+        if (!pineconeUserId) {
+          const defaultUser = await db.user.findFirst({
+            where: { email: 'widget@default.com' }
+          })
+          pineconeUserId = defaultUser?.id || 'widget-user'
+        }
+
         await PineconeService.storeChatMessage({
           id: `assistant_${savedMessage.id}`,
           conversationId: currentConversationId.toString(),
           botId,
-          userId: userId || 1,
+          userId: pineconeUserId,
+
+
           role: 'assistant',
           content: assistantMessage,
           timestamp: new Date().toISOString(),

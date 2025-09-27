@@ -31,6 +31,11 @@
     showAvatar: true,
     showTitle: true,
     autoOpen: false,
+    enableVoice: true,
+    voiceLanguage: 'en-US',
+    autoSpeak: false,
+    voiceRate: 1.0,
+    voicePitch: 1.0,
     apiUrl: 'https://your-domain.com/api/chat'
   };
 
@@ -42,6 +47,13 @@
   let isLoading = false;
   let conversationId = null;
   let widgetElement = null;
+  
+  // Voice-related state
+  let recognition = null;
+  let isListening = false;
+  let speechSynthesis = null;
+  let currentUtterance = null;
+  let isVoiceSupported = false;
 
   // Position mappings
   const POSITIONS = {
@@ -70,6 +82,98 @@
 
     createWidget();
     addStyles();
+    initializeVoice();
+  }
+
+  // Initialize voice functionality
+  function initializeVoice() {
+    if (!config.enableVoice) return;
+    
+    // Check for speech recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = config.voiceLanguage || 'en-US';
+      
+      recognition.onstart = function() {
+        isListening = true;
+        updateVoiceButton();
+      };
+      
+      recognition.onend = function() {
+        isListening = false;
+        updateVoiceButton();
+      };
+      
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        if (transcript.trim()) {
+          const input = widgetElement?.querySelector('.message-input');
+          if (input) {
+            input.value = transcript;
+            sendMessage();
+          }
+        }
+      };
+      
+      recognition.onerror = function(event) {
+        console.error('Speech recognition error:', event.error);
+        isListening = false;
+        updateVoiceButton();
+      };
+      
+      isVoiceSupported = true;
+    }
+    
+    // Check for speech synthesis support
+    if ('speechSynthesis' in window) {
+      speechSynthesis = window.speechSynthesis;
+    }
+  }
+
+  // Start/stop voice recognition
+  function toggleVoiceRecognition() {
+    if (!recognition || !isVoiceSupported) return;
+    
+    if (isListening) {
+      recognition.stop();
+    } else {
+      recognition.start();
+    }
+  }
+
+  // Speak text using speech synthesis
+  function speakText(text) {
+    if (!speechSynthesis || !config.enableVoice) return;
+    
+    // Stop any current speech
+    if (currentUtterance) {
+      speechSynthesis.cancel();
+    }
+    
+    currentUtterance = new SpeechSynthesisUtterance(text);
+    currentUtterance.lang = config.voiceLanguage || 'en-US';
+    currentUtterance.rate = config.voiceRate || 1.0;
+    currentUtterance.pitch = config.voicePitch || 1.0;
+    
+    currentUtterance.onend = function() {
+      currentUtterance = null;
+    };
+    
+    speechSynthesis.speak(currentUtterance);
+  }
+
+  // Update voice button appearance
+  function updateVoiceButton() {
+    const voiceBtn = widgetElement?.querySelector('.voice-btn');
+    if (voiceBtn) {
+      voiceBtn.style.backgroundColor = isListening ? '#ef4444' : config.primaryColor;
+      voiceBtn.innerHTML = isListening 
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="2"/><rect x="14" y="4" width="4" height="16" rx="2"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+    }
   }
 
   // Create the widget HTML structure
@@ -269,6 +373,28 @@
               outline: none;
               font-size: 13px;
             " onkeypress="if(event.key==='Enter') ChatbotWidget.sendMessage()">
+            ${config.enableVoice && isVoiceSupported ? `
+              <button class="voice-btn" style="
+                width: 36px;
+                height: 36px;
+                border: none;
+                border-radius: 50%;
+                background-color: ${config.primaryColor};
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background-color 0.2s ease;
+              " onclick="ChatbotWidget.toggleVoice()" title="${isListening ? 'Stop listening' : 'Start voice input'}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="23"/>
+                  <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+              </button>
+            ` : ''}
             <button class="send-btn" style="
               width: 36px;
               height: 36px;
@@ -354,8 +480,19 @@
         if (data.conversationId) {
           conversationId = data.conversationId;
         }
+        
+        // Auto-speak the response if enabled
+        if (config.autoSpeak && config.enableVoice) {
+          speakText(data.message);
+        }
       } else {
-        messages.push({ role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' });
+        const errorMessage = 'Sorry, I encountered an error. Please try again.';
+        messages.push({ role: 'assistant', content: errorMessage });
+        
+        // Auto-speak error message if enabled
+        if (config.autoSpeak && config.enableVoice) {
+          speakText(errorMessage);
+        }
       }
       renderWidget();
       
@@ -368,7 +505,14 @@
     .catch(error => {
       console.error('ChatbotWidget Error:', error);
       isLoading = false;
-      messages.push({ role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' });
+      const errorMessage = 'Sorry, I encountered an error. Please try again.';
+      messages.push({ role: 'assistant', content: errorMessage });
+      
+      // Auto-speak error message if enabled
+      if (config.autoSpeak && config.enableVoice) {
+        speakText(errorMessage);
+      }
+      
       renderWidget();
     });
   }
@@ -408,6 +552,8 @@
   const ChatbotWidget = {
     init: init,
     sendMessage: sendMessage,
+    toggleVoice: toggleVoiceRecognition,
+    speakText: speakText,
     open: () => {
       isOpen = true;
       renderWidget();
@@ -424,6 +570,16 @@
       if (widgetElement) {
         widgetElement.remove();
         widgetElement = null;
+      }
+      
+      // Clean up voice resources
+      if (recognition) {
+        recognition.stop();
+        recognition = null;
+      }
+      if (speechSynthesis && currentUtterance) {
+        speechSynthesis.cancel();
+        currentUtterance = null;
       }
     }
   };
@@ -449,6 +605,11 @@
       const showAvatar = script.getAttribute('data-show-avatar');
       const showTitle = script.getAttribute('data-show-title');
       const autoOpen = script.getAttribute('data-auto-open');
+      const enableVoice = script.getAttribute('data-enable-voice');
+      const voiceLanguage = script.getAttribute('data-voice-language');
+      const autoSpeak = script.getAttribute('data-auto-speak');
+      const voiceRate = script.getAttribute('data-voice-rate');
+      const voicePitch = script.getAttribute('data-voice-pitch');
       const apiUrl = script.getAttribute('data-api-url');
       const botName = script.getAttribute('data-bot-name');
 
@@ -462,6 +623,11 @@
           showAvatar: showAvatar !== 'false',
           showTitle: showTitle !== 'false',
           autoOpen: autoOpen === 'true',
+          enableVoice: enableVoice !== 'false',
+          voiceLanguage: voiceLanguage || DEFAULT_CONFIG.voiceLanguage,
+          autoSpeak: autoSpeak === 'true',
+          voiceRate: parseFloat(voiceRate) || DEFAULT_CONFIG.voiceRate,
+          voicePitch: parseFloat(voicePitch) || DEFAULT_CONFIG.voicePitch,
           apiUrl: apiUrl || DEFAULT_CONFIG.apiUrl,
           botName: botName
         };
