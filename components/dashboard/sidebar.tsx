@@ -34,21 +34,23 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-2xl",
           isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-sidebar-border">
-            <div>
-              <h1 className="text-xl font-bold text-sidebar-foreground">AI Dashboard</h1>
-              <p className="text-sm text-sidebar-foreground/70">Welcome, {user?.name}</p>
+          <div className="flex items-center justify-between p-6 border-b border-slate-200/50">
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                AI Dashboard
+              </h1>
+              <p className="text-sm text-slate-600">Welcome back, {user?.name}</p>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -57,13 +59,16 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
                     isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-blue-600",
                   )}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className={cn(
+                    "h-5 w-5 transition-colors duration-200",
+                    isActive ? "text-white" : "text-slate-500 group-hover:text-blue-600"
+                  )} />
                   {item.name}
                 </Link>
               )
@@ -71,11 +76,11 @@ export function Sidebar() {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-sidebar-border">
+          <div className="p-4 border-t border-slate-200/50">
             <Button
               variant="ghost"
               onClick={signOut}
-              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/50"
+              className="w-full justify-start text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 rounded-xl"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

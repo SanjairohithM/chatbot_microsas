@@ -301,10 +301,15 @@ export default function ChatPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="relative mb-6">
+            <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-20 h-20 mx-auto flex items-center justify-center shadow-lg">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+            </div>
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
+          </div>
+          <p className="text-slate-600 text-lg font-medium">Loading chat interface...</p>
         </div>
       </div>
     )
@@ -315,7 +320,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <Sidebar />
 
       <div className="lg:pl-64 flex h-screen">
@@ -330,28 +335,33 @@ export default function ChatPage() {
         />
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-white/80 backdrop-blur-sm">
           {/* Header */}
-          <div className="p-4 border-b border-border bg-card">
+          <div className="p-6 border-b border-slate-200/50 bg-white/90 backdrop-blur-sm shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                  <MessageSquare className="h-6 w-6 text-white" />
+                </div>
                 <div>
-                  <h1 className="text-lg font-semibold">Chat & Test</h1>
-                  <p className="text-sm text-muted-foreground">Test your bots in real-time</p>
+                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    Chat & Test
+                  </h1>
+                  <p className="text-slate-600">Test your bots in real-time</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Select value={selectedBotId} onValueChange={setSelectedBotId}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-56 h-12 bg-white/80 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm">
                     <SelectValue placeholder="Select a bot" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-xl">
                     {bots.map((bot) => (
-                      <SelectItem key={bot.id} value={bot.id.toString()}>
+                      <SelectItem key={bot.id} value={bot.id.toString()} className="hover:bg-blue-50 transition-colors duration-200">
                         <div className="flex items-center gap-2">
-                          <span>{bot.name}</span>
-                          <Badge variant="outline" className="text-xs">
+                          <span className="font-medium">{bot.name}</span>
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
                             {bot.model}
                           </Badge>
                         </div>
@@ -361,7 +371,7 @@ export default function ChatPage() {
                 </Select>
 
                 {selectedBot && (
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="h-12 px-4 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 rounded-xl">
                     <Settings className="h-4 w-4 mr-2" />
                     Settings
                   </Button>
@@ -372,27 +382,45 @@ export default function ChatPage() {
 
           {/* Chat Content */}
           {!selectedBot ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
               <div className="text-center">
-                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">No active bots</h3>
-                <p className="text-muted-foreground mb-4">Create and activate a bot to start testing.</p>
-                <Button onClick={() => router.push("/dashboard")}>
-                  <Play className="h-4 w-4 mr-2" />
+                <div className="relative mb-8">
+                  <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
+                    <MessageSquare className="h-12 w-12 text-blue-600" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+                <h3 className="text-2xl font-semibold mb-3 text-slate-800">No active bots</h3>
+                <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">Create and activate a bot to start testing.</p>
+                <Button 
+                  onClick={() => router.push("/dashboard")}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  size="lg"
+                >
+                  <Play className="h-5 w-5 mr-2" />
                   Go to Bots
                 </Button>
               </div>
             </div>
           ) : !selectedConversationId ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
               <div className="text-center">
-                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">Start a conversation</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create a new conversation to test your bot: <strong>{selectedBot.name}</strong>
+                <div className="relative mb-8">
+                  <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
+                    <MessageSquare className="h-12 w-12 text-blue-600" />
+                  </div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+                <h3 className="text-2xl font-semibold mb-3 text-slate-800">Start a conversation</h3>
+                <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">
+                  Create a new conversation to test your bot: <strong className="text-blue-600">{selectedBot.name}</strong>
                 </p>
-                <Button onClick={handleNewConversation}>
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                <Button 
+                  onClick={handleNewConversation}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  size="lg"
+                >
+                  <MessageSquare className="h-5 w-5 mr-2" />
                   New Conversation
                 </Button>
               </div>
@@ -400,21 +428,22 @@ export default function ChatPage() {
           ) : (
             <>
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-6 bg-gradient-to-b from-slate-50/50 to-white">
                 <div className="max-w-4xl mx-auto">
                   {messages.map((message, index) => (
                     <ChatMessage key={message.id} message={message} isLast={index === messages.length - 1} />
                   ))}
                   {isLoading && (
-                    <div className="flex gap-3 mb-4">
-                      <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
+                    <div className="flex gap-4 mb-6">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
                       </div>
-                      <div className="bg-muted rounded-lg px-4 py-2 text-sm">
+                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border border-slate-200/50">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.1s]"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
+                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                          <span className="text-slate-600 text-sm ml-2">AI is thinking...</span>
                         </div>
                       </div>
                     </div>
