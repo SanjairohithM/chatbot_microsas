@@ -70,12 +70,11 @@ export class ConversationController {
         return ApiResponse.badRequest('User ID is required')
       }
 
-      const userIdNum = parseInt(userId)
-      if (isNaN(userIdNum)) {
+      if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
         return ApiResponse.badRequest('Invalid user ID')
       }
 
-      const conversations = await ConversationService.getConversationsByUserId(userIdNum)
+      const conversations = await ConversationService.getConversationsByUserId(userId)
 
       return ApiResponse.success('Conversations retrieved successfully', conversations)
     } catch (error) {

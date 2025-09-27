@@ -3,7 +3,7 @@ import type { Conversation, Message } from '../types'
 
 export interface CreateConversationRequest {
   botId: number
-  userId: number
+  userId: string
   title?: string
   isTest?: boolean
 }
@@ -98,7 +98,7 @@ export class ConversationService {
   /**
    * Get conversations for a user
    */
-  static async getConversationsByUserId(userId: number): Promise<Conversation[]> {
+  static async getConversationsByUserId(userId: string): Promise<Conversation[]> {
     try {
       const conversations = await db.conversation.findMany({
         where: { user_id: userId },

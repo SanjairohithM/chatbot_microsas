@@ -19,11 +19,11 @@ export class BotController {
       }
       const { userId: userIdRaw, ...botData } = body
       
-      // Convert userId to number if it's a string
-      const userId = typeof userIdRaw === 'string' ? parseInt(userIdRaw, 10) : userIdRaw
+      // Ensure userId is a string
+      const userId = typeof userIdRaw === 'number' ? userIdRaw.toString() : userIdRaw
       
-      // Check if userId conversion was successful
-      if (isNaN(userId) || userId <= 0) {
+      // Check if userId is valid
+      if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
         return ApiResponse.badRequest('Invalid user ID provided')
       }
 
