@@ -26,7 +26,7 @@ export interface UpdateBotRequest {
 }
 
 export interface BotFilters {
-  userId?: number
+  userId?: string
   status?: string
   isDeployed?: boolean
   search?: string
@@ -36,7 +36,7 @@ export class BotService {
   /**
    * Create a new bot
    */
-  static async createBot(userId: number, botData: CreateBotRequest): Promise<Bot> {
+  static async createBot(userId: string, botData: CreateBotRequest): Promise<Bot> {
     try {
       // Validate required fields
       if (!botData.name || botData.name.trim().length === 0) {

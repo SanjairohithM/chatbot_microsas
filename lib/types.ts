@@ -1,6 +1,6 @@
 // Shared types for the application
 export interface User {
-  id: number
+  id: string
   email: string
   name: string
   created_at: string
@@ -8,7 +8,7 @@ export interface User {
 
 export interface Bot {
   id: number
-  user_id: number
+  user_id: string
   name: string
   description: string
   system_prompt: string
@@ -39,7 +39,7 @@ export interface KnowledgeDocument {
 export interface Conversation {
   id: number
   bot_id: number
-  user_id: number
+  user_id: string
   title: string
   is_test: boolean
   created_at: string

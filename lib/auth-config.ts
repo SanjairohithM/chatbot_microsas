@@ -87,11 +87,14 @@ export const authOptions: NextAuthOptions = {
           // Best-effort upsert; do not block sign-in if it fails
           const randomPassword = crypto.randomBytes(32).toString("hex")
           const randomHash = await bcrypt.hash(randomPassword, 10)
-          await prisma.user.upsert({
+          const dbUser = await prisma.user.upsert({
             where: { email },
             update: { name },
             create: { email, name, password_hash: randomHash },
           })
+          
+          // Update the user object with the database ID
+          ;(user as any).id = dbUser.id
         } catch (err) {
           // ignore and allow sign-in; oauth-bridge will handle creation
         }

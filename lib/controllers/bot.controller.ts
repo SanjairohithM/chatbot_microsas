@@ -21,7 +21,7 @@ export class BotController {
 
       // Validate request
       const validation = validateRequest({
-        userId: { required: true, type: 'number' },
+        userId: { required: true, type: 'string' },
         name: { required: true, type: 'string', minLength: 1, maxLength: 255 },
         description: { type: 'string', maxLength: 1000 },
         system_prompt: { type: 'string', maxLength: 50000 },
@@ -89,14 +89,14 @@ export class BotController {
       const { searchParams } = new URL(request.url)
       
       const filters: BotFilters = {
-        userId: searchParams.get('userId') ? parseInt(searchParams.get('userId')!) : undefined,
+        userId: searchParams.get('userId') || undefined,
         status: searchParams.get('status') || undefined,
         isDeployed: searchParams.get('isDeployed') ? searchParams.get('isDeployed') === 'true' : undefined,
         search: searchParams.get('search') || undefined
       }
 
       // Validate filters
-      if (filters.userId && isNaN(filters.userId)) {
+      if (filters.userId && typeof filters.userId !== 'string') {
         return ApiResponse.badRequest('Invalid user ID')
       }
 

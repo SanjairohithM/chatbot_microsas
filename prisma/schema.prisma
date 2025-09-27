@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
+  id            String         @id @default(cuid())
   email         String         @unique
   password_hash String
   name          String
@@ -24,7 +24,7 @@ model User {
 
 model Bot {
   id                  Int                 @id @default(autoincrement())
-  user_id             Int
+  user_id             String
   name                String
   description         String?
   system_prompt       String?
@@ -34,8 +34,8 @@ model Bot {
   status              String              @default("draft")
   is_deployed         Boolean             @default(false)
   deployment_url      String?
-  interaction_mode    String              @default("chat") // "chat" or "faq"
-  faq_questions       String?             // JSON string of FAQ questions and answers
+  interaction_mode    String              @default("chat")
+  faq_questions       String?
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
   analytics           BotAnalytics[]
@@ -67,7 +67,7 @@ model KnowledgeDocument {
 model Conversation {
   id         Int       @id @default(autoincrement())
   bot_id     Int
-  user_id    Int
+  user_id    String
   title      String?
   is_test    Boolean   @default(false)
   created_at DateTime  @default(now())
