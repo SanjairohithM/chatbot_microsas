@@ -411,7 +411,45 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                             console.log('File selected:', file.name)
                             
                             try {
-                              // Upload file to server
+                              console.log('🚀 Attempting direct Pinecone upload for bot creation...')
+                              
+                              // Try direct Pinecone upload first (for existing bots)
+                              if (editingBot?.id) {
+                                const formData = new FormData()
+                                formData.append('file', file)
+                                formData.append('botId', editingBot.id.toString())
+                                
+                                const pineconeResponse = await fetch('/api/upload-to-pinecone', {
+                                  method: 'POST',
+                                  body: formData
+                                })
+                                
+                                if (pineconeResponse.ok) {
+                                  const pineconeResult = await pineconeResponse.json()
+                                  console.log('✅ Direct Pinecone upload successful for bot creation:', pineconeResult.data)
+                                  
+                                  // Create document object for bot creation
+                                  const pineconeDocument: KnowledgeDocument = {
+                                    id: pineconeResult.data.documentId,
+                                    bot_id: editingBot.id,
+                                    title: file.name,
+                                    content: `Document stored in Pinecone (${pineconeResult.data.wordCount} words)`,
+                                    file_type: file.type,
+                                    file_size: file.size,
+                                    status: 'indexed',
+                                    created_at: pineconeResult.data.timestamp,
+                                    updated_at: pineconeResult.data.timestamp
+                                  }
+                                  
+                                  handleDocumentUploaded(pineconeDocument)
+                                  return // Success, exit early
+                                } else {
+                                  console.log('⚠️ Direct Pinecone upload failed for bot creation, falling back to regular upload')
+                                }
+                              }
+                              
+                              // Fallback to regular upload for new bots or if Pinecone fails
+                              console.log('📁 Using regular upload for bot creation...')
                               const formData = new FormData()
                               formData.append('file', file)
                               

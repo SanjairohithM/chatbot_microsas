@@ -84,8 +84,64 @@ export function DocumentUpload({
         )
       )
 
-      // If botId is provided, save to database
+      // If botId is provided, try direct Pinecone upload first
       if (botId) {
+        try {
+          console.log('🚀 Attempting direct Pinecone upload...')
+          
+          // Create FormData for direct Pinecone upload
+          const formData = new FormData()
+          formData.append('file', file)
+          formData.append('botId', botId.toString())
+
+          const pineconeResponse = await fetch('/api/upload-to-pinecone', {
+            method: 'POST',
+            body: formData
+          })
+
+          if (pineconeResponse.ok) {
+            const pineconeResult = await pineconeResponse.json()
+            
+            console.log('✅ Direct Pinecone upload successful:', pineconeResult.data)
+            
+            // Update document status to indexed
+            setUploadedDocuments(prev => 
+              prev.map(doc => 
+                doc.id === documentId 
+                  ? { 
+                      ...doc, 
+                      status: 'indexed', 
+                      progress: 100,
+                      content: `Document stored in Pinecone (${pineconeResult.data.wordCount} words)`
+                    }
+                  : doc
+              )
+            )
+
+            // Create a mock document object for the callback
+            const mockDocument = {
+              id: pineconeResult.data.documentId,
+              bot_id: botId,
+              title: file.name,
+              content: `Document processed and stored in Pinecone vector database. Content length: ${pineconeResult.data.contentLength} characters, Word count: ${pineconeResult.data.wordCount}`,
+              file_type: fileExtension?.substring(1) || 'unknown',
+              file_size: file.size,
+              status: 'indexed' as const,
+              created_at: pineconeResult.data.timestamp,
+              updated_at: pineconeResult.data.timestamp
+            }
+
+            onDocumentUploaded?.(mockDocument)
+            return // Success, exit early
+          } else {
+            console.log('⚠️ Direct Pinecone upload failed, falling back to regular upload')
+          }
+        } catch (pineconeError) {
+          console.error('⚠️ Direct Pinecone upload error:', pineconeError)
+          console.log('Falling back to regular database upload...')
+        }
+
+        // Fallback to regular database upload
         const response = await fetch('/api/knowledge-documents', {
           method: 'POST',
           headers: {
