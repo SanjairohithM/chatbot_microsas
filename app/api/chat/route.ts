@@ -370,6 +370,20 @@ export async function POST(request: NextRequest) {
       responseTimeMs: responseTime
     })
 
+    // Update analytics
+    try {
+      const { ServerAnalyticsService } = await import('@/lib/server-database')
+      await ServerAnalyticsService.updateAnalyticsForMessage(
+        botId,
+        !conversationId, // isNewConversation (true if conversation was just created)
+        response.usage?.total_tokens,
+        responseTime
+      )
+    } catch (error) {
+      console.error('Failed to update analytics:', error)
+      // Don't fail the entire request if analytics update fails
+    }
+
     // Store messages in Pinecone for vector search (if enabled)
     if (config.chat.useVectorSearch) {
       try {

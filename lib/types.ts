@@ -67,5 +67,13 @@ export interface BotAnalytics {
   total_tokens_used: number
   avg_response_time_ms: number
   user_satisfaction_score: number
+  daily_summary?: DailySummary
   created_at: string
+}
+
+export interface DailySummary {
+  issues: string[]
+  trends: Record<string, number>
+  generated_at: string
+  method: 'keyword' | 'ai'
 }
