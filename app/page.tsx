@@ -1,29 +1,31 @@
-"use client"
+import { SiteHeader } from "@/components/site-header"
+import { Hero } from "@/components/hero"
+import { BrandStrip } from "@/components/brand-strip"
+import { SectionInsights } from "@/components/section-insights"
+import { SectionValues } from "@/components/section-values"
+import { SectionBenefits } from "@/components/section-benefits"
+import { SectionProcess } from "@/components/section-process"
+import { SectionTestimonials } from "@/components/section-testimonials"
+import { SectionResources } from "@/components/section-resources"
+import { SectionCta } from "@/components/section-cta"
+import { SectionFooter } from "@/components/section-footer"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
-
-export default function HomePage() {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        router.push("/dashboard")
-      } else {
-        router.push("/auth")
-      }
-    }
-  }, [user, isLoading, router])
-
+export default function Page() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    </div>
+    <>
+      <SiteHeader />
+      <main>
+        <Hero />
+        <SectionInsights />
+        <SectionValues />
+        <SectionBenefits />
+        <SectionProcess />
+        <SectionTestimonials />
+        <SectionResources />
+        <SectionCta />
+        <BrandStrip />
+        <SectionFooter />
+      </main>
+    </>
   )
 }
