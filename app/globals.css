@@ -3,6 +3,94 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Custom animations for anivoice icon */
+@keyframes voice-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1) drop-shadow(0 0 8px rgba(40, 156, 254, 0.3));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.2) drop-shadow(0 0 12px rgba(40, 156, 254, 0.6));
+  }
+}
+
+@keyframes equalizer-bars {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  25% {
+    transform: scaleY(1.2);
+  }
+  50% {
+    transform: scaleY(0.8);
+  }
+  75% {
+    transform: scaleY(1.1);
+  }
+}
+
+.voice-animated {
+  animation: voice-pulse 2s ease-in-out infinite;
+}
+
+.voice-animated:hover {
+  animation: voice-pulse 0.5s ease-in-out infinite;
+}
+
+/* Rainbow train border animation */
+@keyframes rainbow-train {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes rainbow-train-reverse {
+  0% {
+    background-position: 200% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-train-border {
+  background: linear-gradient(
+    90deg,
+    #ff0000 0%,
+    #ff7f00 12.5%,
+    #ffff00 25%,
+    #00ff00 37.5%,
+    #00ffff 50%,
+    #0000ff 62.5%,
+    #8b00ff 75%,
+    #ff00ff 87.5%,
+    #ff0000 100%
+  );
+  background-size: 200% 100%;
+  animation: rainbow-train 2s linear infinite;
+}
+
+.rainbow-train-border-reverse {
+  background: linear-gradient(
+    90deg,
+    #ff0000 0%,
+    #ff7f00 12.5%,
+    #ffff00 25%,
+    #00ff00 37.5%,
+    #00ffff 50%,
+    #0000ff 62.5%,
+    #8b00ff 75%,
+    #ff00ff 87.5%,
+    #ff0000 100%
+  );
+  background-size: 200% 100%;
+  animation: rainbow-train-reverse 2s linear infinite;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);

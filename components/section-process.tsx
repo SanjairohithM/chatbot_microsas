@@ -23,47 +23,26 @@ export function SectionProcess() {
         {/* Content */}
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {/* Left Gradient Card */}
-          <article
-            className="relative rounded-3xl p-8 md:p-10 text-background shadow-xl ring-1 ring-black/5"
+          <div
+            className="relative rounded-3xl  text-background shadow-xl ring-1 ring-black/5"
             style={{
               background:
                 "linear-gradient(135deg, color-mix(in oklch, hsl(var(--primary)) 85%, white) 0%, color-mix(in oklch, hsl(var(--primary)) 35%, white) 55%, color-mix(in oklch, hsl(var(--primary)) 0%, white) 100%)",
             }}
           >
-            <h3 className="text-2xl md:text-3xl font-semibold leading-tight">
-              Our Working
-              <br />
-              Process - How
-              <br />
-              We Work For Our
-              <br />
-              Customers
-            </h3>
-
-            <p className="mt-5 max-w-md text-sm/6 opacity-90">
-              Resolving neglected sir tolerably but existence conveying for. Day his put off unaffected literature
-              partiality inhabiting.
-            </p>
-
-            <div className="mt-8">
-              <Button
-                size="lg"
-                className="h-12 rounded-full bg-background text-foreground shadow-md hover:bg-background/90"
-              >
-                Get Started
-              </Button>
+            <div className="flex h-full">
+              {/* Left side - Image */}
+              <div className="w-full ">
+                <img 
+                  src="images/instagram.jpeg" 
+                  alt="Instagram" 
+                  className="w-full h-full object-cover rounded-2xl shadow-lg"
+                />
+              </div>
+              
+            
             </div>
-
-            {/* Decorative clipped wedge to echo reference */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-0 right-0 h-28 w-36 rounded-tl-3xl opacity-35"
-              style={{
-                background: "linear-gradient(160deg, color-mix(in oklch, hsl(var(--primary)) 45%, white), transparent)",
-                clipPath: "polygon(0 0, 100% 0, 100% 100%, 40% 100%)",
-              }}
-            />
-          </article>
+          </div>
 
           {/* Steps grid (spans two columns) */}
           <div className="md:col-span-2">
@@ -71,23 +50,23 @@ export function SectionProcess() {
               <Step
                 number="01"
                 title="Create your free account"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. Duxo is purpose built."
+                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
               />
               <Step
                 number="02"
                 title="Connect your candidate’s"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. Duxo is purpose built."
+                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
                 accent
               />
               <Step
                 number="03"
                 title="Schedule your posts"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. Duxo is purpose built."
+                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
               />
               <Step
                 number="04"
                 title="Publish & get your planning on point"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. Duxo is purpose built."
+                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
               />
             </div>
           </div>

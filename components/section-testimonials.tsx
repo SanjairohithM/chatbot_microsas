@@ -56,23 +56,23 @@ export function SectionTestimonials() {
               {items.map((t, i) => (
                 <CarouselItem key={i}>
                   <article className="rounded-2xl border bg-muted/30 p-6 shadow-sm md:p-10">
-                    <div className="grid gap-8 md:grid-cols-[1.15fr,1fr] md:items-center">
-                      {/* Left: Big quote */}
+                    <div className="text-center space-y-6">
+                      {/* Centered quote */}
                       <blockquote className="text-pretty text-2xl font-semibold leading-tight md:text-3xl">
-                        <span className="align-top text-4xl leading-none text-primary">“</span>
+                        <span className="align-top text-4xl leading-none text-primary">"</span>
                         {t.quote}
-                        <span className="align-top text-4xl leading-none text-primary">”</span>
+                        <span className="align-top text-4xl leading-none text-primary">"</span>
                       </blockquote>
 
-                      {/* Right: Details + author */}
+                      {/* Centered details + author */}
                       <div className="space-y-5">
-                        <p className="text-muted-foreground">{t.detail}</p>
-                        <div className="flex items-center gap-3">
+                        <p className="text-muted-foreground max-w-2xl mx-auto">{t.detail}</p>
+                        <div className="flex items-center justify-center gap-3">
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={t.author.avatar || "/placeholder.svg"} alt={`${t.author.name} avatar`} />
                             <AvatarFallback>{t.author.name.slice(0, 2)}</AvatarFallback>
                           </Avatar>
-                          <div className="leading-tight">
+                          <div className="leading-tight text-center">
                             <div className="font-medium">{t.author.name}</div>
                             <div className="text-sm text-muted-foreground">{t.author.role}</div>
                           </div>

@@ -34,16 +34,16 @@ function MiniBars() {
 
 function MiniLineCard() {
   return (
-    <div className="rounded-xl border bg-card shadow-sm p-4">
-      <div className="text-[10px] text-muted-foreground mb-2">Over time</div>
+    <div className="rounded-xl border bg-card shadow-sm p-2 hover:shadow-md transition-shadow">
+      <div className="text-[9px] text-muted-foreground mb-1.5 font-medium">Over time</div>
       <div className="relative">
         <SparkLine className="h-20 w-full" />
         <div className="absolute left-1/2 top-[38%] -translate-x-1/2" aria-hidden="true">
           <div className="h-14 w-[2px] bg-primary/70 rounded-full"></div>
-          <div className="mt-1 text-[10px] text-muted-foreground text-center">March</div>
+          <div className="mt-0.5 text-[9px] text-muted-foreground text-center font-medium">March</div>
         </div>
       </div>
-      <div className="mt-2 grid grid-cols-5 text-center text-[10px] text-muted-foreground">
+      <div className="mt-1.5 grid grid-cols-5 text-center text-[9px] text-muted-foreground">
         <span>Jan</span>
         <span>Feb</span>
         <span className="text-primary font-medium">Mar</span>
@@ -68,95 +68,95 @@ export function SectionBenefits() {
           </p>
         </header>
 
-        <div className="mt-12 grid gap-6 lg:gap-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-8 lg:gap-12 md:grid-cols-3">
           {/* Card 1 - Autopilot */}
-          <article className="relative rounded-2xl border bg-card shadow-sm p-6 md:p-8">
-            <div className="absolute -top-6 left-6">
+          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 overflow-hidden">
+            <div className="absolute -top-2 left-4 right-4">
               {/* back widget */}
-              <div className="rounded-xl border bg-card shadow-sm px-4 py-3 translate-y-2">
-                <div className="text-xs text-muted-foreground">New customers</div>
-                <div className="mt-1 text-sm font-semibold tracking-tight">5026</div>
-                <div className="text-[10px] text-emerald-500">+56% vs last month</div>
+              <div className="rounded-xl border bg-card shadow-sm px-2 py-1.5 translate-y-2 opacity-90">
+                <div className="text-[10px] text-muted-foreground">New customers</div>
+                <div className="mt-0.5 text-xs font-semibold tracking-tight">5026</div>
+                <div className="text-[9px] text-emerald-500">+56% vs last month</div>
               </div>
               {/* front widget */}
-              <div className="rounded-xl border bg-card shadow-md px-4 py-3 -ml-4 mt-2">
-                <div className="text-xs text-muted-foreground">Response time</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <div className="text-sm font-semibold">40,420</div>
-                  <div className="h-4 w-16">
+              <div className="rounded-xl border bg-card shadow-md px-2 py-1.5 -ml-2 mt-2">
+                <div className="text-[10px] text-muted-foreground">Response time</div>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <div className="text-xs font-semibold">40,420</div>
+                  <div className="h-3 w-12">
                     <SparkLine className="h-full w-full" />
                   </div>
                 </div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[9px] text-muted-foreground">
                   20% <span className="text-emerald-500">▲</span> vs Fast month
                 </div>
               </div>
             </div>
 
-            <div className="mt-24">
-              <h3 className="text-lg md:text-xl font-semibold">Autopilot</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-16">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Autopilot</h3>
+              <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
                 Empower our AI engine to manage the purchase and sale of reserved instances, effectively optimizing your
                 AWS expenditure.
               </p>
               <Link
                 href="#"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
                 aria-label="Learn more about Autopilot"
               >
-                Learn more <span aria-hidden="true">→</span>
+                Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
           </article>
 
           {/* Card 2 - Emphasized */}
-          <article className="relative rounded-2xl border bg-card shadow-sm p-6 md:p-8 ring-1 ring-primary/20">
-            <div className="absolute inset-x-6 -top-6">
-              <div className="rounded-xl border bg-card shadow-md p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">Income Analysis</div>
-                  <div className="text-[10px] text-emerald-500">↑ 12.7% this month</div>
+          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 ring-1 ring-primary/20 hover:ring-primary/40 overflow-hidden">
+            <div className="absolute inset-x-4 -top-2">
+              <div className="rounded-xl border bg-card shadow-md p-2">
+                <div className="mb-1.5 flex items-center justify-between">
+                  <div className="text-[10px] text-muted-foreground">Income Analysis</div>
+                  <div className="text-[9px] text-emerald-500">↑ 12.7% this month</div>
                 </div>
-                <div className="text-sm font-semibold">$10,890</div>
+                <div className="text-xs font-semibold">$10,890</div>
                 <div className="mt-3">
                   <MiniBars />
                 </div>
               </div>
             </div>
 
-            <div className="mt-28">
-              <h3 className="text-lg md:text-xl font-semibold">Continuous Optimization</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-16">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Continuous Optimization</h3>
+              <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
                 Our AI engine consistently observes and adapts to your usage behaviors, uncovering fresh savings
                 possibilities.
               </p>
               <Link
                 href="#"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
                 aria-label="Learn more about Continuous Optimization"
               >
-                Learn more <span aria-hidden="true">→</span>
+                Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
           </article>
 
           {/* Card 3 - Commitment-free */}
-          <article className="relative rounded-2xl border bg-card shadow-sm p-6 md:p-8">
-            <div className="absolute inset-x-6 -top-6">
+          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 overflow-hidden">
+            <div className="absolute inset-x-4 -top-2">
               <MiniLineCard />
             </div>
 
-            <div className="mt-28">
-              <h3 className="text-lg md:text-xl font-semibold">Commitment-free</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+            <div className="mt-16">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Commitment-free</h3>
+              <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
                 Embrace the advantages of extended AWS pricing without entanglements.
               </p>
               <Link
                 href="#"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
                 aria-label="Learn more about Commitment-free"
               >
-                Learn more <span aria-hidden="true">→</span>
+                Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
           </article>

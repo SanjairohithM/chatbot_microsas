@@ -62,7 +62,7 @@ export function SectionFooter() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-semibold tracking-tight">DUXO</span>
+              <span className="text-2xl font-semibold tracking-tight">omnixchat</span>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
               Yet bed any for travelling assistance indulgence unpleasing. Not thoughts all exercise blessing.
@@ -134,8 +134,8 @@ export function SectionFooter() {
             <h3 className="text-sm font-semibold text-foreground">Contact Us</h3>
             <div className="text-sm text-muted-foreground">
               <p className="mb-2">+01 234 567 8910</p>
-              <a className="hover:text-foreground" href="mailto:hello@duxo.ai">
-                hello@duxo.ai
+              <a className="hover:text-foreground" href="mailto:hello@omnixchat.ai">
+                hello@omnixchat.ai
               </a>
             </div>
             <div className="flex items-center gap-2 pt-2">
@@ -159,7 +159,7 @@ export function SectionFooter() {
 
         <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground md:flex-row">
           <p>
-            © Copyright {year} <span className="font-medium text-foreground">Duxo.io</span> All rights reserved.
+            © Copyright {year} <span className="font-medium text-foreground">omnixchat.io</span> All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             <Link href="#" className="hover:text-foreground">

@@ -3,45 +3,46 @@
 import type { ElementType } from "react"
 import { cn } from "@/lib/utils"
 import { Lightbulb, TrendingUp, ShieldCheck, Users, Workflow, Smile } from "lucide-react"
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid"
 
 type ValueItem = {
   title: string
   description: string
   icon: ElementType
   featured?: boolean
+  className?: string
+  animationDirection?: "forward" | "reverse"
 }
 
 const VALUES: ValueItem[] = [
   {
     title: "Innovation",
-    description: "Building an enterprise doesn’t need nightmare or cost your thousands. Felix is purpose built.",
+    description: "Building an enterprise doesn't need nightmare or cost your thousands. Felix is purpose built.",
     icon: Lightbulb,
     featured: true,
+    className: "md:col-span-2",
+    animationDirection: "forward",
   },
   {
     title: "Growth",
     description: "We ship improvements continuously so your business compounds over time.",
     icon: TrendingUp,
+    className: "md:col-span-1",
+    animationDirection: "reverse",
   },
   {
     title: "Ownership",
     description: "Clear accountability and autonomy so decisions happen quickly.",
     icon: ShieldCheck,
+    className: "md:col-span-1",
+    animationDirection: "forward",
   },
   {
     title: "Team Work",
     description: "Transparent collaboration that keeps everyone aligned and moving.",
     icon: Users,
-  },
-  {
-    title: "Commitment",
-    description: "We keep promises and measure progress to outcomes, not output.",
-    icon: Workflow,
-  },
-  {
-    title: "Positivity",
-    description: "A calm, constructive environment that brings out the best in teams.",
-    icon: Smile,
+    className: "md:col-span-2",
+    animationDirection: "reverse",
   },
 ]
 
@@ -55,45 +56,65 @@ export function SectionValues() {
           </h2>
         </header>
 
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {VALUES.map((item) => (
-            <ValueCard key={item.title} item={item} />
-          ))}
+        <div className="mt-14">
+          <BentoGrid className="max-w-4xl mx-auto">
+            {VALUES.map((item) => (
+              <div
+                key={item.title}
+                className={cn(
+                  "group relative overflow-hidden rounded-xl border border-neutral-200 bg-white transition-all duration-300 hover:shadow-xl dark:border-white/[0.2] dark:bg-black",
+                  "hover:border-transparent hover:p-[4px]",
+                  item.className
+                )}
+              >
+                <div className={cn(
+                  "absolute inset-0 rounded-xl opacity-0 transition-all duration-500 group-hover:opacity-100",
+                  item.animationDirection === "reverse" ? "rainbow-train-border-reverse" : "rainbow-train-border"
+                )} />
+                <div className="relative h-full w-full rounded-lg bg-white dark:bg-black p-4">
+                  <BentoGridItem
+                    title={item.title}
+                    description={item.description}
+                    header={<ValueHeader item={item} />}
+                    className="border-0 shadow-none"
+                    icon={<ValueIcon item={item} />}
+                  />
+                </div>
+              </div>
+            ))}
+          </BentoGrid>
         </div>
       </div>
     </section>
   )
 }
 
-function ValueCard({ item }: { item: ValueItem }) {
-  const Icon = item.icon
+function ValueHeader({ item }: { item: ValueItem }) {
   const featured = item.featured
-
+  
   return (
-    <article
-      className={cn(
-        "group relative overflow-hidden rounded-3xl border bg-card text-card-foreground p-10 shadow-sm transition-shadow",
-        "flex flex-col items-center text-center",
-        featured
-          ? "ring-1 ring-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent shadow-md"
-          : "hover:shadow-md",
-      )}
-    >
-      {/* Icon chip */}
-      <div
-        aria-hidden="true"
-        className={cn(
-          "inline-flex size-14 items-center justify-center rounded-2xl",
+    <div className={cn(
+      "flex flex-1 w-full h-full min-h-[6rem] rounded-xl",
+      "dark:bg-dot-white/[0.2] bg-dot-black/[0.2]",
+      "[mask-image:radial-gradient(ellipse_at_center,white,transparent)]",
+      "border border-transparent dark:border-white/[0.2]",
+      featured 
+        ? "bg-gradient-to-br from-primary/20 via-primary/10 to-transparent" 
+        : "bg-neutral-100 dark:bg-black"
+    )}>
+      <div className="flex items-center justify-center w-full h-full">
+        <div className={cn(
+          "inline-flex size-16 items-center justify-center rounded-2xl",
           "bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner",
-        )}
-      >
-        <Icon className="size-6" />
+          "backdrop-blur-sm"
+        )}>
+          <item.icon className="size-8" />
+        </div>
       </div>
-
-      <h3 className="mt-6 text-xl font-semibold">{item.title}</h3>
-      <p className="mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed">
-        Building an enterprise doesn’t need nightmare or cost your thousands. Felix is purpose built.
-      </p>
-    </article>
+    </div>
   )
+}
+
+function ValueIcon({ item }: { item: ValueItem }) {
+  return <item.icon className="h-4 w-4 text-neutral-500" />
 }

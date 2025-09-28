@@ -55,7 +55,7 @@ export function SiteHeader() {
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" asChild>
-              <Link href="#">Sign in</Link>
+              <Link href="/auth ">Sign in</Link>
             </Button>
             <Button asChild>
               <Link href="#">Start free</Link>
