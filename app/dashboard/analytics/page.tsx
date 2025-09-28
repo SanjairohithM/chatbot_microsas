@@ -7,48 +7,82 @@ import { Sidebar } from "@/components/dashboard/sidebar"
 import { AnalyticsCard } from "@/components/dashboard/analytics-card"
 import { AnalyticsChart } from "@/components/dashboard/analytics-chart"
 import { BotPerformanceTable } from "@/components/dashboard/bot-performance-table"
+import { DailySummaryCard } from "@/components/dashboard/daily-summary"
 import { useAuth } from "@/hooks/use-auth"
-import type { Bot } from "@/lib/types"
-import { mockBots, mockAnalytics } from "@/lib/mock-data"
+import type { Bot, BotAnalytics } from "@/lib/types"
 import { MessageSquare, Clock, Zap, Star, TrendingUp, Users } from "lucide-react"
 
-// Extended mock analytics data for charts
-const mockChartData = [
-  { date: "2024-01-15", value: 15 },
-  { date: "2024-01-16", value: 18 },
-  { date: "2024-01-17", value: 22 },
-  { date: "2024-01-18", value: 19 },
-  { date: "2024-01-19", value: 25 },
-  { date: "2024-01-20", value: 21 },
-  { date: "2024-01-21", value: 28 },
-]
-
-const mockResponseTimeData = [
-  { date: "2024-01-15", value: 750 },
-  { date: "2024-01-16", value: 680 },
-  { date: "2024-01-17", value: 720 },
-  { date: "2024-01-18", value: 695 },
-  { date: "2024-01-19", value: 710 },
-  { date: "2024-01-20", value: 665 },
-  { date: "2024-01-21", value: 690 },
-]
-
-const mockSatisfactionData = [
-  { date: "2024-01-15", value: 4.2 },
-  { date: "2024-01-16", value: 4.5 },
-  { date: "2024-01-17", value: 4.3 },
-  { date: "2024-01-18", value: 4.4 },
-  { date: "2024-01-19", value: 4.6 },
-  { date: "2024-01-20", value: 4.5 },
-  { date: "2024-01-21", value: 4.7 },
-]
 
 export default function AnalyticsPage() {
   const [bots, setBots] = useState<Bot[]>([])
+  const [analytics, setAnalytics] = useState<BotAnalytics[]>([])
   const [selectedBotId, setSelectedBotId] = useState<string>("all")
   const [timeRange, setTimeRange] = useState<string>("7d")
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [isLoadingBots, setIsLoadingBots] = useState(false)
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false)
   const { user, isLoading } = useAuth()
   const router = useRouter()
+
+  // Fetch user's bots
+  const fetchBots = async () => {
+    if (!user?.id) return
+    
+    setIsLoadingBots(true)
+    try {
+      const response = await fetch(`/api/bots?userId=${user.id}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setBots(data.data)
+      } else {
+        console.error('Failed to fetch bots:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching bots:', error)
+    } finally {
+      setIsLoadingBots(false)
+    }
+  }
+
+  // Fetch analytics for selected bot or all bots
+  const fetchAnalytics = async (botId?: number) => {
+    setIsLoadingAnalytics(true)
+    try {
+      if (botId) {
+        // Fetch analytics for specific bot
+        const response = await fetch(`/api/analytics/${botId}?days=${timeRange.replace('d', '')}`)
+        const data = await response.json()
+        
+        if (data.success) {
+          setAnalytics(data.data)
+        } else {
+          console.error('Failed to fetch analytics:', data.error)
+          setAnalytics([])
+        }
+      } else {
+        // Fetch analytics for all bots
+        const allAnalytics: BotAnalytics[] = []
+        for (const bot of bots) {
+          try {
+            const response = await fetch(`/api/analytics/${bot.id}?days=${timeRange.replace('d', '')}`)
+            const data = await response.json()
+            if (data.success) {
+              allAnalytics.push(...data.data)
+            }
+          } catch (error) {
+            console.error(`Failed to fetch analytics for bot ${bot.id}:`, error)
+          }
+        }
+        setAnalytics(allAnalytics)
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+      setAnalytics([])
+    } finally {
+      setIsLoadingAnalytics(false)
+    }
+  }
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -56,31 +90,52 @@ export default function AnalyticsPage() {
       return
     }
 
-    // Load mock data
-    const userBots = mockBots.filter((bot) => bot.user_id === user?.id)
-    setBots(userBots)
+    if (user?.id) {
+      fetchBots()
+    }
   }, [user, isLoading, router])
 
-  // Calculate aggregate metrics
-  const totalConversations = mockAnalytics.reduce((sum, analytics) => sum + analytics.total_conversations, 0)
-  const totalMessages = mockAnalytics.reduce((sum, analytics) => sum + analytics.total_messages, 0)
-  const avgResponseTime =
-    mockAnalytics.reduce((sum, analytics) => sum + analytics.avg_response_time_ms, 0) / mockAnalytics.length
-  const avgSatisfaction =
-    mockAnalytics.reduce((sum, analytics) => sum + analytics.user_satisfaction_score, 0) / mockAnalytics.length
+  useEffect(() => {
+    if (selectedBotId !== "all" && selectedBotId) {
+      fetchAnalytics(parseInt(selectedBotId))
+    } else if (selectedBotId === "all") {
+      fetchAnalytics() // Fetch all bots
+    } else {
+      setAnalytics([])
+    }
+  }, [selectedBotId, timeRange, bots])
+
+  // Calculate aggregate metrics from real data
+  const totalConversations = analytics.reduce((sum, analytics) => sum + analytics.total_conversations, 0)
+  const totalMessages = analytics.reduce((sum, analytics) => sum + analytics.total_messages, 0)
+  const avgResponseTime = analytics.length > 0 
+    ? analytics.reduce((sum, analytics) => sum + analytics.avg_response_time_ms, 0) / analytics.length
+    : 0
+  const avgSatisfaction = analytics.length > 0
+    ? analytics.reduce((sum, analytics) => sum + analytics.user_satisfaction_score, 0) / analytics.length
+    : 0
 
   // Prepare bot performance data
   const botPerformanceData = bots.map((bot) => {
-    const analytics = mockAnalytics.find((a) => a.bot_id === bot.id)
+    const botAnalytics = analytics.filter((a) => a.bot_id === bot.id)
+    const totalBotConversations = botAnalytics.reduce((sum, a) => sum + a.total_conversations, 0)
+    const totalBotMessages = botAnalytics.reduce((sum, a) => sum + a.total_messages, 0)
+    const avgBotResponseTime = botAnalytics.length > 0 
+      ? botAnalytics.reduce((sum, a) => sum + a.avg_response_time_ms, 0) / botAnalytics.length
+      : 0
+    const avgBotSatisfaction = botAnalytics.length > 0
+      ? botAnalytics.reduce((sum, a) => sum + a.user_satisfaction_score, 0) / botAnalytics.length
+      : 0
+
     return {
       ...bot,
       analytics: {
-        total_conversations: analytics?.total_conversations || 0,
-        total_messages: analytics?.total_messages || 0,
-        avg_response_time_ms: analytics?.avg_response_time_ms || 0,
-        user_satisfaction_score: analytics?.user_satisfaction_score || 0,
-        change_conversations: Math.floor(Math.random() * 40) - 20, // Mock change data
-        change_satisfaction: Math.floor(Math.random() * 20) - 10,
+        total_conversations: totalBotConversations,
+        total_messages: totalBotMessages,
+        avg_response_time_ms: avgBotResponseTime,
+        user_satisfaction_score: avgBotSatisfaction,
+        change_conversations: 0, // TODO: Calculate actual change
+        change_satisfaction: 0, // TODO: Calculate actual change
       },
     }
   })
@@ -89,7 +144,29 @@ export default function AnalyticsPage() {
     router.push(`/dashboard?botId=${botId}`)
   }
 
-  if (isLoading) {
+  // Convert analytics data to chart format
+  const getChartData = () => {
+    return analytics.map(a => ({
+      date: a.date,
+      value: a.total_conversations
+    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }
+
+  const getResponseTimeData = () => {
+    return analytics.map(a => ({
+      date: a.date,
+      value: a.avg_response_time_ms
+    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }
+
+  const getSatisfactionData = () => {
+    return analytics.map(a => ({
+      date: a.date,
+      value: a.user_satisfaction_score
+    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  }
+
+  if (isLoading || isLoadingBots) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -142,6 +219,13 @@ export default function AnalyticsPage() {
                   <SelectItem value="90d">90 days</SelectItem>
                 </SelectContent>
               </Select>
+
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
+              />
             </div>
           </div>
 
@@ -150,8 +234,29 @@ export default function AnalyticsPage() {
               <div className="p-4 bg-muted/30 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                 <TrendingUp className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No analytics available</h3>
-              <p className="text-muted-foreground mb-4">Create and activate bots to start seeing analytics data.</p>
+              <h3 className="text-lg font-medium mb-2">No bots found</h3>
+              <p className="text-muted-foreground mb-4">Create your first bot to start seeing analytics data.</p>
+            </div>
+          ) : selectedBotId === "all" ? (
+            <div className="text-center py-12">
+              <div className="p-4 bg-muted/30 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">All Bots Analytics</h3>
+              <p className="text-muted-foreground mb-4">Viewing combined analytics and insights for all your bots.</p>
+            </div>
+          ) : isLoadingAnalytics ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading analytics data...</p>
+            </div>
+          ) : analytics.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="p-4 bg-muted/30 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">No analytics data available</h3>
+              <p className="text-muted-foreground mb-4">This bot doesn't have any analytics data for the selected time period.</p>
             </div>
           ) : (
             <>
@@ -196,14 +301,14 @@ export default function AnalyticsPage() {
                 <AnalyticsChart
                   title="Conversations Over Time"
                   description="Daily conversation volume"
-                  data={mockChartData}
+                  data={getChartData()}
                   type="line"
                   color="hsl(var(--chart-1))"
                 />
                 <AnalyticsChart
                   title="Response Time Trend"
                   description="Average response time in milliseconds"
-                  data={mockResponseTimeData}
+                  data={getResponseTimeData()}
                   type="bar"
                   color="hsl(var(--chart-2))"
                 />
@@ -213,7 +318,7 @@ export default function AnalyticsPage() {
                 <AnalyticsChart
                   title="User Satisfaction"
                   description="Average satisfaction score over time"
-                  data={mockSatisfactionData}
+                  data={getSatisfactionData()}
                   type="line"
                   color="hsl(var(--chart-3))"
                 />
@@ -224,6 +329,15 @@ export default function AnalyticsPage() {
                     <p className="text-muted-foreground">Additional analytics and insights will be available here.</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Daily Summary Section */}
+              <div className="mb-8">
+                <DailySummaryCard 
+                  botId={selectedBotId === "all" ? 0 : parseInt(selectedBotId)} 
+                  date={selectedDate}
+                  isAllBots={selectedBotId === "all"}
+                />
               </div>
 
               {/* Bot Performance Table */}

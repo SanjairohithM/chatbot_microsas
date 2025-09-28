@@ -103,6 +103,9 @@ model BotAnalytics {
   total_tokens_used       Int      @default(0)
   avg_response_time_ms    Float?
   user_satisfaction_score Float?
+  
+  daily_summary           Json?
+
   created_at              DateTime @default(now())
   bot                     Bot      @relation(fields: [bot_id], references: [id], onDelete: Cascade)
 

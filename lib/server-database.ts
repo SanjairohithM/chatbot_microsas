@@ -61,7 +61,7 @@ export class ServerBotService {
   static async create(userId: number, botData: Partial<Bot>): Promise<Bot> {
     const bot = await db.bot.create({
       data: {
-        user_id: userId,
+        user_id: String(userId),
         name: botData.name || 'New Bot',
         description: botData.description || '',
         system_prompt: botData.system_prompt || '',
@@ -91,7 +91,7 @@ export class ServerBotService {
     }
   }
 
-  static async findByUserId(userId: number): Promise<Bot[]> {
+  static async findByUserId(userId: string): Promise<Bot[]> {
     const bots = await db.bot.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
@@ -232,7 +232,7 @@ export class ServerKnowledgeDocumentService {
 
 // Conversation operations (server-side only)
 export class ServerConversationService {
-  static async create(botId: number, userId: number, title?: string, isTest = false): Promise<Conversation> {
+  static async create(botId: number, userId: string, title?: string, isTest = false): Promise<Conversation> {
     const conversation = await db.conversation.create({
       data: {
         bot_id: botId,
@@ -253,7 +253,7 @@ export class ServerConversationService {
     }
   }
 
-  static async findByUserId(userId: number): Promise<Conversation[]> {
+  static async findByUserId(userId: string): Promise<Conversation[]> {
     const conversations = await db.conversation.findMany({
       where: { user_id: userId },
       include: {
@@ -344,13 +344,21 @@ export class ServerAnalyticsService {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
 
+    const whereClause = botId === 0 
+      ? {
+          date: {
+            gte: startDate,
+          },
+        }
+      : {
+          bot_id: botId,
+          date: {
+            gte: startDate,
+          },
+        }
+
     const analytics = await db.botAnalytics.findMany({
-      where: {
-        bot_id: botId,
-        date: {
-          gte: startDate,
-        },
-      },
+      where: whereClause,
       orderBy: { date: 'asc' },
     })
 
@@ -363,6 +371,7 @@ export class ServerAnalyticsService {
       total_tokens_used: analytics.total_tokens_used,
       avg_response_time_ms: analytics.avg_response_time_ms || 0,
       user_satisfaction_score: analytics.user_satisfaction_score || 0,
+      daily_summary: (analytics as any).daily_summary || undefined,
       created_at: analytics.created_at.toISOString(),
     }))
   }
@@ -370,7 +379,7 @@ export class ServerAnalyticsService {
   static async createOrUpdateAnalytics(botId: number, date: string, data: Partial<BotAnalytics>) {
     const targetDate = new Date(date)
     
-    await db.botAnalytics.upsert({
+    await (db.botAnalytics as any).upsert({
       where: {
         bot_id_date: {
           bot_id: botId,
@@ -383,6 +392,7 @@ export class ServerAnalyticsService {
         total_tokens_used: data.total_tokens_used,
         avg_response_time_ms: data.avg_response_time_ms,
         user_satisfaction_score: data.user_satisfaction_score,
+        daily_summary: (data as any).daily_summary,
       },
       create: {
         bot_id: botId,
@@ -392,7 +402,107 @@ export class ServerAnalyticsService {
         total_tokens_used: data.total_tokens_used || 0,
         avg_response_time_ms: data.avg_response_time_ms,
         user_satisfaction_score: data.user_satisfaction_score,
+        daily_summary: (data as any).daily_summary,
       },
     })
+  }
+
+  /**
+   * Get messages for a specific bot and date for daily summary analysis
+   */
+  static async getMessagesForDate(botId: number, date: string) {
+    const startOfDay = new Date(date)
+    startOfDay.setHours(0, 0, 0, 0)
+    
+    const endOfDay = new Date(date)
+    endOfDay.setHours(23, 59, 59, 999)
+
+    const messages = await db.message.findMany({
+      where: {
+        conversation: { bot_id: botId },
+        created_at: {
+          gte: startOfDay,
+          lt: endOfDay,
+        },
+      },
+      select: { content: true },
+      orderBy: { created_at: 'asc' },
+    })
+
+    return messages.map(msg => msg.content)
+  }
+
+  /**
+   * Generate and save daily summary for a specific date
+   */
+  static async generateDailySummary(botId: number, date: string, useAI: boolean = true) {
+    const messages = await this.getMessagesForDate(botId, date)
+    
+    if (messages.length === 0) {
+      return null
+    }
+
+    const { DailySummaryService } = await import('@/lib/services/daily-summary.service')
+    const dailySummary = await DailySummaryService.generateDailySummary(messages, useAI)
+
+    // Update the analytics record with the daily summary
+    await this.createOrUpdateAnalytics(botId, date, { daily_summary: dailySummary })
+
+    return dailySummary
+  }
+
+  /**
+   * Update analytics when a message is sent
+   */
+  static async updateAnalyticsForMessage(botId: number, isNewConversation: boolean, tokensUsed?: number, responseTimeMs?: number) {
+    const today = new Date().toISOString().split('T')[0]
+    
+    try {
+      // Get current analytics for today
+      const existingAnalytics = await db.botAnalytics.findUnique({
+        where: {
+          bot_id_date: {
+            bot_id: botId,
+            date: new Date(today)
+          }
+        }
+      })
+
+      // Calculate new values
+      const totalConversations = existingAnalytics ? 
+        existingAnalytics.total_conversations + (isNewConversation ? 1 : 0) : 
+        (isNewConversation ? 1 : 0)
+      
+      const totalMessages = existingAnalytics ? 
+        existingAnalytics.total_messages + 1 : 1
+      
+      const totalTokensUsed = existingAnalytics ? 
+        (existingAnalytics.total_tokens_used || 0) + (tokensUsed || 0) : 
+        (tokensUsed || 0)
+
+      // Calculate average response time
+      let avgResponseTime = existingAnalytics?.avg_response_time_ms || 0
+      if (responseTimeMs) {
+        if (existingAnalytics?.avg_response_time_ms) {
+          // Weighted average
+          avgResponseTime = (existingAnalytics.avg_response_time_ms * (totalMessages - 1) + responseTimeMs) / totalMessages
+        } else {
+          avgResponseTime = responseTimeMs
+        }
+      }
+
+      // Update or create analytics record
+      await this.createOrUpdateAnalytics(botId, today, {
+        total_conversations: totalConversations,
+        total_messages: totalMessages,
+        total_tokens_used: totalTokensUsed,
+        avg_response_time_ms: avgResponseTime,
+        user_satisfaction_score: existingAnalytics?.user_satisfaction_score || undefined
+      })
+
+    } catch (error) {
+      console.error('Failed to update analytics for message:', error)
+      // Don't throw error to avoid breaking the chat flow
+    }
   }
 }
