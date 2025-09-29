@@ -25,20 +25,21 @@ export function Hero() {
             </div>  */}
 
         {/* Headline */}
-        <div className="mx-auto mt-6 max-w-3xl text-center">
-          <h1 className="text-balance text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl flex items-baseline justify-center gap-4 flex-wrap">
-            <span>AI-powered chatbot </span>
+        <div className="mx-auto mt-6 max-w-4xl text-center">
+          <h1 className="font-sans text-balance text-5xl font-semibold tracking-tight text-foreground md:text-5xl  flex items-baseline justify-center gap-4 flex-wrap">
+            <span>Meet AI-Powered Intelligent Chatbot </span>
            
-            <span>has never been smarter</span>
+            <span>Built for Your Sites</span>
           </h1>
           <p className="mt-4 text-pretty text-muted-foreground md:text-lg leading-relaxed">
-            The best way for intelligent conversations, customer support, and automated assistance. Fast responses, all-in-one
-            chatbot platform. AI intelligence, every interaction.
+          Launch multilingual, emotion-aware AI support bots in minutes, personalize
+ every interaction, and manage it all from one intuitive dashboard.
+
           </p>
 
           <div className="mt-6 flex items-center justify-center gap-3">
             <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-              <Link href="#">Start Chatting</Link>
+              <Link href="#">Get Started</Link>
             </Button>
           </div>
         </div>

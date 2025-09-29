@@ -3,6 +3,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
 
 
 @custom-variant dark (&:is(.dark *));
@@ -227,6 +228,13 @@
     background-size: 24px 24px, 24px 24px;
     mask-image: radial-gradient(80% 60% at 50% 20%, black, transparent 80%);
     opacity: 0.6;
+  }
+  
+  .exo-2-hero {
+    font-family: "Exo 2", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
   }
 }
 
