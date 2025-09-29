@@ -33,37 +33,42 @@ export function SectionInsights() {
               id="insights-heading"
               className="text-balance text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl"
             >
-              Thirty forremove plenty regard you summer though.
+              An AI Support Platform
+              That Goes Beyond
+              Chatbots
+
             </h2>
             <p className="mt-4 max-w-prose text-pretty text-muted-foreground leading-relaxed md:text-base">
-              The its enable direct men depend highly. Ham windows sixteen who inquiry fortune demands.
+              Give your customers the fast, personalized help they deserve
+              and give your team the data and control to make it even better.
+
             </p>
 
             <ul className="mt-6 grid gap-3 text-sm md:text-base">
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Get Over view at a glance</span>
+                  <span className="font-medium">Create & Deploy in Minutes</span>
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Deopsosit funds easily, security</span>
+                  <span className="font-medium">Serve Global Customers Effortlessly</span>
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Get Live Support</span>
+                  <span className="font-medium">Track & Improve Performance</span>
                 </span>
               </li>
             </ul>
 
             <div className="mt-8">
               <Button size="lg" asChild>
-              <Link href="#">Get Started</Link>
-            </Button>
+                <Link href="#">Get Started</Link>
+              </Button>
             </div>
           </div>
 

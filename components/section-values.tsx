@@ -16,30 +16,30 @@ type ValueItem = {
 
 const VALUES: ValueItem[] = [
   {
-    title: "Innovation",
-    description: "Building an enterprise doesn't need nightmare or cost your thousands. Felix is purpose built.",
+    title: "Emotion-Aware Support",
+    description: "AI bots instantly adapt tone and style.Detects every customer emotion.Adjusts tone automatically before issues escalate.",
     icon: Lightbulb,
     featured: true,
     className: "md:col-span-2",
     animationDirection: "forward",
   },
   {
-    title: "Growth",
-    description: "We ship improvements continuously so your business compounds over time.",
+    title: "Multimodal Interaction",
+    description: "Go beyond text. AI seamlessly handlesvoice queries, can send images, and respond with the right medium every time.",
     icon: TrendingUp,
     className: "md:col-span-1",
     animationDirection: "reverse",
   },
   {
-    title: "Ownership",
-    description: "Clear accountability and autonomy so decisions happen quickly.",
+    title: "Analytics Dashboard",
+    description: "From data to decisions. Visualize performance .Emotion heatmaps, resolution metrics, and knowledge gapsacross every language and channel.",
     icon: ShieldCheck,
     className: "md:col-span-1",
     animationDirection: "forward",
   },
   {
-    title: "Team Work",
-    description: "Transparent collaboration that keeps everyone aligned and moving.",
+    title: "AI Quality Control",
+    description: "Ensure every response stays sharp Detect errors instantly and let AI optimizes itself for peak performance.",
     icon: Users,
     className: "md:col-span-2",
     animationDirection: "reverse",
@@ -52,7 +52,7 @@ export function SectionValues() {
       <div className="container mx-auto px-4">
         <header className="text-center">
           <h2 id="values-heading" className="text-4xl sm:text-5xl font-semibold tracking-tight text-balance">
-            Our Values
+          What makes the best AI Chatbot?
           </h2>
         </header>
 

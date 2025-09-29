@@ -24,9 +24,9 @@ function SparkLine({ className = "" }: { className?: string }) {
 function MiniBars() {
   const bars = [14, 10, 18, 12, 20, 9, 22, 14, 24, 12, 18, 26]
   return (
-    <div className="grid grid-cols-12 items-end gap-1 h-24">
+    <div className="grid grid-cols-12 items-end gap-1 h-16">
       {bars.map((h, i) => (
-        <div key={i} className="rounded-full bg-primary/80" style={{ height: `${h * 3}px` }} aria-hidden="true" />
+        <div key={i} className="rounded-full bg-primary/80" style={{ height: `${h * 2}px` }} aria-hidden="true" />
       ))}
     </div>
   )
@@ -37,9 +37,9 @@ function MiniLineCard() {
     <div className="rounded-xl border bg-card shadow-sm p-2 hover:shadow-md transition-shadow">
       <div className="text-[9px] text-muted-foreground mb-1.5 font-medium">Over time</div>
       <div className="relative">
-        <SparkLine className="h-20 w-full" />
+        <SparkLine className="h-12 w-full" />
         <div className="absolute left-1/2 top-[38%] -translate-x-1/2" aria-hidden="true">
-          <div className="h-14 w-[2px] bg-primary/70 rounded-full"></div>
+          <div className="h-8 w-[2px] bg-primary/70 rounded-full"></div>
           <div className="mt-0.5 text-[9px] text-muted-foreground text-center font-medium">March</div>
         </div>
       </div>
@@ -60,26 +60,19 @@ export function SectionBenefits() {
       <div className="container mx-auto px-4">
         <header className="mx-auto max-w-3xl text-center">
           <h2 id="benefits-title" className="text-3xl/tight md:text-5xl font-semibold text-balance">
-            Push your ideas to product with ease.
+            Next-Gen AI Chatbot
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Led ask possible mistress relation elegance eat likewise debating. By message or am nothing amongst chiefly
-            address.
+            Deliver instant answers, seamless multimodal support, and powerful analytics
           </p>
         </header>
 
         <div className="mt-12 grid gap-8 lg:gap-12 md:grid-cols-3">
-          {/* Card 1 - Autopilot */}
-          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 overflow-hidden">
-            <div className="absolute -top-2 left-4 right-4">
-              {/* back widget */}
-              <div className="rounded-xl border bg-card shadow-sm px-2 py-1.5 translate-y-2 opacity-90">
-                <div className="text-[10px] text-muted-foreground">New customers</div>
-                <div className="mt-0.5 text-xs font-semibold tracking-tight">5026</div>
-                <div className="text-[9px] text-emerald-500">+56% vs last month</div>
-              </div>
-              {/* front widget */}
-              <div className="rounded-xl border bg-card shadow-md px-2 py-1.5 -ml-2 mt-2">
+          {/* Card 1 - Instant Answers */}
+          <div className="group rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-8 md:p-10 min-h-[400px]">
+            {/* Widget section */}
+            <div className="mb-6">
+              <div className="rounded-xl border bg-card shadow-md px-2 py-1.5">
                 <div className="text-[10px] text-muted-foreground">Response time</div>
                 <div className="mt-0.5 flex items-center gap-1.5">
                   <div className="text-xs font-semibold">40,420</div>
@@ -93,25 +86,25 @@ export function SectionBenefits() {
               </div>
             </div>
 
-            <div className="mt-16">
-              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Autopilot</h3>
+            <div className="mt-4">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Instant Answers</h3>
               <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
-                Empower our AI engine to manage the purchase and sale of reserved instances, effectively optimizing your
-                AWS expenditure.
+                Reply to visitors instantly with AI trained on your FAQs, articles, and policies no setup or manual training needed. Just connect and go.
               </p>
               <Link
                 href="#"
                 className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
-                aria-label="Learn more about Autopilot"
+                aria-label="Learn more about Instant Answers"
               >
                 Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
-          </article>
+          </div>
 
-          {/* Card 2 - Emphasized */}
-          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 ring-1 ring-primary/20 hover:ring-primary/40 overflow-hidden">
-            <div className="absolute inset-x-4 -top-2">
+          {/* Card 2 - Multimodal Support */}
+          <div className="group rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-8 md:p-10 ring-1 ring-primary/20 hover:ring-primary/40 min-h-[400px]">
+            {/* Widget section */}
+            <div className="mb-6">
               <div className="rounded-xl border bg-card shadow-md p-2">
                 <div className="mb-1.5 flex items-center justify-between">
                   <div className="text-[10px] text-muted-foreground">Income Analysis</div>
@@ -124,42 +117,42 @@ export function SectionBenefits() {
               </div>
             </div>
 
-            <div className="mt-16">
-              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Continuous Optimization</h3>
+            <div className="mt-4">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Multimodal Support</h3>
               <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
-                Our AI engine consistently observes and adapts to your usage behaviors, uncovering fresh savings
-                possibilities.
+                Handle text, voice, and image queries seamlessly in one place. Give users natural, human-like help in their preferred language and channel.
               </p>
               <Link
                 href="#"
                 className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
-                aria-label="Learn more about Continuous Optimization"
+                aria-label="Learn more about Multimodal Support"
               >
                 Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
-          </article>
+          </div>
 
-          {/* Card 3 - Commitment-free */}
-          <article className="group relative rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-6 md:p-8 overflow-hidden">
-            <div className="absolute inset-x-4 -top-2">
+          {/* Card 3 - Deep Analytics & Insights */}
+          <div className="group rounded-2xl border bg-card shadow-sm hover:shadow-lg transition-all duration-300 p-8 md:p-10 min-h-[400px]">
+            {/* Widget section */}
+            <div className="mb-6">
               <MiniLineCard />
             </div>
 
-            <div className="mt-16">
-              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Commitment-free</h3>
+            <div className="mt-4">
+              <h3 className="text-xl md:text-2xl font-semibold group-hover:text-primary transition-colors">Deep Analytics & Insights</h3>
               <p className="mt-3 text-sm md:text-base text-muted-foreground leading-relaxed">
-                Embrace the advantages of extended AWS pricing without entanglements.
+                Get real-time dashboards with emotion heatmaps, performance metrics, and trend analysis turning every chat into actionable business intelligence.
               </p>
               <Link
                 href="#"
                 className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:gap-3 transition-all group-hover:underline"
-                aria-label="Learn more about Commitment-free"
+                aria-label="Learn more about Deep Analytics & Insights"
               >
                 Learn more <span aria-hidden="true" className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
             </div>
-          </article>
+          </div>
         </div>
       </div>
     </section>

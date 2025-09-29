@@ -5,18 +5,16 @@ export function SectionProcess() {
     <section aria-labelledby="process-title" className="py-20 md:py-28">
       <div className="mx-auto max-w-6xl px-4">
         {/* Header */}
-        <div className="mx-auto max-w-3xl text-center">
+        <div className="mx-auto max-w-4xl text-center">
           <span className="inline-block rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
             How It Work
           </span>
           <h2 id="process-title" className="mt-4 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
-            Work smarter
-            <br className="hidden md:block" />
-            with easy access for user..
+          Create AI-powered chatbots in minutes 
+          
           </h2>
           <p className="mt-4 text-pretty text-muted-foreground">
-            Led ask possible mistress relation elegance eat likewise debating. By message or am nothing amongst chiefly
-            address.
+          Customize & Launch.
           </p>
         </div>
 
@@ -49,24 +47,24 @@ export function SectionProcess() {
             <div className="grid gap-10 md:grid-cols-2">
               <Step
                 number="01"
-                title="Create your free account"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
+                title="Create Your Account"
+                copy="Sign up in seconds and access your all-in-one dashboard to start building your AI assistant."
               />
               <Step
                 number="02"
-                title="Connect your candidate’s"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
+                title="Train With Your Content"
+                copy="Upload FAQs, documents, or knowledge base articles. Our AI learns instantly no manual setup needed."
                 accent
               />
               <Step
                 number="03"
-                title="Schedule your posts"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
+                title="Customize & Connect"
+                copy="Choose your tone, add branding, and integrate with your website, app, or CRM seamlessly."
               />
               <Step
                 number="04"
-                title="Publish & get your planning on point"
-                copy="Building defang enterprise doesn't need nightmare or cost your thousands. omnixchat is purpose built."
+                title="Launch & Improve"
+                copy="Deploy your bot live, monitor performance, and optimize with built-in analytics for continuous improvement."
               />
             </div>
           </div>
