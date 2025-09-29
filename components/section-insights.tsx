@@ -6,15 +6,15 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Line, LineChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import Link from "next/link"
 
-const interviewData = [
-  { month: "SEP", design: 22, qa: 12 },
-  { month: "OCT", design: 28, qa: 18 },
-  { month: "NOV", design: 24, qa: 16 },
-  { month: "DEC", design: 32, qa: 21 },
-  { month: "JAN", design: 27, qa: 19 },
-  { month: "FEB", design: 46, qa: 25 },
-  { month: "MAR", design: 41, qa: 23 },
-  { month: "APR", design: 44, qa: 28 },
+const chatbotData = [
+  { month: "SEP", resolved: 22, pending: 12 },
+  { month: "OCT", resolved: 28, pending: 18 },
+  { month: "NOV", resolved: 24, pending: 16 },
+  { month: "DEC", resolved: 32, pending: 21 },
+  { month: "JAN", resolved: 27, pending: 19 },
+  { month: "FEB", resolved: 46, pending: 25 },
+  { month: "MAR", resolved: 41, pending: 23 },
+  { month: "APR", resolved: 44, pending: 28 },
 ]
 
 export function SectionInsights() {
@@ -33,14 +33,14 @@ export function SectionInsights() {
               id="insights-heading"
               className="text-balance text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl"
             >
-              An AI Support Platform
-              That Goes Beyond
-              Chatbots
+              Transform Customer
+              Support with
+              Smart AI Chatbots
 
             </h2>
             <p className="mt-4 max-w-prose text-pretty text-muted-foreground leading-relaxed md:text-base">
-              Give your customers the fast, personalized help they deserve
-              and give your team the data and control to make it even better.
+              Deploy intelligent chatbots that understand context, learn from interactions,
+              and provide instant, accurate responses to boost customer satisfaction.
 
             </p>
 
@@ -48,19 +48,19 @@ export function SectionInsights() {
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Create & Deploy in Minutes</span>
+                  <span className="font-medium">24/7 Instant Response</span>
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Serve Global Customers Effortlessly</span>
+                  <span className="font-medium">Multilingual Support</span>
                 </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 text-[var(--color-chart-2)]" aria-hidden="true" />
                 <span className="text-foreground">
-                  <span className="font-medium">Track & Improve Performance</span>
+                  <span className="font-medium">Smart Learning & Analytics</span>
                 </span>
               </li>
             </ul>
@@ -75,33 +75,33 @@ export function SectionInsights() {
           {/* Right: Cards cluster */}
           <div className="relative">
             {/* Floating mini chart */}
-            <div className="absolute -top-20 right-0 z-10 hidden w-[320px] rounded-xl border bg-card/95 p-4 shadow-lg ring-1 ring-black/5 md:block">
+            <div className="absolute -top-20 -right-8 z-10 hidden w-[320px] rounded-xl border bg-card/95 p-4 shadow-lg ring-1 ring-black/5 md:block">
               <div className="mb-3 flex items-center justify-between">
-                <p className="text-sm font-medium">Interviewed</p>
+                <p className="text-sm font-medium">Tickets Resolved</p>
                 <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                   <div className="h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--color-chart-3)" }} />
-                  <span>Design</span>
+                  <span>Resolved</span>
                   <div className="ml-3 h-2 w-2 rounded-sm" style={{ backgroundColor: "var(--color-chart-2)" }} />
-                  <span>QA</span>
+                  <span>Pending</span>
                 </div>
               </div>
 
               <ChartContainer
                 config={{
-                  design: { label: "Design", color: "var(--color-chart-3)" },
-                  qa: { label: "QA", color: "var(--color-chart-2)" },
+                  resolved: { label: "Resolved", color: "var(--color-chart-3)" },
+                  pending: { label: "Pending", color: "var(--color-chart-2)" },
                 }}
                 className="aspect-[16/7] w-full"
               >
-                <LineChart data={interviewData} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
+                <LineChart data={chatbotData} margin={{ left: 8, right: 8, top: 8, bottom: 0 }}>
                   <CartesianGrid vertical={false} strokeOpacity={0.2} />
                   <XAxis dataKey="month" tickLine={false} axisLine={false} />
                   <YAxis hide />
                   <ChartTooltip content={<ChartTooltipContent hideIndicator />} />
-                  <Line type="monotone" dataKey="design" stroke="var(--color-chart-3)" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="resolved" stroke="var(--color-chart-3)" strokeWidth={2} dot={false} />
                   <Line
                     type="monotone"
-                    dataKey="qa"
+                    dataKey="pending"
                     stroke="var(--color-chart-2)"
                     strokeWidth={2}
                     dot={{ r: 2 }}
@@ -116,12 +116,12 @@ export function SectionInsights() {
               </div>
             </div>
 
-            {/* Main Transactions card */}
+            {/* Main Chatbot Performance card */}
             <div className="rounded-2xl border bg-card p-6 shadow-xl ring-1 ring-black/5">
-              <p className="text-sm font-medium">Transactions</p>
+              <p className="text-sm font-medium">Chatbot Performance</p>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-5xl font-extrabold tracking-tight">100</span>
-                <span className="text-muted-foreground">Transactions</span>
+                <span className="text-5xl font-extrabold tracking-tight">98%</span>
+                <span className="text-muted-foreground">Satisfaction</span>
               </div>
 
               {/* Stacked bar */}
@@ -135,11 +135,11 @@ export function SectionInsights() {
 
               {/* Legend */}
               <div className="mt-6 grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
-                <LegendItem color="var(--color-chart-3)" label="Web Designer" value="50" />
-                <LegendItem color="var(--color-chart-1)" label="Graphics Design" value="18" />
-                <LegendItem color="var(--color-chart-4)" label="Web Developer" value="12" />
-                <LegendItem color="var(--color-chart-5)" label="Internship" value="12" />
-                <LegendItem color="var(--color-chart-2)" label="UI/UX Designer" value="8" />
+                <LegendItem color="var(--color-chart-3)" label="Resolved Instantly" value="42%" />
+                <LegendItem color="var(--color-chart-1)" label="Escalated to Human" value="18%" />
+                <LegendItem color="var(--color-chart-4)" label="Follow-up Required" value="12%" />
+                <LegendItem color="var(--color-chart-5)" label="Complex Queries" value="12%" />
+                <LegendItem color="var(--color-chart-2)" label="Multi-language" value="16%" />
               </div>
             </div>
           </div>
