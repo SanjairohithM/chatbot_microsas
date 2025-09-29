@@ -166,7 +166,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-none h-[95vh] overflow-y-auto">
+      <DialogContent className="w-1/2 max-w-none h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
@@ -367,7 +367,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Knowledge Base */}
-            <TabsContent value="knowledge" className="space-y-6 flex-1 overflow-y-auto">
+            <TabsContent value="knowledge" className="space-y-6 flex-1 overflow-y-auto w-full">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -395,7 +395,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                   </div>
 
                   {/* Document Upload Section - Moved up for better visibility */}
-                  <div className="space-y-4">
+                  <div className="space-y-4 w-full">
                     <div className="space-y-2">
                       <Label>Upload Documents</Label>
                       <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
@@ -525,7 +525,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="response_style">Response Style</Label>
                       <Select value={formData.response_style} onValueChange={(value) => setFormData({ ...formData, response_style: value })}>
