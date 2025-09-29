@@ -66,7 +66,7 @@ export class PineconeDocumentService {
           metric: 'cosine',
           spec: {
             serverless: {
-              cloud: config.pinecone.cloud,
+              cloud: config.pinecone.cloud as 'aws' | 'gcp' | 'azure',
               region: config.pinecone.region
             }
           },
@@ -87,6 +87,12 @@ export class PineconeDocumentService {
     await this.initialize()
     if (!this.pc) throw new Error('Pinecone not initialized')
     return this.pc.index(this.indexName)
+  }
+
+  private static async getIndexWithNamespace(botId: number) {
+    const index = await this.getIndex()
+    const namespace = `bot_${botId}`
+    return index.namespace(namespace)
   }
 
   /**
@@ -233,9 +239,10 @@ export class PineconeDocumentService {
     content: string
   ): Promise<void> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
-      console.log(`[Pinecone Documents] Storing document: ${title} (ID: ${documentId}) for bot ${botId}`)
+      console.log(`[Pinecone Documents] Storing document: ${title} (ID: ${documentId}) for bot ${botId} in namespace ${namespace}`)
       console.log(`[Pinecone Documents] Content length: ${content.length} characters`)
       
       // Split content into chunks
@@ -269,11 +276,11 @@ export class PineconeDocumentService {
         })
       }
       
-      // Batch upsert
-      console.log(`[Pinecone Documents] Upserting ${vectors.length} vectors to Pinecone...`)
+      // Batch upsert with namespace
+      console.log(`[Pinecone Documents] Upserting ${vectors.length} vectors to Pinecone namespace ${namespace}...`)
       await index.upsert(vectors)
       
-      console.log(`[Pinecone Documents] ✅ Successfully stored document ${title} with ${chunks.length} chunks`)
+      console.log(`[Pinecone Documents] ✅ Successfully stored document ${title} with ${chunks.length} chunks in namespace ${namespace}`)
     } catch (error) {
       console.error('[Pinecone Documents] Error storing document:', error)
       throw error
@@ -289,9 +296,10 @@ export class PineconeDocumentService {
     limit: number = 5
   ): Promise<DocumentSearchResult[]> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
-      console.log(`[Pinecone Documents] 🔍 Searching documents for bot ${botId} with query: "${query}"`)
+      console.log(`[Pinecone Documents] 🔍 Searching documents for bot ${botId} with query: "${query}" in namespace ${namespace}`)
       
       // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query)
@@ -301,7 +309,6 @@ export class PineconeDocumentService {
         vector: queryEmbedding,
         filter: {
           $and: [
-            { botId: { $eq: botId } },
             { documentId: { $exists: true } }, // Only get document chunks, not chat messages
             { chunkIndex: { $exists: true } }  // Ensure it's a document chunk
           ]
@@ -310,7 +317,7 @@ export class PineconeDocumentService {
         includeMetadata: true
       })
 
-      console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks`)
+      console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks in namespace ${namespace}`)
 
       // Convert results to DocumentSearchResult format
       const results: DocumentSearchResult[] = searchResponse.matches?.map(match => ({
@@ -340,11 +347,12 @@ export class PineconeDocumentService {
   /**
    * Delete document from Pinecone
    */
-  static async deleteDocument(documentId: number): Promise<void> {
+  static async deleteDocument(documentId: number, botId: number): Promise<void> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
-      console.log(`[Pinecone Documents] Deleting document ${documentId} from Pinecone...`)
+      console.log(`[Pinecone Documents] Deleting document ${documentId} from Pinecone namespace ${namespace}...`)
       
       // Query to find all chunks for this document
       const queryResponse = await index.query({
@@ -360,9 +368,9 @@ export class PineconeDocumentService {
       
       if (vectorIds.length > 0) {
         await index.deleteMany(vectorIds)
-        console.log(`[Pinecone Documents] ✅ Deleted ${vectorIds.length} chunks for document ${documentId}`)
+        console.log(`[Pinecone Documents] ✅ Deleted ${vectorIds.length} chunks for document ${documentId} from namespace ${namespace}`)
       } else {
-        console.log(`[Pinecone Documents] No chunks found for document ${documentId}`)
+        console.log(`[Pinecone Documents] No chunks found for document ${documentId} in namespace ${namespace}`)
       }
     } catch (error) {
       console.error('[Pinecone Documents] Error deleting document:', error)
@@ -378,7 +386,7 @@ export class PineconeDocumentService {
       const index = await this.getIndex()
       
       const stats = await index.describeIndexStats()
-      console.log(`[Pinecone Documents] Index stats:`, stats)
+      console.log(`[Pinecone Documents] Index stats for namespace ${botId ? `bot_${botId}` : '_default_'}:`, stats)
       
       return stats
     } catch (error) {

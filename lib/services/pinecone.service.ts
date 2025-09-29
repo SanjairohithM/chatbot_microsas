@@ -78,7 +78,7 @@ export class PineconeService {
           metric: 'cosine',
           spec: {
             serverless: {
-              cloud: config.pinecone.cloud,
+              cloud: config.pinecone.cloud as 'aws' | 'gcp' | 'azure',
               region: config.pinecone.region
             }
           },
@@ -102,6 +102,12 @@ export class PineconeService {
     await this.initialize()
     if (!this.pc) throw new Error('Pinecone not initialized')
     return this.pc.index(this.indexName)
+  }
+
+  private static async getIndexWithNamespace(botId: number) {
+    const index = await this.getIndex()
+    const namespace = `bot_${botId}`
+    return index.namespace(namespace)
   }
 
   /**
@@ -215,7 +221,8 @@ export class PineconeService {
    */
   static async storeChatMessage(message: ChatMessage): Promise<void> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(message.botId)
+      const namespace = `bot_${message.botId}`
       
       // Create vector ID
       const vectorId = `msg_${message.id}_${Date.now()}`
@@ -241,7 +248,7 @@ export class PineconeService {
         metadata
       }])
 
-      console.log(`[Pinecone] Stored message ${message.id} for conversation ${message.conversationId}`)
+      console.log(`[Pinecone] Stored message ${message.id} for conversation ${message.conversationId} in namespace ${namespace}`)
     } catch (error) {
       console.error('[Pinecone] Error storing chat message:', error)
       throw error
@@ -258,49 +265,35 @@ export class PineconeService {
     limit: number = 5
   ): Promise<ChatMessage[]> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
       // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query)
       
-      console.log(`[Pinecone] Searching for botId: ${botId}, userId: ${userId}, query: "${query}"`)
+      console.log(`[Pinecone] Searching for botId: ${botId}, userId: ${userId}, query: "${query}" in namespace ${namespace}`)
       
-      // First try with both botId and userId filters
+      // Search within the bot's namespace
       let searchResponse = await index.query({
         vector: queryEmbedding,
         filter: {
-          botId: { $eq: botId },
           userId: { $eq: userId }
         },
         topK: limit,
         includeMetadata: true
       })
 
-      console.log(`[Pinecone] Search with both filters found ${searchResponse.matches?.length || 0} results`)
+      console.log(`[Pinecone] Search with userId filter found ${searchResponse.matches?.length || 0} results in namespace ${namespace}`)
 
-      // If no results, try with just botId filter
+      // If no results, try without any filters within the namespace
       if (!searchResponse.matches || searchResponse.matches.length === 0) {
-        console.log(`[Pinecone] No results with both filters, trying with botId only`)
-        searchResponse = await index.query({
-          vector: queryEmbedding,
-          filter: {
-            botId: { $eq: botId }
-          },
-          topK: limit,
-          includeMetadata: true
-        })
-        console.log(`[Pinecone] Search with botId only found ${searchResponse.matches?.length || 0} results`)
-      }
-
-      // If still no results, try without any filters (for debugging)
-      if (!searchResponse.matches || searchResponse.matches.length === 0) {
-        console.log(`[Pinecone] No results with botId filter, trying without filters`)
+        console.log(`[Pinecone] No results with userId filter, trying without filters in namespace ${namespace}`)
         searchResponse = await index.query({
           vector: queryEmbedding,
           topK: limit,
           includeMetadata: true
         })
-        console.log(`[Pinecone] Search without filters found ${searchResponse.matches?.length || 0} results`)
+        console.log(`[Pinecone] Search without filters found ${searchResponse.matches?.length || 0} results in namespace ${namespace}`)
       }
 
       // Convert results to ChatMessage format
@@ -320,7 +313,7 @@ export class PineconeService {
         }
       })) || []
 
-      console.log(`[Pinecone] Found ${messages.length} relevant messages for query: "${query}"`)
+      console.log(`[Pinecone] Found ${messages.length} relevant messages for query: "${query}" in namespace ${namespace}`)
       return messages
     } catch (error) {
       console.error('[Pinecone] Error searching conversation context:', error)
@@ -333,10 +326,12 @@ export class PineconeService {
    */
   static async getConversationHistory(
     conversationId: string,
+    botId: number,
     limit: number = 20
   ): Promise<ChatMessage[]> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
       // Query for messages in this conversation
       const queryResponse = await index.query({
@@ -365,7 +360,7 @@ export class PineconeService {
         }
       })).sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()) || []
 
-      console.log(`[Pinecone] Retrieved ${messages.length} messages for conversation ${conversationId}`)
+      console.log(`[Pinecone] Retrieved ${messages.length} messages for conversation ${conversationId} from namespace ${namespace}`)
       return messages
     } catch (error) {
       console.error('[Pinecone] Error getting conversation history:', error)
@@ -376,9 +371,10 @@ export class PineconeService {
   /**
    * Delete conversation from Pinecone
    */
-  static async deleteConversation(conversationId: string): Promise<void> {
+  static async deleteConversation(conversationId: string, botId: number): Promise<void> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
       // Get all vectors for this conversation
       const queryResponse = await index.query({
@@ -395,7 +391,7 @@ export class PineconeService {
       
       if (vectorIds.length > 0) {
         await index.deleteMany(vectorIds)
-        console.log(`[Pinecone] Deleted ${vectorIds.length} messages for conversation ${conversationId}`)
+        console.log(`[Pinecone] Deleted ${vectorIds.length} messages for conversation ${conversationId} from namespace ${namespace}`)
       }
     } catch (error) {
       console.error('[Pinecone] Error deleting conversation:', error)
@@ -408,10 +404,11 @@ export class PineconeService {
    */
   static async getConversationSummary(
     conversationId: string,
+    botId: number,
     maxMessages: number = 10
   ): Promise<string> {
     try {
-      const messages = await this.getConversationHistory(conversationId, maxMessages)
+      const messages = await this.getConversationHistory(conversationId, botId, maxMessages)
       
       if (messages.length === 0) {
         return 'No conversation history available'
@@ -439,16 +436,14 @@ export class PineconeService {
     limit: number = 10
   ): Promise<ChatMessage[]> {
     try {
-      const index = await this.getIndex()
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
       
       // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query)
       
       const searchResponse = await index.query({
         vector: queryEmbedding,
-        filter: {
-          botId: { $eq: botId }
-        },
         topK: limit,
         includeMetadata: true
       })
@@ -469,7 +464,7 @@ export class PineconeService {
         }
       })) || []
 
-      console.log(`[Pinecone] Found ${messages.length} relevant messages across all conversations for bot ${botId}`)
+      console.log(`[Pinecone] Found ${messages.length} relevant messages across all conversations for bot ${botId} in namespace ${namespace}`)
       return messages
     } catch (error) {
       console.error('[Pinecone] Error searching bot conversations:', error)

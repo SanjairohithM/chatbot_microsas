@@ -30,9 +30,9 @@ export async function GET(request: NextRequest) {
 
     let result
 
-    if (conversationId) {
+    if (conversationId && botId) {
       // Get conversation history
-      result = await PineconeService.getConversationHistory(conversationId, limit)
+      result = await PineconeService.getConversationHistory(conversationId, parseInt(botId), limit)
     } else if (botId && userId && query) {
       // Search conversation context
       result = await PineconeService.searchConversationContext(
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         limit
       )
     } else {
-      return ApiResponse.badRequest('Invalid parameters. Provide either conversationId or (botId + userId + query) or (botId + query)')
+      return ApiResponse.badRequest('Invalid parameters. Provide either (conversationId + botId) or (botId + userId + query) or (botId + query)')
     }
 
     logger.apiResponse('GET', '/api/conversations/vector', 200, 0)
@@ -86,14 +86,15 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const conversationId = searchParams.get('conversationId')
+    const botId = searchParams.get('botId')
 
     logger.apiRequest('DELETE', '/api/conversations/vector', conversationId)
 
-    if (!conversationId) {
-      return ApiResponse.badRequest('conversationId is required')
+    if (!conversationId || !botId) {
+      return ApiResponse.badRequest('conversationId and botId are required')
     }
 
-    await PineconeService.deleteConversation(conversationId)
+    await PineconeService.deleteConversation(conversationId, parseInt(botId))
 
     logger.apiResponse('DELETE', '/api/conversations/vector', 200, 0)
 
