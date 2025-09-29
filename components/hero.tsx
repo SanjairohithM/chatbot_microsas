@@ -37,7 +37,7 @@ export function Hero() {
           </p>
 
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Button size="lg" asChild>
+            <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
               <Link href="#">Start Chatting</Link>
             </Button>
           </div>

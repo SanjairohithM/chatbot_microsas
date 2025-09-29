@@ -122,7 +122,7 @@ export default function KnowledgeBasePage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Knowledge Base</h1>
+              <h1 className="text-3xl font-urbanist font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Knowledge Base</h1>
               <p className="text-muted-foreground mt-1">Manage documents and content for your bots</p>
             </div>
 

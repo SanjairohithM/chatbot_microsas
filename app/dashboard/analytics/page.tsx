@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+              <h1 className="text-3xl font-urbanist font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">Analytics</h1>
               <p className="text-muted-foreground mt-1">Monitor your bots' performance and user engagement</p>
             </div>
 

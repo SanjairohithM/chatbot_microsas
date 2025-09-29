@@ -301,7 +301,7 @@ export default function ChatPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="relative mb-6">
             <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-20 h-20 mx-auto flex items-center justify-center shadow-lg">
@@ -320,7 +320,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen">
       <Sidebar />
 
       <div className="lg:pl-64 flex h-screen">
@@ -340,14 +340,14 @@ export default function ChatPage() {
           <div className="p-6 border-b border-slate-200/50 bg-white/90 backdrop-blur-sm shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
                   <MessageSquare className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl font-sans font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
                     Chat & Test
                   </h1>
-                  <p className="text-slate-600">Test your bots in real-time</p>
+                  <p className="text-slate-600 font-sans">Test your bots in real-time</p>
                 </div>
               </div>
 
@@ -388,7 +388,6 @@ export default function ChatPage() {
                   <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
                     <MessageSquare className="h-12 w-12 text-blue-600" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-slate-800">No active bots</h3>
                 <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">Create and activate a bot to start testing.</p>
@@ -409,7 +408,6 @@ export default function ChatPage() {
                   <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
                     <MessageSquare className="h-12 w-12 text-blue-600" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-blue-500 rounded-full animate-pulse"></div>
                 </div>
                 <h3 className="text-2xl font-semibold mb-3 text-slate-800">Start a conversation</h3>
                 <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">
