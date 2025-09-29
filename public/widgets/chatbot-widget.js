@@ -70,6 +70,21 @@
     large: 'width: 400px; height: 600px;'
   };
 
+  // Get the correct base URL for images
+  function getBaseUrl() {
+    // Try to get the base URL from the script tag
+    const script = document.querySelector('script[src*="chatbot-widget.js"]');
+    if (script) {
+      const scriptSrc = script.src;
+      const url = new URL(scriptSrc);
+      console.log('Widget: Using script origin:', url.origin);
+      return url.origin;
+    }
+    // Fallback to current origin
+    console.log('Widget: Using window origin:', window.location.origin);
+    return window.location.origin;
+  }
+
   // Initialize the widget
   function init(userConfig) {
     config = { ...DEFAULT_CONFIG, ...userConfig };
@@ -323,7 +338,19 @@
           ">
             ${messages.length === 0 ? `
               <div style="text-align: center; color: #666; font-size: 13px; padding: 20px;">
-                Hi! I'm ${config.botName || 'your assistant'}. How can I help you today?
+                <div style="margin-bottom: 12px;">
+                  <img src="${getBaseUrl()}/images/robosrc.jpg" 
+                       alt="Chatbot Avatar" 
+                       style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid ${config.primaryColor}; object-fit: cover;"
+                       onload="console.log('Widget: Image loaded successfully from', this.src)"
+                       onerror="console.log('Widget: Image failed to load from', this.src); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iNDAiIGN5PSI0MCIgcj0iNDAiIGZpbGw9IiNmM2Y0ZjYiLz4KPHN2ZyB4PSIyMCIgeT0iMjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSIjOTk5Ij4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIi8+Cjwvc3ZnPgo8L3N2Zz4K'">
+                </div>
+                <div style="font-weight: 600; color: #333; margin-bottom: 4px;">
+                  Hi! How can I help you?
+                </div>
+                <div style="font-size: 12px; color: #888;">
+                  I'm ${config.botName || 'your assistant'} and I'm here to assist you.
+                </div>
               </div>
             ` : messages.map(msg => `
               <div style="display: flex; ${msg.role === 'user' ? 'justify-content: flex-end;' : 'justify-content: flex-start;'}">
