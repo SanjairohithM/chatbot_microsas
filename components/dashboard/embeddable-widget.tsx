@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
@@ -667,23 +668,21 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
   }
 
   return (
-    <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 ${open ? 'block' : 'hidden'}`}>
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="h-5 w-5" />
-              Export {bot.name} Widget
-            </CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ExternalLink className="h-5 w-5" />
+            Export {bot.name} Widget
+          </DialogTitle>
+          <DialogDescription>
+            Export your chatbot as an embeddable widget for external websites
+          </DialogDescription>
+        </DialogHeader>
         
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
+        <div className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 gap-1 p-1">
               <TabsTrigger value="widget" className="flex items-center gap-2">
                 <Code className="h-4 w-4" />
                 Widget
@@ -702,7 +701,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customize" className="space-y-4">
+            <TabsContent value="customize" className="space-y-4 w-full">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Primary Color</label>
@@ -897,7 +896,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="widget" className="space-y-4">
+            <TabsContent value="widget" className="space-y-4 w-full">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">JavaScript Widget Code</label>
@@ -930,7 +929,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="iframe" className="space-y-4">
+            <TabsContent value="iframe" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -981,7 +980,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="react" className="space-y-4">
+            <TabsContent value="react" className="space-y-4 w-full">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">React Component</label>
@@ -1038,9 +1037,9 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
