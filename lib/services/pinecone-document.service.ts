@@ -62,7 +62,7 @@ export class PineconeDocumentService {
         
         await this.pc.createIndex({
           name: this.indexName,
-          dimension: 512, // text-embedding-3-small dimensions
+          dimension: config.pinecone.dimension,
           metric: 'cosine',
           spec: {
             serverless: {
@@ -90,9 +90,43 @@ export class PineconeDocumentService {
   }
 
   private static async getIndexWithNamespace(botId: number) {
+    console.log(`[Pinecone Documents] Getting index with namespace for bot ${botId}`)
     const index = await this.getIndex()
     const namespace = `bot_${botId}`
-    return index.namespace(namespace)
+    console.log(`[Pinecone Documents] Using namespace: ${namespace}`)
+    const namespacedIndex = index.namespace(namespace)
+    console.log(`[Pinecone Documents] Namespaced index created successfully`)
+    return namespacedIndex
+  }
+
+  /**
+   * Enhance query for better company-specific search results
+   */
+  private static enhanceQueryForCompanySearch(query: string): string {
+    const lowerQuery = query.toLowerCase()
+    
+    // Add company-specific terms if the query is about the company
+    if (lowerQuery.includes('company') || 
+        lowerQuery.includes('about') || 
+        lowerQuery.includes('tell me') ||
+        lowerQuery.includes('what') ||
+        lowerQuery.includes('who')) {
+      
+      // Add business-related terms to improve relevance
+      const businessTerms = [
+        'business', 'services', 'products', 'company information',
+        'about us', 'company details', 'corporate information'
+      ]
+      
+      return `${query} ${businessTerms.join(' ')}`
+    }
+    
+    // Add service/product terms for general queries
+    if (lowerQuery.includes('service') || lowerQuery.includes('product')) {
+      return `${query} company business`
+    }
+    
+    return query
   }
 
   /**
@@ -103,7 +137,7 @@ export class PineconeDocumentService {
       console.log(`[Pinecone Documents] 🔍 Generating embedding for text: "${text.substring(0, 100)}..."`)
       const openAIEmbedding = await openAIAPI.createEmbedding(text, config.pinecone.embeddingModel)
       if (openAIEmbedding && openAIEmbedding.length > 0) {
-        const projected = this.projectEmbedding(openAIEmbedding, 512)
+        const projected = this.projectEmbedding(openAIEmbedding, config.pinecone.dimension)
         return projected
       }
       console.warn('[Pinecone Documents] OpenAI embedding empty, using fallback')
@@ -124,12 +158,12 @@ export class PineconeDocumentService {
     
     // Create embedding based on word frequencies and semantic features
     const words = combinedText.split(/\s+/)
-    const embedding = new Array(512).fill(0)
+    const embedding = new Array(config.pinecone.dimension).fill(0)
     
     // Enhanced word-based embedding with semantic weighting
     words.forEach((word, index) => {
       const hash = this.simpleHash(word)
-      const position = hash % 512
+      const position = hash % config.pinecone.dimension
       
       // Weight by position and word importance
       let weight = 1 / (index + 1)
@@ -169,12 +203,12 @@ export class PineconeDocumentService {
   private static generateFallbackEmbedding(text: string): number[] {
     // Create a simple hash-based embedding for testing
     const words = text.toLowerCase().split(/\s+/)
-    const embedding = new Array(512).fill(0)
+    const embedding = new Array(config.pinecone.dimension).fill(0)
     
     // Simple word-based embedding
     words.forEach((word, index) => {
       const hash = this.simpleHash(word)
-      const position = hash % 512
+      const position = hash % config.pinecone.dimension
       embedding[position] += 1 / (index + 1) // Weight by position
     })
     
@@ -199,7 +233,7 @@ export class PineconeDocumentService {
   /**
    * Split document content into chunks for better search
    */
-  private static splitIntoChunks(content: string, chunkSize: number = 1000, overlap: number = 200): string[] {
+  private static splitIntoChunks(content: string, chunkSize: number = config.pinecone.chunkSize, overlap: number = config.pinecone.chunkOverlap): string[] {
     const chunks: string[] = []
     let start = 0
     
@@ -246,7 +280,7 @@ export class PineconeDocumentService {
       console.log(`[Pinecone Documents] Content length: ${content.length} characters`)
       
       // Split content into chunks
-      const chunks = this.splitIntoChunks(content, 1000, 200)
+      const chunks = this.splitIntoChunks(content, config.pinecone.chunkSize, config.pinecone.chunkOverlap)
       console.log(`[Pinecone Documents] Split into ${chunks.length} chunks`)
       
       // Store each chunk
@@ -301,8 +335,12 @@ export class PineconeDocumentService {
       
       console.log(`[Pinecone Documents] 🔍 Searching documents for bot ${botId} with query: "${query}" in namespace ${namespace}`)
       
-      // Generate embedding for the query
-      const queryEmbedding = await this.generateEmbedding(query)
+      // Enhance query for better company-specific results
+      const enhancedQuery = this.enhanceQueryForCompanySearch(query)
+      console.log(`[Pinecone Documents] Enhanced query: "${enhancedQuery}"`)
+      
+      // Generate embedding for the enhanced query
+      const queryEmbedding = await this.generateEmbedding(enhancedQuery)
       
       // Search for relevant document chunks (exclude chat messages)
       const searchResponse = await index.query({
@@ -313,7 +351,7 @@ export class PineconeDocumentService {
             { chunkIndex: { $exists: true } }  // Ensure it's a document chunk
           ]
         },
-        topK: limit,
+        topK: limit * 2, // Get more results to filter later
         includeMetadata: true
       })
 
@@ -331,16 +369,104 @@ export class PineconeDocumentService {
         metadata: match.metadata
       })) || []
 
+      // Filter out low-quality results and irrelevant content
+      const filteredResults = results.filter(result => {
+        // Filter out results with very low scores (be more lenient)
+        if (result.score < config.pinecone.scoreThreshold) {
+          console.log(`[Pinecone Documents] Filtered out low score: ${result.title} (${result.score.toFixed(4)})`)
+          return false
+        }
+        
+        // Filter out results with corrupted or meaningless content
+        if (!result.content || result.content.length < 10) {
+          console.log(`[Pinecone Documents] Filtered out short content: ${result.title} (${result.content?.length || 0} chars)`)
+          return false
+        }
+        
+        // Filter out content that looks like corrupted text (be more specific)
+        const corruptedPatterns = [
+          /^[^\w\s]*$/, // Only special characters
+          /^[A-Z\s]{10,}$/, // Only uppercase letters and spaces (longer than 10 chars)
+          /^\d+$/, // Only numbers
+          /^[^\w]*[^\w\s][^\w]*$/, // Mostly special characters
+        ]
+        
+        if (corruptedPatterns.some(pattern => pattern.test(result.content))) {
+          console.log(`[Pinecone Documents] Filtered out corrupted content: ${result.title}`)
+          return false
+        }
+        
+        // Filter out Wikipedia and generic content (be more specific)
+        const title = result.title.toLowerCase()
+        if (title.includes('wikipedia') || 
+            title.includes('encyclopedia') || 
+            title.includes('generic') ||
+            title.includes('example') ||
+            title.includes('test')) {
+          console.log(`[Pinecone Documents] Filtered out generic content: ${result.title}`)
+          return false
+        }
+        
+        // Filter out content that doesn't contain meaningful words (be more lenient)
+        const meaningfulWords = result.content.toLowerCase().match(/\b[a-z]{2,}\b/g) || []
+        if (meaningfulWords.length < 2) {
+          console.log(`[Pinecone Documents] Filtered out meaningless content: ${result.title} (${meaningfulWords.length} words)`)
+          return false
+        }
+        
+        console.log(`[Pinecone Documents] Keeping result: ${result.title} (Score: ${result.score.toFixed(4)}, Words: ${meaningfulWords.length})`)
+        return true
+      }).slice(0, limit) // Limit to requested number of results
+
       // Log results
-      results.forEach((result, index) => {
+      filteredResults.forEach((result, index) => {
         console.log(`[Pinecone Documents] ${index + 1}. Document: ${result.title} (Score: ${result.score.toFixed(4)})`)
         console.log(`[Pinecone Documents]    Chunk ${result.chunkIndex + 1}/${result.totalChunks}: "${result.content.substring(0, 100)}..."`)
       })
 
-      return results
+      console.log(`[Pinecone Documents] Filtered ${results.length} results down to ${filteredResults.length} relevant chunks`)
+
+      return filteredResults
     } catch (error) {
       console.error('[Pinecone Documents] Error searching documents:', error)
-      return []
+      
+      // If Pinecone search fails, try a simpler search without filters
+      try {
+        console.log('[Pinecone Documents] Attempting fallback search without filters...')
+        const fallbackIndex = await this.getIndexWithNamespace(botId)
+        const fallbackEmbedding = await this.generateEmbedding(query)
+        const fallbackResponse = await fallbackIndex.query({
+          vector: fallbackEmbedding,
+          topK: limit,
+          includeMetadata: true
+        })
+        
+        const fallbackResults = fallbackResponse.matches?.map((match: any) => ({
+          id: match.id,
+          score: match.score || 0,
+          documentId: match.metadata?.documentId as number,
+          title: match.metadata?.title as string,
+          content: match.metadata?.content as string,
+          chunkIndex: match.metadata?.chunkIndex as number,
+          totalChunks: match.metadata?.totalChunks as number,
+          metadata: match.metadata
+        })) || []
+        
+        // Apply basic filtering to fallback results
+        const filteredFallback = fallbackResults.filter((result: any) => 
+          result.score > 0.1 && 
+          result.content && 
+          result.content.length > 20 &&
+          !result.title.toLowerCase().includes('wikipedia')
+        )
+        
+        console.log(`[Pinecone Documents] Fallback search found ${filteredFallback.length} results`)
+        return filteredFallback
+        
+      } catch (fallbackError) {
+        console.error('[Pinecone Documents] Fallback search also failed:', fallbackError)
+        return []
+      }
     }
   }
 
@@ -356,7 +482,7 @@ export class PineconeDocumentService {
       
       // Query to find all chunks for this document
       const queryResponse = await index.query({
-        vector: Array(512).fill(0), // Dummy vector for metadata-only search
+        vector: Array(config.pinecone.dimension).fill(0), // Dummy vector for metadata-only search
         filter: {
           documentId: { $eq: documentId }
         },

@@ -14,6 +14,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!botId) {
+      return NextResponse.json(
+        { error: 'Bot ID is required' },
+        { status: 400 }
+      )
+    }
+
     // Validate URL format
     let targetUrl: URL
     try {
@@ -30,7 +37,7 @@ export async function POST(request: NextRequest) {
       targetUrl = new URL(`https://${url}`)
     }
 
-    console.log(`[Scrape Website] Scraping website: ${targetUrl.toString()}${botId ? ` for bot ${botId}` : ''}`)
+    console.log(`[Scrape and Store] Scraping website: ${targetUrl.toString()} for bot ${botId}`)
 
     // Fetch the website content
     const response = await fetch(targetUrl.toString(), {
@@ -78,38 +85,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If botId is provided, store in Pinecone
-    let document = null
-    let pineconeStored = false
-    
-    if (botId) {
-      try {
-        console.log(`[Scrape Website] 🔍 Starting Pinecone storage process for bot ${botId}`)
-        console.log(`[Scrape Website] Bot ID type: ${typeof botId}, value: ${botId}`)
-        
-        // Validate bot exists first
-        const botIdInt = parseInt(botId)
-        if (isNaN(botIdInt)) {
-          throw new Error(`Invalid bot ID: ${botId}`)
-        }
-        
-        console.log(`[Scrape Website] Creating knowledge document for bot ${botIdInt}`)
-        
-        // Create knowledge document record
-        document = await KnowledgeDocumentService.createKnowledgeDocument({
-          bot_id: botIdInt,
-          title: scrapedContent.title,
-          content: scrapedContent.content,
-          file_type: 'website',
-          file_url: targetUrl.toString(),
-          file_size: scrapedContent.content.length,
-          status: 'processing'
-        })
+    // Create knowledge document record
+    const document = await KnowledgeDocumentService.createKnowledgeDocument({
+      bot_id: parseInt(botId),
+      title: scrapedContent.title,
+      content: scrapedContent.content,
+      file_type: 'website',
+      file_url: targetUrl.toString(),
+      file_size: scrapedContent.content.length,
+      status: 'processing'
+    })
 
-        console.log(`[Scrape Website] ✅ Created knowledge document ${document.id} for URL: ${targetUrl.toString()}`)
+    console.log(`[Scrape and Store] Created knowledge document ${document.id} for URL: ${targetUrl.toString()}`)
 
-        // Store in Pinecone with enhanced metadata
-        const enhancedContent = `Website: ${targetUrl.toString()}
+    // Store in Pinecone with enhanced metadata
+    try {
+      const enhancedContent = `Website: ${targetUrl.toString()}
 
 Title: ${scrapedContent.title}
 Description: ${scrapedContent.description}
@@ -125,56 +116,51 @@ Paragraphs: ${scrapedContent.metadata.paragraphs}
 Links: ${scrapedContent.metadata.links}
 Has Contact Info: ${scrapedContent.metadata.hasContactInfo}`
 
-        console.log(`[Scrape Website] 🌲 Storing in Pinecone namespace: bot_${botIdInt}`)
-        console.log(`[Scrape Website] Enhanced content length: ${enhancedContent.length} characters`)
+      await PineconeDocumentService.storeDocument(
+        parseInt(botId),
+        document.id,
+        scrapedContent.title,
+        enhancedContent
+      )
 
-        await PineconeDocumentService.storeDocument(
-          botIdInt,
-          document.id,
-          scrapedContent.title,
-          enhancedContent
-        )
+      // Update document status to indexed
+      await KnowledgeDocumentService.updateKnowledgeDocument(document.id, {
+        status: 'indexed'
+      })
 
-        // Update document status to indexed
-        await KnowledgeDocumentService.updateKnowledgeDocument(document.id, {
-          status: 'indexed'
-        })
+      console.log(`[Scrape and Store] ✅ Successfully scraped and stored website content for bot ${botId}`)
 
-        pineconeStored = true
-        console.log(`[Scrape Website] ✅ Successfully scraped and stored website content for bot ${botIdInt} in namespace bot_${botIdInt}`)
-
-      } catch (pineconeError) {
-        console.error('[Scrape Website] ❌ Failed to store in Pinecone:', pineconeError)
-        console.error('[Scrape Website] Error details:', {
-          message: pineconeError instanceof Error ? pineconeError.message : 'Unknown error',
-          stack: pineconeError instanceof Error ? pineconeError.stack : undefined,
-          botId: botId,
-          documentId: document?.id
-        })
-        
-        // Update document status to error if document was created
-        if (document) {
-          await KnowledgeDocumentService.updateKnowledgeDocument(document.id, {
-            status: 'error',
-            processing_error: pineconeError instanceof Error ? pineconeError.message : 'Pinecone storage failed'
-          })
+      return NextResponse.json({
+        success: true,
+        data: {
+          document,
+          scrapedContent,
+          pineconeStored: true
         }
-      }
-    } else {
-      console.log(`[Scrape Website] No botId provided, skipping Pinecone storage`)
+      })
+
+    } catch (pineconeError) {
+      console.error('[Scrape and Store] Failed to store in Pinecone:', pineconeError)
+      
+      // Update document status to error
+      await KnowledgeDocumentService.updateKnowledgeDocument(document.id, {
+        status: 'error',
+        processing_error: pineconeError instanceof Error ? pineconeError.message : 'Pinecone storage failed'
+      })
+
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to store scraped content in vector database',
+        data: {
+          document,
+          scrapedContent,
+          pineconeStored: false
+        }
+      }, { status: 500 })
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...scrapedContent,
-        document,
-        pineconeStored
-      }
-    })
-
   } catch (error) {
-    console.error('Website scraping error:', error)
+    console.error('[Scrape and Store] Website scraping error:', error)
     
     let errorMessage = 'Failed to scrape website content'
     if (error instanceof Error) {
@@ -189,6 +175,7 @@ Has Contact Info: ${scrapedContent.metadata.hasContactInfo}`
     
     return NextResponse.json(
       { 
+        success: false,
         error: errorMessage,
         message: 'Please check the URL and try again. Make sure the website is accessible and doesn\'t require authentication.'
       },

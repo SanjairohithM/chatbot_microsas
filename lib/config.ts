@@ -19,7 +19,11 @@ export const config = {
     indexName: process.env.PINECONE_INDEX_NAME || "chatbot",
     cloud: process.env.PINECONE_CLOUD || "aws",
     region: process.env.PINECONE_REGION || "us-east-1",
-    embeddingModel: process.env.PINECONE_EMBEDDING_MODEL || "text-embedding-3-small"
+    embeddingModel: process.env.PINECONE_EMBEDDING_MODEL || "text-embedding-3-small",
+    dimension: parseInt(process.env.PINECONE_DIMENSION || "512"),
+    chunkSize: parseInt(process.env.PINECONE_CHUNK_SIZE || "1000"),
+    chunkOverlap: parseInt(process.env.PINECONE_CHUNK_OVERLAP || "200"),
+    scoreThreshold: parseFloat(process.env.PINECONE_SCORE_THRESHOLD || "0.02")
   },
   
   // Application Configuration

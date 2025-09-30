@@ -142,6 +142,28 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
           
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
+            {/* Draft Activation Button */}
+            {bot.status === "draft" && (
+              <Button 
+                onClick={() => onToggleStatus(bot.id, "active")}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Activate Bot
+              </Button>
+            )}
+            
+            {/* Inactive Bot Activation Button */}
+            {bot.status === "inactive" && (
+              <Button 
+                onClick={() => onToggleStatus(bot.id, "active")}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Activate
+              </Button>
+            )}
+            
             {onChat && (
               <Button 
                 onClick={() => onChat(bot)} 

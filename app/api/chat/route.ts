@@ -181,6 +181,7 @@ export async function POST(request: NextRequest) {
           }
         } else {
           console.log(`[Chat API] ⚠️ No relevant documents found in Pinecone for query: "${messageText}"`)
+          console.log(`[Chat API] 🔍 Will search conversation context as fallback`)
           documentContext = ''
           searchResults = null
         }
@@ -206,8 +207,8 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Get conversation context from Pinecone if enabled
-      if (config.chat.useVectorSearch) {
+      // Get conversation context from Pinecone if enabled and no document context found
+      if (config.chat.useVectorSearch && (!documentContext || documentContext.trim().length === 0)) {
         try {
           // Get the effective user ID for conversation context search
           let contextUserId = userId
@@ -218,7 +219,7 @@ export async function POST(request: NextRequest) {
             contextUserId = defaultUser?.id || 'widget-user'
           }
           
-          console.log(`[Chat API] Searching conversation context for bot ${botId}, user ${contextUserId}`)
+          console.log(`[Chat API] 🔍 Searching conversation context for bot ${botId}, user ${contextUserId} (no document context found)`)
           
           // Search for relevant conversation history
           const relevantMessages = await PineconeService.searchConversationContext(

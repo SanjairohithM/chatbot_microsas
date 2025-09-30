@@ -77,6 +77,9 @@ export default function DashboardPage() {
 
       const result = await response.json()
       const newBot = result.data
+      
+      console.log(`[Dashboard] ✅ Bot created successfully with ID: ${newBot.id}`)
+      console.log(`[Dashboard] Bot data:`, newBot)
 
       // If documents were uploaded, save them to the database
       if (documents && documents.length > 0) {
@@ -130,6 +133,50 @@ export default function DashboardPage() {
         }
       }
 
+      // Handle website scraping if website_url is provided
+      console.log(`[Dashboard] Checking for website data in botData:`, {
+        hasWebsiteUrl: !!(botData as any).website_url,
+        hasWebsiteContent: !!(botData as any).website_content,
+        websiteUrl: (botData as any).website_url,
+        websiteContentLength: (botData as any).website_content?.length
+      })
+      
+      if ((botData as any).website_url && (botData as any).website_content) {
+        try {
+          console.log(`[Dashboard] 🌐 Starting website scraping for bot ${newBot.id}`)
+          console.log(`[Dashboard] Website URL: ${(botData as any).website_url}`)
+          console.log(`[Dashboard] Website content length: ${(botData as any).website_content.length}`)
+          
+          const scrapeResponse = await fetch('/api/scrape-website', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: (botData as any).website_url,
+              botId: newBot.id
+            })
+          })
+
+          console.log(`[Dashboard] Scrape response status: ${scrapeResponse.status}`)
+
+          if (scrapeResponse.ok) {
+            const scrapeResult = await scrapeResponse.json()
+            console.log(`[Dashboard] ✅ Website scraping completed for bot ${newBot.id}`)
+            console.log(`[Dashboard] Pinecone stored: ${scrapeResult.data.pineconeStored}`)
+            console.log(`[Dashboard] Document created: ${scrapeResult.data.document ? 'Yes' : 'No'}`)
+          } else {
+            const errorText = await scrapeResponse.text()
+            console.error(`[Dashboard] ❌ Failed to scrape and store website:`, errorText)
+          }
+        } catch (scrapeError) {
+          console.error(`[Dashboard] ❌ Error scraping website:`, scrapeError)
+        }
+      } else {
+        console.log(`[Dashboard] No website URL provided, skipping scraping`)
+        console.log(`[Dashboard] BotData keys:`, Object.keys(botData))
+      }
+
       setBots([...bots, newBot])
     } catch (error) {
       console.error('Error creating bot:', error)
@@ -161,6 +208,33 @@ export default function DashboardPage() {
 
       const result = await response.json()
       const updatedBot = result.data
+
+      // Handle website scraping if website_url is provided and different from current
+      if ((botData as any).website_url && (botData as any).website_content && (botData as any).website_url !== (editingBot as any).website_url) {
+        try {
+          console.log(`[Dashboard] Scraping website for bot ${editingBot.id}: ${(botData as any).website_url}`)
+          
+          const scrapeResponse = await fetch('/api/scrape-website', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              url: (botData as any).website_url,
+              botId: editingBot.id
+            })
+          })
+
+          if (scrapeResponse.ok) {
+            const scrapeResult = await scrapeResponse.json()
+            console.log(`[Dashboard] Website scraped and stored for bot ${editingBot.id}:`, scrapeResult.data.pineconeStored)
+          } else {
+            console.error('Failed to scrape and store website:', await scrapeResponse.text())
+          }
+        } catch (scrapeError) {
+          console.error('Error scraping website:', scrapeError)
+        }
+      }
 
       setBots(bots.map((bot) => (bot.id === editingBot.id ? updatedBot : bot)))
       setEditingBot(null)
@@ -242,7 +316,7 @@ export default function DashboardPage() {
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <Bot className="h-5 w-5 text-white" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900">AI Dashboard</h1>
+                <h1 className="text-2xl font-bold text-gray-900"> AI Dashboard</h1>
               </div>
    
             </div>

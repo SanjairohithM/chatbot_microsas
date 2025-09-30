@@ -74,7 +74,7 @@ export class PineconeService {
         // Create a standard index (not auto-embedding) since we'll handle embeddings manually
         await this.pc.createIndex({
           name: this.indexName,
-          dimension: 512, // text-embedding-3-small dimensions
+          dimension: config.pinecone.dimension,
           metric: 'cosine',
           spec: {
             serverless: {

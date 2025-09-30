@@ -46,6 +46,9 @@ export class BotController {
       }
 
       const bot = await BotService.createBot(userId, botData as CreateBotRequest)
+      
+      console.log(`[BotController] Bot created successfully with ID: ${bot.id}`)
+      console.log(`[BotController] Bot data:`, bot)
 
       return ApiResponse.success('Bot created successfully', bot)
     } catch (error) {

@@ -129,6 +129,9 @@ Be polite, professional, and helpful. If you don't know something, politely say 
         max_tokens: formData.max_tokens,
         status: "draft" as const,
         is_deployed: false,
+        // Include website data for scraping after bot creation
+        website_url: formData.website_url,
+        website_content: formData.website_content,
       }
       
       // Pass both bot data and uploaded documents
