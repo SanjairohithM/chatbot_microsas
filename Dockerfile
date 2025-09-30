@@ -2,10 +2,10 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install
 
 COPY package.json ./
-COPY pnpm-lock.yaml* ./
+COPY npm-lock.yaml* ./
 COPY package-lock.json* ./
 
 RUN \
