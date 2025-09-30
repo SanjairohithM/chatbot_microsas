@@ -75,7 +75,7 @@ function PricingCard({
   )
 }
 
-export default function SectionPricing() {
+export function SectionPricing() {
   const plans: Plan[] = [
     {
       name: "Standard",

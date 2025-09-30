@@ -49,7 +49,7 @@ export function Hero() {
           <div className="rounded-[1.25rem] border bg-card shadow-xl shadow-black/5 ring-1 ring-black/5">
             <div className="rounded-[1rem] overflow-hidden">
               <img
-                src="/images/body-img.jpg"
+                src="/images/ssadmin.png"
                 alt="Financial analytics dashboard preview"
                 width={1200}
                 height={400}
