@@ -320,7 +320,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
 
       <div className="lg:pl-64 flex h-screen">
@@ -335,90 +335,72 @@ export default function ChatPage() {
         />
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-white/80 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col bg-white">
           {/* Header */}
-          <div className="p-6 border-b border-slate-200/50 bg-white/90 backdrop-blur-sm shadow-sm">
+          <div className="p-6 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg">
-                  <MessageSquare className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                    <h1 className="text-2xl font-sans font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-                    Chat & Test
-                  </h1>
-                  <p className="text-slate-600 font-sans">Test your bots in real-time</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <MessageSquare className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900">Chat & Test</h1>
+                    <p className="text-sm text-gray-600">Test your bots in real-time</p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
-                <Select value={selectedBotId} onValueChange={setSelectedBotId}>
-                  <SelectTrigger className="w-56 h-12 bg-white/80 border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm">
-                    <SelectValue placeholder="Select a bot" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 backdrop-blur-sm border-0 shadow-xl rounded-xl">
-                    {bots.map((bot) => (
-                      <SelectItem key={bot.id} value={bot.id.toString()} className="hover:bg-blue-50 transition-colors duration-200">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{bot.name}</span>
-                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 border-blue-200">
-                            {bot.model}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
                 {selectedBot && (
-                  <Button variant="outline" size="sm" className="h-12 px-4 border-slate-200 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 rounded-xl">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Settings
-                  </Button>
+                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
+                    {selectedBot.model}
+                  </Badge>
                 )}
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                  <Play className="h-4 w-4 mr-2" />
+                  Test
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </div>
 
           {/* Chat Content */}
           {!selectedBot ? (
-            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
               <div className="text-center">
-                <div className="relative mb-8">
-                  <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
-                    <MessageSquare className="h-12 w-12 text-blue-600" />
-                  </div>
+                <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                  <MessageSquare className="h-12 w-12 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-3 text-slate-800">No active bots</h3>
-                <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">Create and activate a bot to start testing.</p>
+                <h3 className="text-2xl font-semibold mb-3 text-gray-800">No active bots</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">Create and activate a bot to start testing.</p>
                 <Button 
                   onClick={() => router.push("/dashboard")}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
-                  <Play className="h-5 w-5 mr-2" />
+                  <Play className="h-4 w-4 mr-2" />
                   Go to Bots
                 </Button>
               </div>
             </div>
           ) : !selectedConversationId ? (
-            <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
               <div className="text-center">
-                <div className="relative mb-8">
-                  <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto flex items-center justify-center shadow-lg">
-                    <MessageSquare className="h-12 w-12 text-blue-600" />
-                  </div>
+                <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                  <MessageSquare className="h-12 w-12 text-blue-600" />
                 </div>
-                <h3 className="text-2xl font-semibold mb-3 text-slate-800">Start a conversation</h3>
-                <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">
+                <h3 className="text-2xl font-semibold mb-3 text-gray-800">Start a conversation</h3>
+                <p className="text-gray-600 mb-6 max-w-md mx-auto">
                   Create a new conversation to test your bot: <strong className="text-blue-600">{selectedBot.name}</strong>
                 </p>
                 <Button 
                   onClick={handleNewConversation}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
-                  <MessageSquare className="h-5 w-5 mr-2" />
+                  <MessageSquare className="h-4 w-4 mr-2" />
                   New Conversation
                 </Button>
               </div>
@@ -426,22 +408,22 @@ export default function ChatPage() {
           ) : (
             <>
               {/* Messages */}
-              <ScrollArea className="flex-1 p-6 bg-gradient-to-b from-slate-50/50 to-white">
+              <ScrollArea className="flex-1 p-6 bg-white">
                 <div className="max-w-4xl mx-auto">
                   {messages.map((message, index) => (
                     <ChatMessage key={message.id} message={message} isLast={index === messages.length - 1} />
                   ))}
                   {isLoading && (
                     <div className="flex gap-4 mb-6">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
                       </div>
-                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border border-slate-200/50">
+                      <div className="bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-200">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                          <span className="text-slate-600 text-sm ml-2">AI is thinking...</span>
+                          <span className="text-gray-600 text-sm ml-2">AI is thinking...</span>
                         </div>
                       </div>
                     </div>

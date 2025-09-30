@@ -10,7 +10,7 @@ import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
 import { useAuth } from "@/hooks/use-auth"
 import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 import { mockBots } from "@/lib/mock-data"
-import { Plus, Search } from "lucide-react"
+import { Plus, Search, Bot } from "lucide-react"
 
 export default function DashboardPage() {
   const [bots, setBots] = useState<BotType[]>([])
@@ -214,15 +214,12 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center ">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="relative mb-6">
-            <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-20 h-20 mx-auto flex items-center justify-center shadow-lg">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
-            </div>
-            
+          <div className="p-6 bg-blue-100 rounded-3xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
           </div>
-          <p className="text-slate-600 text-lg font-medium">Loading your dashboard...</p>
+          <p className="text-gray-600 text-lg">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -233,39 +230,55 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar />
 
       <div className="lg:pl-64">
-        <div className="p-6 lg:p-8">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-urbanist font-bold text-primary">
-                MY BOTS
-              </h1>
-              <p className="text-slate-600 text-lg">Manage and configure your AI chatbots</p>
+        {/* Top Header Bar */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Bot className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900">AI Dashboard</h1>
+              </div>
+              <span className="text-gray-600">Welcome back, Alex</span>
             </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search bots..."
+                  className="pl-10 pr-4 py-2 w-64 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Bot
+              </Button>
+            </div>
+          </div>
+        </div>
 
-            <Button 
-              onClick={() => setIsCreateDialogOpen(true)} 
-              className="sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              size="lg"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Create Bot
-            </Button>
+        <div className="p-6">
+          {/* Main Content Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bots</h1>
+            <p className="text-gray-600 text-lg">Manage and configure your AI chatbots</p>
           </div>
 
-          {/* Search */}
-          <div className="relative mb-8">
+          {/* Search Bar */}
+          <div className="mb-8">
             <div className="relative max-w-md">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Search bots..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 bg-white/80 backdrop-blur-sm border-slate-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl shadow-sm"
+                className="pl-10 pr-4 py-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -273,29 +286,25 @@ export default function DashboardPage() {
           {/* Bots Grid */}
           {filteredBots.length === 0 ? (
             <div className="text-center py-16">
-              <div className="relative">
-                <div className="p-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-lg">
-                  <Plus className="h-10 w-10 text-blue-600" />
-                </div>
-                
+              <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                <Plus className="h-10 w-10 text-blue-600" />
               </div>
-              <h3 className="text-2xl font-semibold mb-3 text-slate-800">No bots found</h3>
-              <p className="text-slate-600 mb-6 text-lg max-w-md mx-auto">
+              <h3 className="text-2xl font-semibold mb-3 text-gray-800">No bots found</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
                 {searchQuery ? "Try adjusting your search terms." : "Get started by creating your first AI chatbot."}
               </p>
               {!searchQuery && (
                 <Button 
                   onClick={() => setIsCreateDialogOpen(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
                 >
-                  <Plus className="h-5 w-5 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                   Create Your First Bot
                 </Button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredBots.map((bot) => (
                 <BotCard
                   key={bot.id}

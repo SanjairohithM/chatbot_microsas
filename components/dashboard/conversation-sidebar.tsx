@@ -63,24 +63,24 @@ export function ConversationSidebar({
   }
 
   return (
-    <div className="w-80 border-r border-border bg-card flex flex-col h-full">
+    <div className="w-80 border-r border-gray-200 bg-white flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold">Conversations</h2>
-          <Button onClick={onNewConversation} size="sm" variant="outline">
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Conversations</h2>
+          <Button onClick={onNewConversation} size="sm" className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-8 h-8 p-0">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
@@ -90,8 +90,8 @@ export function ConversationSidebar({
         <div className="p-2">
           {filteredConversations.length === 0 ? (
             <div className="text-center py-8">
-              <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
+              <MessageSquare className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">
                 {searchQuery ? "No conversations found" : "No conversations yet"}
               </p>
             </div>
@@ -101,12 +101,12 @@ export function ConversationSidebar({
                 <div
                   key={conversation.id}
                   className={cn(
-                    "group flex items-center gap-2 p-3 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors",
-                    selectedConversationId === conversation.id && "bg-accent text-accent-foreground",
+                    "group flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-blue-50 transition-colors",
+                    selectedConversationId === conversation.id && "bg-blue-100",
                   )}
                   onClick={() => onSelectConversation(conversation.id)}
                 >
-                  <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                  <MessageSquare className="h-4 w-4 flex-shrink-0 text-gray-500" />
 
                   <div className="flex-1 min-w-0">
                     {editingId === conversation.id ? (
@@ -121,17 +121,17 @@ export function ConversationSidebar({
                             setEditTitle("")
                           }
                         }}
-                        className="h-6 text-sm"
+                        className="h-6 text-sm border-gray-300 rounded"
                         autoFocus
                         onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
                       <>
-                        <p className="text-sm font-medium truncate">{conversation.title}</p>
+                        <p className="text-sm font-medium truncate text-gray-900">{conversation.title}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground">{formatDate(conversation.updated_at)}</span>
+                          <span className="text-xs text-gray-500">{formatDate(conversation.updated_at)}</span>
                           {conversation.is_test && (
-                            <Badge variant="outline" className="text-xs px-1 py-0">
+                            <Badge variant="outline" className="text-xs px-1 py-0 bg-green-50 text-green-700 border-green-200">
                               Test
                             </Badge>
                           )}
@@ -145,20 +145,20 @@ export function ConversationSidebar({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
+                        className="opacity-0 group-hover:opacity-100 h-6 w-6 p-0 hover:bg-gray-100"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <MoreHorizontal className="h-3 w-3" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => startEditing(conversation)}>
+                    <DropdownMenuContent align="end" className="w-48 bg-white border border-gray-200 shadow-lg rounded-lg">
+                      <DropdownMenuItem onClick={() => startEditing(conversation)} className="hover:bg-gray-50">
                         <Edit className="h-4 w-4 mr-2" />
                         Rename
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => onDeleteConversation(conversation.id)}
-                        className="text-destructive"
+                        className="text-red-600 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete

@@ -206,11 +206,11 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
   }
 
   return (
-    <div className="border-t border-border bg-background">
+    <div className="border-t border-gray-200 bg-white">
       {/* Recording Indicator */}
       {isRecording && (
-        <div className="p-2 border-b border-border bg-red-50 dark:bg-red-950/20">
-          <div className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
+        <div className="p-3 border-b border-gray-200 bg-red-50">
+          <div className="flex items-center justify-center gap-2 text-red-600">
             <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             <span className="text-sm font-medium">Recording... Click the microphone to stop</span>
           </div>
@@ -219,8 +219,8 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
 
       {/* Processing Indicator */}
       {isProcessingVoice && (
-        <div className="p-2 border-b border-border bg-blue-50 dark:bg-blue-950/20">
-          <div className="flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400">
+        <div className="p-3 border-b border-gray-200 bg-blue-50">
+          <div className="flex items-center justify-center gap-2 text-blue-600">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
             <span className="text-sm font-medium">Processing your voice...</span>
           </div>
@@ -229,8 +229,8 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
 
       {/* Error Indicator */}
       {voiceError && (
-        <div className="p-2 border-b border-border bg-red-50 dark:bg-red-950/20">
-          <div className="flex items-center justify-between gap-2 text-red-600 dark:text-red-400">
+        <div className="p-3 border-b border-gray-200 bg-red-50">
+          <div className="flex items-center justify-between gap-2 text-red-600">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
               <span className="text-sm font-medium">{voiceError}</span>
@@ -240,7 +240,7 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
               onClick={() => setVoiceError(null)}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+              className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
             >
               <X className="h-3 w-3" />
             </Button>
@@ -250,7 +250,7 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
 
       {/* Image Preview */}
       {selectedImage && (
-        <div className="p-4 border-b border-border">
+        <div className="p-4 border-b border-gray-200">
           <div className="relative inline-block">
             <img 
               src={selectedImage} 
@@ -270,93 +270,96 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex gap-2 p-4">
-        <div className="flex-1 flex flex-col gap-2">
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              disabled 
-                ? "Select a bot to start chatting..." 
-                : isProcessingVoice 
-                  ? "Processing voice..." 
-                  : "Type your message..."
-            }
-            className="min-h-[44px] max-h-32 resize-none"
-            disabled={disabled || isLoading || isUploading || isProcessingVoice}
-            rows={1}
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="flex gap-3 p-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                disabled 
+                  ? "Select a bot to start chatting..." 
+                  : isProcessingVoice 
+                    ? "Processing voice..." 
+                    : "Type your message..."
+              }
+              className="min-h-[44px] max-h-32 resize-none border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-20"
+              disabled={disabled || isLoading || isUploading || isProcessingVoice}
+              rows={1}
+            />
+            
+            {/* Action buttons inside input */}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+              {/* Voice (STT) Button */}
+              <Button
+                type="button"
+                onClick={() => (isRecording ? stopRecording() : startRecording())}
+                variant={isRecording ? "destructive" : "ghost"}
+                size="sm"
+                className={`h-8 w-8 p-0 transition-all duration-200 ${
+                  isRecording ? 'animate-pulse' : ''
+                }`}
+                disabled={disabled || isLoading || isUploading || isProcessingVoice}
+                title={
+                  isProcessingVoice 
+                    ? "Processing voice..." 
+                    : isRecording 
+                      ? "Click to stop recording" 
+                      : "Click to start voice recording"
+                }
+              >
+                {isProcessingVoice ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                ) : isRecording ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
 
-        <div className="flex flex-col gap-2">
-          {/* Voice (STT) Button */}
-          <Button
-            type="button"
-            onClick={() => (isRecording ? stopRecording() : startRecording())}
-            variant={isRecording ? "destructive" : "outline"}
-            size="sm"
-            className={`px-3 transition-all duration-200 ${
-              isRecording ? 'animate-pulse shadow-lg' : ''
-            }`}
-            disabled={disabled || isLoading || isUploading || isProcessingVoice}
-            title={
-              isProcessingVoice 
-                ? "Processing voice..." 
-                : isRecording 
-                  ? "Click to stop recording" 
-                  : "Click to start voice recording"
-            }
-          >
-            {isProcessingVoice ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-            ) : isRecording ? (
-              <MicOff className="h-4 w-4 text-white" />
-            ) : (
-              <Mic className="h-4 w-4" />
-            )}
-          </Button>
+              {/* Image Upload Button */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={disabled || isLoading || isUploading}
+              />
+              
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                disabled={disabled || isLoading || isUploading}
+              >
+                {isUploading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+                ) : (
+                  <Image className="h-4 w-4" />
+                )}
+              </Button>
 
-          {/* Image Upload Button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            disabled={disabled || isLoading || isUploading}
-          />
-          
-          <Button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-            size="sm"
-            className="px-3"
-            disabled={disabled || isLoading || isUploading}
-          >
-            {isUploading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-            ) : (
-              <Image className="h-4 w-4" />
-            )}
-          </Button>
-
-          {/* Send Button */}
-          {isLoading ? (
-            <Button type="button" onClick={onStop} variant="outline" size="sm" className="px-3 bg-transparent">
-              <Square className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button 
-              type="submit" 
-              disabled={(!message.trim() && !selectedImage) || disabled || isUploading} 
-              size="sm" 
-              className="px-3"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          )}
+              {/* Send Button */}
+              {isLoading ? (
+                <Button type="button" onClick={onStop} variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Square className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button 
+                  type="submit" 
+                  disabled={(!message.trim() && !selectedImage) || disabled || isUploading} 
+                  size="sm" 
+                  className="h-8 w-8 p-0 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </form>
     </div>

@@ -22,13 +22,13 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800"
+        return "bg-green-100 text-green-800 border-green-200"
       case "inactive":
-        return "bg-muted text-muted-foreground border-border"
+        return "bg-red-100 text-red-800 border-red-200"
       case "draft":
-        return "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800"
+        return "bg-yellow-100 text-yellow-800 border-yellow-200"
       default:
-        return "bg-muted text-muted-foreground border-border"
+        return "bg-gray-100 text-gray-800 border-gray-200"
     }
   }
 
@@ -41,57 +41,39 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
   }
 
   return (
-    <Card className="group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-card/80 backdrop-blur-sm border border-border shadow-lg hover:shadow-primary/10">
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-primary to-primary/80 rounded-2xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-              <Bot className="h-6 w-6 text-white" />
+            <div className="p-3 bg-blue-100 rounded-lg">
+              <Bot className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors duration-200">
+              <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
                 {bot.name}
               </CardTitle>
-              <CardDescription className="mt-2 text-muted-foreground text-sm leading-relaxed">
+              <CardDescription className="text-gray-600 text-sm">
                 {bot.description}
               </CardDescription>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Test button for activation */}
-            {bot.status === "draft" && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  console.log('Test activate button clicked for bot:', bot.id)
-                  onToggleStatus(bot.id, "active")
-                }}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
-              >
-                <Play className="h-4 w-4 mr-1" />
-                Activate
-              </Button>
-            )}
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-full hover:bg-accent transition-colors duration-200">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-popover/95 backdrop-blur-sm border border-border shadow-xl rounded-xl">
-                <DropdownMenuItem onClick={() => onEdit(bot)} className="hover:bg-accent transition-colors duration-200">
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => onEdit(bot)}>
                   <Settings className="h-4 w-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {
-                  console.log('Dropdown menu item clicked for bot:', bot.id, 'current status:', bot.status)
                   const newStatus = bot.status === "active" ? "inactive" : "active"
-                  console.log('Setting status to:', newStatus)
                   onToggleStatus(bot.id, newStatus)
-                }} className="hover:bg-accent transition-colors duration-200">
+                }}>
                   {bot.status === "active" ? (
                     <>
                       <Pause className="h-4 w-4 mr-2" />
@@ -100,25 +82,17 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                   ) : (
                     <>
                       <Play className="h-4 w-4 mr-2" />
-                      {bot.status === "draft" ? "Activate" : "Activate"}
+                      Activate
                     </>
                   )}
                 </DropdownMenuItem>
                 {bot.status === "active" && (
-                  <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)} className="hover:bg-accent transition-colors duration-200">
+                  <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
                     <Code className="h-4 w-4 mr-2" />
                     Export Widget
                   </DropdownMenuItem>
                 )}
-                {bot.deployment_url && (
-                  <DropdownMenuItem asChild>
-                    <a href={bot.deployment_url} target="_blank" rel="noopener noreferrer" className="hover:bg-accent transition-colors duration-200">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View Live
-                    </a>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-destructive hover:bg-destructive/10 transition-colors duration-200">
+                <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-red-600">
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete
                 </DropdownMenuItem>
@@ -130,57 +104,63 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
 
       <CardContent>
         <div className="space-y-4">
+          {/* Status and Last Active */}
           <div className="flex items-center justify-between">
-            <Badge className={`${getStatusColor(bot.status)} px-3 py-1 rounded-full font-medium text-xs`}>
-              {bot.status.charAt(0).toUpperCase() + bot.status.slice(1)}
-            </Badge>
-            {bot.is_deployed && (
-              <Badge variant="outline" className="text-emerald-600 border-emerald-200 bg-emerald-50 dark:text-emerald-300 dark:border-emerald-800 dark:bg-emerald-900/20 px-3 py-1 rounded-full font-medium text-xs">
-                Deployed
+            <div className="flex items-center gap-2">
+              <Badge className={`${getStatusColor(bot.status)} px-2 py-1 text-xs font-medium`}>
+                {bot.status.charAt(0).toUpperCase() + bot.status.slice(1)}
               </Badge>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-xl">
-            <div>
-              <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Model</p>
-              <p className="font-semibold text-card-foreground mt-1">{bot.model}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">Temperature</p>
-              <p className="font-semibold text-card-foreground mt-1">{bot.temperature}</p>
+              <span className="text-xs text-gray-500">2 minutes ago</span>
             </div>
           </div>
 
-          <div className="text-sm text-muted-foreground flex items-center gap-2">
-            <div className="w-2 h-2 bg-primary rounded-full"></div>
+          {/* Bot Details Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">MODEL</p>
+              <p className="text-sm font-semibold text-gray-900">{bot.model}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">TEMPERATURE</p>
+              <p className="text-sm font-semibold text-gray-900">{bot.temperature}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">CONVERSATIONS</p>
+              <p className="text-sm font-semibold text-gray-900">1,247</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">SUCCESS RATE</p>
+              <p className="text-sm font-semibold text-green-600">94%</p>
+            </div>
+          </div>
+
+          {/* Created Date */}
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
             Created {formatDate(bot.created_at)}
           </div>
           
           {/* Action Buttons */}
-          <div className="pt-2 space-y-2">
+          <div className="flex gap-2 pt-2">
             {onChat && (
               <Button 
                 onClick={() => onChat(bot)} 
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                variant="default"
-                size="sm"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
                 disabled={bot.status === "draft"}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
-                {bot.status === "draft" ? "Activate Bot to Chat" : "Chat with Bot"}
+                Chat with Bot
               </Button>
             )}
             
             {bot.status === "active" && (
               <Button 
                 onClick={() => setIsExportDialogOpen(true)} 
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                variant="default"
-                size="sm"
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
+                variant="outline"
               >
                 <Code className="h-4 w-4 mr-2" />
-                Export Widget
+                Export
               </Button>
             )}
           </div>
