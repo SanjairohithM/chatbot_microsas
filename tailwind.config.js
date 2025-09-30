@@ -18,9 +18,10 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        sans: ['Urbanist', 'sans-serif'],
+        sans: ['var(--font-poppins)', 'Poppins', 'Urbanist', 'sans-serif'],
         'open-sans': ['Open Sans', 'sans-serif'],
         'exo-2': ['Exo 2', 'sans-serif'],
+        'poppins': ['var(--font-poppins)', 'Poppins', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

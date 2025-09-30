@@ -319,7 +319,7 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
               </Button>
 
               {/* Image Upload Button */}
-              <input
+              {/* <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
@@ -327,8 +327,8 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
                 className="hidden"
                 disabled={disabled || isLoading || isUploading}
               />
-              
-              <Button
+               */}
+              {/* <Button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 variant="ghost"
@@ -341,7 +341,7 @@ export function ChatInput({ onSendMessage, isLoading, onStop, disabled }: ChatIn
                 ) : (
                   <Image className="h-4 w-4" />
                 )}
-              </Button>
+              </Button> */}
 
               {/* Send Button */}
               {isLoading ? (

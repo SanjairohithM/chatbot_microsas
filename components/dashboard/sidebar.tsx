@@ -12,10 +12,10 @@ import { cn } from "@/lib/utils"
 const navigation = [
   { name: "Bots", href: "/dashboard", icon: Bot },
   { name: "Chat & Test", href: "/dashboard/chat", icon: MessageSquare },
-  { name: "Knowledge Base", href: "/dashboard/knowledge", icon: Database },
+  // { name: "Knowledge Base", href: "/dashboard/knowledge", icon: Database },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "Deployment", href: "/dashboard/deployment", icon: Rocket },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  // { name: "Deployment", href: "/dashboard/deployment", icon: Rocket },
+  // { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function Sidebar() {

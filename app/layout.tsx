@@ -3,7 +3,14 @@ import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { SessionAuthProvider } from "@/components/session-auth-provider"
 import { Suspense } from "react"
+import { Poppins } from "next/font/google"
 import "./globals.css"
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+})
 
 export const metadata: Metadata = {
   title: "Convox",
@@ -18,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans">
+      <body className={`${poppins.variable} font-sans`}>
         <Suspense fallback={<div>Loading...</div>}>
           <SessionAuthProvider>{children}</SessionAuthProvider>
         </Suspense>

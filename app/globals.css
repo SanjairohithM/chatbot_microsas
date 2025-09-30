@@ -168,11 +168,12 @@
 }
 
 @theme inline {
-  --font-sans: "Urbanist", sans-serif;
+  --font-sans: var(--font-poppins), "Poppins", "Urbanist", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
   --font-urbanist: "Urbanist", sans-serif;
   --font-exo-2: "Exo 2", sans-serif;
   --font-open-sans: "Open Sans", sans-serif;
+  --font-poppins: var(--font-poppins), "Poppins", sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -217,7 +218,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Urbanist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-poppins), "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
 }
 
