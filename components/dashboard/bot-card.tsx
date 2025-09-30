@@ -110,7 +110,7 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
               <Badge className={`${getStatusColor(bot.status)} px-2 py-1 text-xs font-medium`}>
                 {bot.status.charAt(0).toUpperCase() + bot.status.slice(1)}
               </Badge>
-              <span className="text-xs text-gray-500">2 minutes ago</span>
+              {/* <span className="text-xs text-gray-500">2 minutes ago</span> */}
             </div>
           </div>
 
@@ -124,14 +124,14 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">TEMPERATURE</p>
               <p className="text-sm font-semibold text-gray-900">{bot.temperature}</p>
             </div>
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">CONVERSATIONS</p>
               <p className="text-sm font-semibold text-gray-900">1,247</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">SUCCESS RATE</p>
               <p className="text-sm font-semibold text-green-600">94%</p>
-            </div>
+            </div> */}
           </div>
 
           {/* Created Date */}

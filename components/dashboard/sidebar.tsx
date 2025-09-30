@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
@@ -42,9 +43,16 @@ export function Sidebar() {
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200/50">
             <div className="space-y-1">
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                AI Dashboard
-              </h1>
+              <div className="flex items-center gap-3 w-full">
+                <Image
+                  src="/Logo.png"
+                  alt="Logo"
+                  width={120}
+                  height={60}
+                  className="object-contain"
+                />
+
+              </div>
               <p className="text-sm text-slate-600">Welcome back, {user?.name}</p>
             </div>
           </div>

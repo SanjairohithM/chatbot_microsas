@@ -18,7 +18,9 @@ module.exports = {
     },
     extend: {
       fontFamily: {
-        urbanist: ['Urbanist', 'sans-serif'],
+        sans: ['Urbanist', 'sans-serif'],
+        'open-sans': ['Open Sans', 'sans-serif'],
+        'exo-2': ['Exo 2', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

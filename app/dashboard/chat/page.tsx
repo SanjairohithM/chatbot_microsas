@@ -357,13 +357,13 @@ export default function ChatPage() {
                     {selectedBot.model}
                   </Badge>
                 )}
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                {/* <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
                   <Play className="h-4 w-4 mr-2" />
                   Test
                 </Button>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Settings className="h-4 w-4" />
-                </Button>
+                </Button> */}
               </div>
             </div>
           </div>
