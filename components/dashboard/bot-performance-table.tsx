@@ -55,42 +55,42 @@ export function BotPerformanceTable({ data, onViewBot }: BotPerformanceTableProp
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bot Performance</CardTitle>
-        <CardDescription>Compare performance metrics across all your bots</CardDescription>
+    <Card className="bg-white border border-gray-200 shadow-sm">
+      <CardHeader className="bg-gray-50 border-b border-gray-200">
+        <CardTitle className="text-gray-900">Bot Performance</CardTitle>
+        <CardDescription className="text-gray-600">Compare performance metrics across all your bots</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Bot Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Conversations</TableHead>
-                <TableHead>Messages</TableHead>
-                <TableHead>Avg Response</TableHead>
-                <TableHead>Satisfaction</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="bg-gray-50">
+                <TableHead className="text-gray-700 font-medium">Bot Name</TableHead>
+                <TableHead className="text-gray-700 font-medium">Status</TableHead>
+                <TableHead className="text-gray-700 font-medium">Conversations</TableHead>
+                <TableHead className="text-gray-700 font-medium">Messages</TableHead>
+                <TableHead className="text-gray-700 font-medium">Avg Response</TableHead>
+                <TableHead className="text-gray-700 font-medium">Satisfaction</TableHead>
+                <TableHead className="text-right text-gray-700 font-medium">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((bot) => (
-                <TableRow key={bot.id}>
-                  <TableCell>
+                <TableRow key={bot.id} className="hover:bg-gray-50">
+                  <TableCell className="py-4">
                     <div>
-                      <div className="font-medium">{bot.name}</div>
-                      <div className="text-sm text-muted-foreground">{bot.model}</div>
+                      <div className="font-medium text-gray-900">{bot.name}</div>
+                      <div className="text-sm text-gray-500">{bot.model}</div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <Badge className={getStatusColor(bot.status)}>
                       {bot.status.charAt(0).toUpperCase() + bot.status.slice(1)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{bot.analytics.total_conversations}</span>
+                      <span className="font-medium text-gray-900">{bot.analytics.total_conversations}</span>
                       {bot.analytics.change_conversations !== 0 && (
                         <div className="flex items-center gap-1">
                           {getTrendIcon(bot.analytics.change_conversations)}
@@ -102,15 +102,17 @@ export function BotPerformanceTable({ data, onViewBot }: BotPerformanceTableProp
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <span className="font-medium">{bot.analytics.total_messages}</span>
+                  <TableCell className="py-4">
+                    <span className="font-medium text-gray-900">{bot.analytics.total_messages}</span>
                   </TableCell>
-                  <TableCell>
-                    <span className="font-medium">{formatResponseTime(bot.analytics.avg_response_time_ms)}</span>
+                  <TableCell className="py-4">
+                    <span className="font-medium text-gray-900">{formatResponseTime(bot.analytics.avg_response_time_ms)}</span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{bot.analytics.user_satisfaction_score.toFixed(1)}/5</span>
+                      <span className="font-medium text-gray-900">
+                        {bot.analytics.user_satisfaction_score > 0 ? `${bot.analytics.user_satisfaction_score.toFixed(1)}/5` : 'N/A'}
+                      </span>
                       {bot.analytics.change_satisfaction !== 0 && (
                         <div className="flex items-center gap-1">
                           {getTrendIcon(bot.analytics.change_satisfaction)}
@@ -122,13 +124,23 @@ export function BotPerformanceTable({ data, onViewBot }: BotPerformanceTableProp
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-4">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => onViewBot(bot.id)}>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => onViewBot(bot.id)}
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                      >
                         View
                       </Button>
                       {bot.deployment_url && (
-                        <Button variant="outline" size="sm" asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          asChild
+                          className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        >
                           <a href={bot.deployment_url} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-3 w-3" />
                           </a>

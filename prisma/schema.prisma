@@ -38,6 +38,9 @@ model Bot {
   faq_questions       String?
   created_at          DateTime            @default(now())
   updated_at          DateTime            @updatedAt
+  bot_avatar          String?
+  bot_avatar_data     Bytes?
+  bot_avatar_type     String?
   analytics           BotAnalytics[]
   settings            BotSettings[]
   user                User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -103,10 +106,8 @@ model BotAnalytics {
   total_tokens_used       Int      @default(0)
   avg_response_time_ms    Float?
   user_satisfaction_score Float?
-  
-  daily_summary           Json?
-
   created_at              DateTime @default(now())
+  daily_summary           Json?
   bot                     Bot      @relation(fields: [bot_id], references: [id], onDelete: Cascade)
 
   @@unique([bot_id, date])

@@ -123,25 +123,37 @@ export function DailySummaryCard({ botId, date, isAllBots = false }: DailySummar
   }
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/20 border border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300">
+      <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 border-b border-indigo-200">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Daily Summary - {formatDate(date)}
-              {isAllBots && <Badge variant="secondary">All Bots</Badge>}
-            </CardTitle>
-            <CardDescription>
-              AI-powered insights and trends for this day
-            </CardDescription>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+              <Calendar className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="flex items-center gap-3 text-gray-900 text-xl">
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent font-bold">
+                  Daily Summary
+                </span>
+                <span className="text-gray-600 font-normal">- {formatDate(date)}</span>
+                {isAllBots && (
+                  <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 shadow-sm">
+                    All Bots
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription className="text-gray-600 mt-1">
+                AI-powered insights and trends for this day
+              </CardDescription>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => generateSummary(false)}
               disabled={isGenerating}
+              className="border-indigo-300 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400 transition-all duration-200"
             >
               <Hash className="h-4 w-4 mr-2" />
               Keyword
@@ -151,6 +163,7 @@ export function DailySummaryCard({ botId, date, isAllBots = false }: DailySummar
               size="sm"
               onClick={() => generateSummary(true)}
               disabled={isGenerating}
+              className="border-purple-300 text-purple-700 hover:bg-purple-50 hover:border-purple-400 transition-all duration-200"
             >
               <Brain className="h-4 w-4 mr-2" />
               AI
@@ -160,6 +173,7 @@ export function DailySummaryCard({ botId, date, isAllBots = false }: DailySummar
               size="sm"
               onClick={fetchSummary}
               disabled={isLoading}
+              className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200"
             >
               <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -167,34 +181,52 @@ export function DailySummaryCard({ botId, date, isAllBots = false }: DailySummar
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         {!summary ? (
-          <div className="text-center py-8">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Summary Available</h3>
-            <p className="text-muted-foreground mb-4">
-              Generate a daily summary to see insights and trends for this date.
+          <div className="text-center py-12">
+            <div className="p-6 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-lg">
+              <AlertCircle className="h-12 w-12 text-indigo-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">No Summary Available</h3>
+            <p className="text-gray-600 mb-8 max-w-md mx-auto">
+              Generate a daily summary to see AI-powered insights and trends for this date.
             </p>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={() => generateSummary(false)} disabled={isGenerating}>
-                <Hash className="h-4 w-4 mr-2" />
+            <div className="flex gap-4 justify-center">
+              <Button 
+                onClick={() => generateSummary(false)} 
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Hash className="h-5 w-5 mr-2" />
                 Generate with Keywords
               </Button>
-              <Button onClick={() => generateSummary(true)} disabled={isGenerating}>
-                <Brain className="h-4 w-4 mr-2" />
+              <Button 
+                onClick={() => generateSummary(true)} 
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Brain className="h-5 w-5 mr-2" />
                 Generate with AI
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Summary Info */}
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <div className="flex items-center gap-4">
-                <span>Generated: {formatTime(summary.generated_at)}</span>
-                <Badge variant={summary.method === 'ai' ? 'default' : 'secondary'}>
-                  {summary.method === 'ai' ? 'AI Generated' : 'Keyword Analysis'}
-                </Badge>
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-4 border border-indigo-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-gray-700">Generated: {formatTime(summary.generated_at)}</span>
+                  </div>
+                  <Badge className={`${summary.method === 'ai' 
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' 
+                    : 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
+                  } border-0 shadow-sm`}>
+                    {summary.method === 'ai' ? '🤖 AI Generated' : '🔍 Keyword Analysis'}
+                  </Badge>
+                </div>
               </div>
             </div>
 

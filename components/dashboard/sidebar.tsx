@@ -41,19 +41,19 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-slate-200/50">
+          <div className="flex items-center justify-between p-2 border-b border-slate-200/50">
             <div className="space-y-1">
-              <div className="flex items-center gap-3 w-full">
+              <div className="flex items-center gap-3 w-full h-full">
                 <Image
                   src="/Logo.png"
                   alt="Logo"
-                  width={120}
+                  width={220}
                   height={60}
                   className="object-contain"
                 />
 
               </div>
-              <p className="text-sm text-slate-600">Welcome back, {user?.name}</p>
+              <p className=" px-8 text-sm text-slate-600">Welcome back, {user?.name}</p>
             </div>
           </div>
 

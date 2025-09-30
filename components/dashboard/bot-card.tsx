@@ -45,7 +45,7 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-lg">
+            <div className="p-3 bg-blue-100 rounded-full">
               <Bot className="h-6 w-6 text-blue-600" />
             </div>
             <div className="flex-1">
@@ -58,7 +58,7 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -98,7 +98,7 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 
@@ -164,11 +164,11 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
               </Button>
             )}
             
-            {onChat && (
+            {/* Chat with Bot Button - only show for non-draft bots */}
+            {onChat && bot.status !== "draft" && (
               <Button 
                 onClick={() => onChat(bot)} 
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
-                disabled={bot.status === "draft"}
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Chat with Bot

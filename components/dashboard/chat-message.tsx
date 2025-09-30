@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Bot, User, Volume2 } from "lucide-react"
+import { Bot, User, Volume2, MessageCircle, UserCircle } from "lucide-react"
 import type { Message } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -26,26 +26,28 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
   }
 
   return (
-    <div className={cn("flex gap-4 mb-6", isUser && "flex-row-reverse")}>
-      <Avatar className="h-10 w-10">
-        <AvatarFallback className={cn(
-          isUser ? "bg-blue-600 text-white" : "bg-white text-gray-600 border border-gray-200"
-        )}>
-          {isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-        </AvatarFallback>
-      </Avatar>
+    <div className={cn("flex gap-2 mb-1", isUser && "flex-row-reverse")}>
+      {/* Avatar - only show for AI messages */}
+      {!isUser && (
+        <div className="flex-shrink-0 self-end mb-1">
+          <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
+            <Bot className="h-4 w-4 text-gray-600" />
+          </div>
+        </div>
+      )}
 
-      <div className={cn("flex flex-col max-w-[80%]", isUser && "items-end")}>
+      <div className={cn("flex flex-col max-w-[85%]", isUser && "items-end")}>
+        {/* Message bubble */}
         <div
           className={cn(
-            "rounded-2xl px-4 py-3 text-sm shadow-sm",
+            "relative px-3 py-2 text-sm leading-relaxed shadow-sm",
             isUser 
-              ? "bg-blue-600 text-white" 
-              : "bg-white text-gray-900 border border-gray-200"
+              ? "bg-[#DCF8C6] text-black rounded-2xl rounded-br-sm" 
+              : "bg-white text-black rounded-2xl rounded-bl-sm border border-gray-200"
           )}
         >
           {message.image_url && (
-            <div className="mb-3">
+            <div className="mb-2">
               <img 
                 src={message.image_url} 
                 alt="Uploaded image" 
@@ -53,21 +55,36 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
               />
             </div>
           )}
-          <p className="whitespace-pre-wrap leading-relaxed">{message.content}</p>
+          
+          <p className="whitespace-pre-wrap">{message.content}</p>
+          
           {message.image_analysis && (
-            <div className="mt-3 p-3 bg-gray-50 rounded-lg text-xs">
+            <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
               <strong>Image Analysis:</strong> {message.image_analysis}
             </div>
           )}
+
+          {/* WhatsApp-style message tail */}
+          <div className={cn(
+            "absolute bottom-0 w-0 h-0",
+            isUser 
+              ? "right-[-8px] border-l-[8px] border-l-[#DCF8C6] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent"
+              : "left-[-8px] border-r-[8px] border-r-white border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent"
+          )} />
         </div>
 
-        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-          <span>{new Date(message.created_at).toLocaleTimeString()}</span>
-          {message.tokens_used && <span>• {message.tokens_used} tokens</span>}
+        {/* Message time and status - WhatsApp style */}
+        <div className={cn(
+          "flex items-center gap-1 mt-1 text-xs text-gray-500",
+          isUser ? "justify-end" : "justify-start"
+        )}>
+          <span>{new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          {isUser && <span>✓✓</span>}
+          {message.tokens_used && <span>• {message.tokens_used}</span>}
           {message.response_time_ms && <span>• {message.response_time_ms}ms</span>}
           {!isUser && message.content && (
             <button
-              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 transition-colors"
+              className="ml-1 text-gray-400 hover:text-gray-600"
               onClick={async () => {
                 try {
                   const res = await fetch('/api/audio/tts', {
@@ -87,7 +104,6 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
               title="Play voice"
             >
               <Volume2 className="h-3 w-3" />
-              <span>Listen</span>
             </button>
           )}
         </div>
