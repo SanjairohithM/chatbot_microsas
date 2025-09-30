@@ -423,7 +423,7 @@ export default function ChatPage() {
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
                           <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                          <span className="text-gray-600 text-sm ml-2">AI is thinking...</span>
+                          
                         </div>
                       </div>
                     </div>

@@ -232,35 +232,110 @@ export class PineconeDocumentService {
 
   /**
    * Split document content into chunks for better search
+   * Improved version with better PDF text handling
    */
   private static splitIntoChunks(content: string, chunkSize: number = config.pinecone.chunkSize, overlap: number = config.pinecone.chunkOverlap): string[] {
+    // Preprocess content for better chunking
+    const preprocessedContent = this.preprocessContentForChunking(content)
+    
     const chunks: string[] = []
     let start = 0
     
-    while (start < content.length) {
-      const end = Math.min(start + chunkSize, content.length)
-      let chunk = content.substring(start, end)
+    while (start < preprocessedContent.length) {
+      const end = Math.min(start + chunkSize, preprocessedContent.length)
+      let chunk = preprocessedContent.substring(start, end)
       
-      // Try to break at sentence boundary
-      if (end < content.length) {
+      // Try to break at natural boundaries
+      if (end < preprocessedContent.length) {
+        // Look for sentence boundaries first
         const lastSentence = chunk.lastIndexOf('.')
+        const lastExclamation = chunk.lastIndexOf('!')
+        const lastQuestion = chunk.lastIndexOf('?')
         const lastNewline = chunk.lastIndexOf('\n')
-        const breakPoint = Math.max(lastSentence, lastNewline)
+        const lastParagraph = chunk.lastIndexOf('\n\n')
+        
+        // Find the best break point
+        const breakPoints = [lastSentence, lastExclamation, lastQuestion, lastParagraph, lastNewline]
+          .filter(point => point > start + chunkSize * 0.3) // Don't break too early
+          .sort((a, b) => b - a) // Sort descending
+        
+        const breakPoint = breakPoints[0] || lastNewline
         
         if (breakPoint > start + chunkSize * 0.5) {
-          chunk = content.substring(start, start + breakPoint + 1)
+          chunk = preprocessedContent.substring(start, start + breakPoint + 1)
           start = start + breakPoint + 1 - overlap
         } else {
-          start = end - overlap
+          // If no good break point, try to break at word boundary
+          const lastSpace = chunk.lastIndexOf(' ')
+          if (lastSpace > start + chunkSize * 0.7) {
+            chunk = preprocessedContent.substring(start, start + lastSpace)
+            start = start + lastSpace + 1 - overlap
+          } else {
+            start = end - overlap
+          }
         }
       } else {
         start = end
       }
       
-      chunks.push(chunk.trim())
+      // Clean up the chunk
+      const cleanedChunk = chunk.trim()
+      if (cleanedChunk.length > 0) {
+        chunks.push(cleanedChunk)
+      }
     }
     
-    return chunks.filter(chunk => chunk.length > 0)
+    // Filter out very small chunks and ensure minimum quality
+    return chunks.filter(chunk => 
+      chunk.length >= 50 && // Minimum length
+      !this.isLowQualityChunk(chunk) // Quality check
+    )
+  }
+
+  /**
+   * Preprocess content to improve chunking quality
+   */
+  private static preprocessContentForChunking(content: string): string {
+    return content
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      // Fix common PDF extraction issues
+      .replace(/([a-z])([A-Z])/g, '$1. $2') // Add periods between camelCase
+      .replace(/(\d+)\s*([A-Z][a-z])/g, '$1. $2') // Add periods between numbers and words
+      // Remove excessive line breaks
+      .replace(/\n\s*\n/g, '\n')
+      // Clean up multiple spaces
+      .replace(/\s{2,}/g, ' ')
+      // Remove common PDF artifacts
+      .replace(/\f/g, '') // Form feed characters
+      .replace(/\u00A0/g, ' ') // Non-breaking spaces
+      .trim()
+  }
+
+  /**
+   * Check if a chunk is low quality and should be filtered out
+   */
+  private static isLowQualityChunk(chunk: string): boolean {
+    // Check for very short chunks
+    if (chunk.length < 50) return true
+    
+    // Check for chunks with mostly special characters
+    const specialCharRatio = (chunk.match(/[^a-zA-Z0-9\s]/g) || []).length / chunk.length
+    if (specialCharRatio > 0.7) return true
+    
+    // Check for chunks with mostly numbers
+    const numberRatio = (chunk.match(/\d/g) || []).length / chunk.length
+    if (numberRatio > 0.8) return true
+    
+    // Check for chunks with very few words
+    const wordCount = chunk.split(/\s+/).length
+    if (wordCount < 5) return true
+    
+    // Check for chunks that are mostly repeated characters
+    const uniqueChars = new Set(chunk.toLowerCase()).size
+    if (uniqueChars < 5) return true
+    
+    return false
   }
 
   /**

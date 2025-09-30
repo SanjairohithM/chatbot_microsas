@@ -75,7 +75,7 @@ export class DocumentProcessorService {
   }
 
   /**
-   * Process PDF files using pdf-parse library with fallback
+   * Process PDF files using multiple approaches for better reliability
    */
   private static async processPdfFile(filePath: string): Promise<string> {
     try {
@@ -96,47 +96,49 @@ export class DocumentProcessorService {
       
       console.log(`[DocumentProcessor] PDF buffer size: ${dataBuffer.length} bytes`)
       
+      // Validate PDF header
+      const pdfHeader = dataBuffer.toString('ascii', 0, 4)
+      if (pdfHeader !== '%PDF') {
+        throw new Error('Invalid PDF file - missing PDF header')
+      }
+      
       // Try multiple PDF parsing approaches
       let pdfText = ''
       
-      // Method 1: Try standard pdf-parse with better options
+      // Method 1: Try pdfjs-dist first (most reliable for modern PDFs)
       try {
-        const pdfParse = require('pdf-parse')
-        const data = await pdfParse(dataBuffer, {
-          max: 0, // Parse all pages
-          normalizeWhitespace: true,
-          disableCombineTextItems: false
-        })
+        console.log(`[DocumentProcessor] Attempting pdfjs-dist extraction...`)
+        pdfText = await this.extractTextWithPdfJs(dataBuffer)
         
-        if (data && data.text && data.text.trim().length > 0) {
-          pdfText = this.cleanExtractedText(data.text)
-          console.log(`[DocumentProcessor] PDF parsed successfully with pdf-parse, text length: ${pdfText.length}`)
+        if (pdfText && pdfText.trim().length > 0) {
+          console.log(`[DocumentProcessor] PDF parsed successfully with pdfjs-dist, text length: ${pdfText.length}`)
+        } else {
+          console.warn(`[DocumentProcessor] pdfjs-dist returned empty text`)
         }
-      } catch (parseError) {
-        console.warn(`[DocumentProcessor] pdf-parse failed, trying alternative method:`, parseError.message)
+      } catch (pdfJsError) {
+        console.warn(`[DocumentProcessor] pdfjs-dist failed:`, pdfJsError.message)
         
-        // Method 2: Try with different pdf-parse options
+        // Method 2: Try pdf-parse as fallback
         try {
-          const pdfParse = require('pdf-parse')
-          const data = await pdfParse(dataBuffer, {
-            max: 0,
-            normalizeWhitespace: false,
-            disableCombineTextItems: true
-          })
+          console.log(`[DocumentProcessor] Attempting pdf-parse fallback...`)
+          pdfText = await this.extractTextWithPdfParse(dataBuffer)
           
-          if (data && data.text && data.text.trim().length > 0) {
-            pdfText = this.cleanExtractedText(data.text)
-            console.log(`[DocumentProcessor] PDF parsed with alternative pdf-parse options, text length: ${pdfText.length}`)
+          if (pdfText && pdfText.trim().length > 0) {
+            console.log(`[DocumentProcessor] PDF parsed with pdf-parse fallback, text length: ${pdfText.length}`)
+          } else {
+            console.warn(`[DocumentProcessor] pdf-parse fallback returned empty text`)
           }
-        } catch (secondError) {
-          console.warn(`[DocumentProcessor] Alternative pdf-parse also failed:`, secondError.message)
+        } catch (pdfParseError) {
+          console.warn(`[DocumentProcessor] pdf-parse fallback also failed:`, pdfParseError.message)
           
-          // Method 3: Improved fallback text extraction
+          // Method 3: Custom fallback text extraction
+          console.log(`[DocumentProcessor] Trying custom fallback text extraction...`)
           const textFromBuffer = this.extractTextFromPdfBuffer(dataBuffer)
           if (textFromBuffer && textFromBuffer.trim().length > 0) {
             pdfText = textFromBuffer
-            console.log(`[DocumentProcessor] PDF text extracted with improved fallback method, text length: ${pdfText.length}`)
+            console.log(`[DocumentProcessor] PDF text extracted with custom fallback method, text length: ${pdfText.length}`)
           } else {
+            console.warn(`[DocumentProcessor] Custom fallback text extraction also failed`)
             throw new Error('All PDF parsing methods failed')
           }
         }
@@ -149,6 +151,16 @@ export class DocumentProcessorService {
       // Final cleanup of extracted text
       pdfText = this.cleanExtractedText(pdfText)
       
+      // Additional validation for PDF content
+      if (pdfText.length < 100) {
+        console.warn(`[DocumentProcessor] PDF text is very short (${pdfText.length} chars), may be low quality`)
+      }
+      
+      // Log some statistics about the extracted text
+      const wordCount = pdfText.split(/\s+/).length
+      const sentenceCount = pdfText.split(/[.!?]+/).length
+      console.log(`[DocumentProcessor] PDF processing complete: ${pdfText.length} chars, ${wordCount} words, ${sentenceCount} sentences`)
+      
       return pdfText
       
     } catch (error) {
@@ -156,7 +168,105 @@ export class DocumentProcessorService {
       
       // Return filename and basic info instead of failing completely
       const fileName = filePath.split(/[/\\]/).pop() || 'unknown.pdf'
-      return `PDF Document: ${fileName}\n\nNote: Text extraction failed, but document was uploaded successfully. Content: [PDF file - ${fileName}]`
+      const fileSize = (await import('fs')).statSync(filePath).size
+      
+      return `PDF Document: ${fileName}
+File Size: ${fileSize} bytes
+Upload Date: ${new Date().toISOString()}
+
+Note: Text extraction failed, but document was uploaded successfully. 
+This may be due to:
+- PDF being scanned images (not text-based)
+- PDF being password protected
+- PDF being corrupted
+- PDF using unsupported encoding
+
+Content: [PDF file - ${fileName}]`
+    }
+  }
+
+  /**
+   * Extract text using pdfjs-dist library (primary method)
+   */
+  private static async extractTextWithPdfJs(buffer: Buffer): Promise<string> {
+    try {
+      // Use the correct import path for newer versions of pdfjs-dist
+      const pdfjsLib = await import('pdfjs-dist')
+      
+      // Convert Buffer to Uint8Array as required by pdfjs-dist
+      const uint8Array = new Uint8Array(buffer)
+      
+      // Load the PDF document
+      const loadingTask = pdfjsLib.getDocument({
+        data: uint8Array,
+        useSystemFonts: true,
+        disableFontFace: false,
+        disableRange: false,
+        disableStream: false,
+        disableAutoFetch: false,
+        maxImageSize: -1,
+        isEvalSupported: false,
+        useWorkerFetch: false,
+        stopAtErrors: false,
+        verbosity: 0
+      })
+      
+      const pdfDocument = await loadingTask.promise
+      console.log(`[DocumentProcessor] PDF loaded: ${pdfDocument.numPages} pages`)
+      
+      let fullText = ''
+      
+      // Extract text from each page
+      for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
+        const page = await pdfDocument.getPage(pageNum)
+        const textContent = await page.getTextContent()
+        
+        // Combine text items
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
+          .trim()
+        
+        if (pageText) {
+          fullText += pageText + '\n'
+        }
+        
+        console.log(`[DocumentProcessor] Page ${pageNum}: ${pageText.length} characters`)
+      }
+      
+      await pdfDocument.destroy()
+      
+      return fullText.trim()
+      
+    } catch (error) {
+      console.error('[DocumentProcessor] pdfjs-dist extraction failed:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Extract text using pdf-parse library (fallback method)
+   */
+  private static async extractTextWithPdfParse(buffer: Buffer): Promise<string> {
+    try {
+      // Use dynamic require to avoid module resolution issues
+      const pdfParse = eval('require')('pdf-parse')
+      
+      const data = await pdfParse(buffer, {
+        max: 0,
+        normalizeWhitespace: true,
+        disableCombineTextItems: false
+      })
+      
+      if (data && data.text && data.text.trim().length > 0) {
+        return this.cleanExtractedText(data.text)
+      } else {
+        throw new Error('pdf-parse returned empty text')
+      }
+      
+    } catch (error) {
+      console.error('[DocumentProcessor] pdf-parse extraction failed:', error)
+      throw error
     }
   }
 
@@ -165,15 +275,19 @@ export class DocumentProcessorService {
    */
   private static extractTextFromPdfBuffer(buffer: Buffer): string {
     try {
+      console.log(`[DocumentProcessor] Fallback extraction: buffer size ${buffer.length} bytes`)
+      
       // Convert buffer to string using UTF-8 encoding
       const pdfString = buffer.toString('utf8')
+      console.log(`[DocumentProcessor] PDF string length: ${pdfString.length} characters`)
       
       // Look for text objects in PDF structure
       const textObjects = pdfString.match(/BT[\s\S]*?ET/g) || []
+      console.log(`[DocumentProcessor] Found ${textObjects.length} text objects`)
       
       let extractedText = ''
       
-      textObjects.forEach(obj => {
+      textObjects.forEach((obj, index) => {
         // Extract text from text objects
         const textMatches = obj.match(/\(([^)]+)\)/g) || []
         textMatches.forEach(match => {
@@ -184,19 +298,53 @@ export class DocumentProcessorService {
         })
       })
       
+      console.log(`[DocumentProcessor] Extracted text from text objects: ${extractedText.length} characters`)
+      
       // If no text objects found, try alternative method
       if (extractedText.trim().length === 0) {
+        console.log(`[DocumentProcessor] No text from objects, trying alternative extraction...`)
+        
         // Look for text between parentheses in the entire PDF
         const allTextMatches = pdfString.match(/\(([^)]+)\)/g) || []
+        console.log(`[DocumentProcessor] Found ${allTextMatches.length} text matches in entire PDF`)
+        
         allTextMatches.forEach(match => {
           const text = match.replace(/[()]/g, '').trim()
           if (text.length > 2 && this.isReadableText(text)) {
             extractedText += text + ' '
           }
         })
+        
+        console.log(`[DocumentProcessor] Extracted text from all matches: ${extractedText.length} characters`)
       }
       
-      return this.cleanExtractedText(extractedText.trim())
+      // Try a more aggressive text extraction method
+      if (extractedText.trim().length === 0) {
+        console.log(`[DocumentProcessor] Trying aggressive text extraction...`)
+        
+        // Look for any readable text patterns
+        const textPatterns = [
+          /[A-Za-z]{3,}/g,  // Words with 3+ letters
+          /\b[A-Za-z]+\b/g, // Word boundaries
+          /[A-Za-z0-9\s]{5,}/g // Mixed alphanumeric with spaces
+        ]
+        
+        for (const pattern of textPatterns) {
+          const matches = pdfString.match(pattern) || []
+          for (const match of matches) {
+            if (match.length > 3 && this.isReadableText(match)) {
+              extractedText += match + ' '
+            }
+          }
+        }
+        
+        console.log(`[DocumentProcessor] Aggressive extraction found: ${extractedText.length} characters`)
+      }
+      
+      const cleanedText = this.cleanExtractedText(extractedText.trim())
+      console.log(`[DocumentProcessor] Final cleaned text length: ${cleanedText.length} characters`)
+      
+      return cleanedText
     } catch (error) {
       console.warn('Fallback text extraction failed:', error)
       return ''
@@ -220,10 +368,27 @@ export class DocumentProcessorService {
 
   /**
    * Clean extracted text to remove artifacts
+   * Enhanced version for better PDF text processing
    */
   private static cleanExtractedText(text: string): string {
     return text
+      // Remove form feed and other PDF artifacts
+      .replace(/\f/g, '') // Form feed characters
+      .replace(/\u00A0/g, ' ') // Non-breaking spaces
+      .replace(/\u00AD/g, '') // Soft hyphens
+      .replace(/\u200B/g, '') // Zero-width space
+      .replace(/\u200C/g, '') // Zero-width non-joiner
+      .replace(/\u200D/g, '') // Zero-width joiner
+      .replace(/\uFEFF/g, '') // Byte order mark
+      
+      // Fix common PDF extraction issues
+      .replace(/([a-z])([A-Z])/g, '$1 $2') // Add space between camelCase
+      .replace(/(\d+)([A-Z][a-z])/g, '$1 $2') // Add space between numbers and words
+      .replace(/([a-z])(\d+)/g, '$1 $2') // Add space between letters and numbers
+      
+      // Normalize whitespace
       .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/\n\s*\n/g, '\n') // Remove excessive line breaks
       .replace(/[^\x20-\x7E\n\r\t]/g, '') // Remove non-printable characters
       .replace(/\s+/g, ' ') // Normalize again
       .trim()
@@ -254,18 +419,51 @@ export class DocumentProcessorService {
 
   /**
    * Split content into chunks for better processing
+   * Improved version that handles PDF content better
    */
   static splitIntoChunks(content: string, maxChunkSize: number = 1000): string[] {
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0)
+    // Preprocess content for better chunking
+    const preprocessedContent = this.preprocessContentForChunking(content)
+    
+    // Split by multiple delimiters to handle various text formats
+    const sentences = preprocessedContent
+      .split(/[.!?]+\s+/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+    
     const chunks: string[] = []
     let currentChunk = ''
 
     for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > maxChunkSize && currentChunk.length > 0) {
+      const sentenceWithPunctuation = sentence.endsWith('.') || sentence.endsWith('!') || sentence.endsWith('?') 
+        ? sentence 
+        : sentence + '.'
+      
+      // Check if adding this sentence would exceed the chunk size
+      if (currentChunk.length + sentenceWithPunctuation.length + 1 > maxChunkSize && currentChunk.length > 0) {
+        // If the current chunk is too small, try to add part of the sentence
+        if (currentChunk.length < maxChunkSize * 0.5 && sentenceWithPunctuation.length > maxChunkSize * 0.3) {
+          // Split the sentence at a word boundary
+          const words = sentenceWithPunctuation.split(/\s+/)
+          let partialSentence = ''
+          
+          for (const word of words) {
+            if (currentChunk.length + partialSentence.length + word.length + 1 <= maxChunkSize) {
+              partialSentence += (partialSentence ? ' ' : '') + word
+            } else {
+              break
+            }
+          }
+          
+          if (partialSentence.length > 0) {
+            currentChunk += (currentChunk ? ' ' : '') + partialSentence
+          }
+        }
+        
         chunks.push(currentChunk.trim())
-        currentChunk = sentence
+        currentChunk = sentenceWithPunctuation
       } else {
-        currentChunk += (currentChunk ? '. ' : '') + sentence
+        currentChunk += (currentChunk ? ' ' : '') + sentenceWithPunctuation
       }
     }
 
@@ -273,6 +471,24 @@ export class DocumentProcessorService {
       chunks.push(currentChunk.trim())
     }
 
-    return chunks
+    // Filter out very small chunks that might not be useful
+    return chunks.filter(chunk => chunk.length >= 50)
+  }
+
+  /**
+   * Preprocess content to improve chunking quality
+   */
+  private static preprocessContentForChunking(content: string): string {
+    return content
+      // Normalize whitespace
+      .replace(/\s+/g, ' ')
+      // Fix common PDF extraction issues
+      .replace(/([a-z])([A-Z])/g, '$1. $2') // Add periods between camelCase
+      .replace(/(\d+)\s*([A-Z][a-z])/g, '$1. $2') // Add periods between numbers and words
+      // Remove excessive line breaks
+      .replace(/\n\s*\n/g, '\n')
+      // Clean up multiple spaces
+      .replace(/\s{2,}/g, ' ')
+      .trim()
   }
 }
