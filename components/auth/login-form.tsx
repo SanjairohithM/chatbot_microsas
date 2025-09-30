@@ -48,7 +48,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       {/* Card Container */}
       <div className="relative z-20 h-screen flex items-center justify-center p-8">
         <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden border-4 border-white">
-          <div className="flex h-[600px]">
+          <div className="flex h-[650px]">
             {/* Left Panel - Background Image Section */}
             <div className="hidden lg:flex lg:w-2/5 relative overflow-hidden">
               {/* Background Image */}
@@ -71,34 +71,22 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
                     <h2 className="text-2xl font-bold mb-2">Selected Works</h2>
                     <p className="text-white/70">AI-Powered Solutions</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button className="px-3 py-2 text-white border border-white/20 rounded-full hover:bg-white/10 transition-colors text-sm">
-                      Sign Up
-                    </button>
-                    <button className="px-3 py-2 bg-white text-slate-900 rounded-full hover:bg-white/90 transition-colors text-sm">
-                      Join Us
-                    </button>
-                  </div>
+                
                 </div>
 
                 <div className="flex justify-between items-end">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">AI</span>
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">ChatBot.AI</p>
-                      <p className="text-white/70 text-sm">AI & Automation</p>
-                    </div>
+                
+                  
                   </div>
-                  <div className="flex gap-2">
+                  {/* <div className="flex gap-2">
                     <button className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
                       ←
                     </button>
                     <button className="w-8 h-8 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 rounded-full transition-colors">
                       →
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
@@ -108,7 +96,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               <div className="w-full max-w-sm">
                 <div className="mb-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-xl font-bold text-slate-900">CHATBOT.AI</h1>
+                    <h1 className="text-xl font-bold text-slate-900">omnixchat</h1>
                     <div className="flex items-center gap-2 text-sm text-slate-600">
                       <span>EN</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,7 +107,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
                   
                   <div className="mb-6">
                     <h2 className="text-3xl font-bold text-slate-900 mb-2">Hi Designer.</h2>
-                    <p className="text-slate-600">Welcome to CHATBOT.AI.</p>
+                    <p className="text-slate-600">Welcome to omnixchat.</p>
                   </div>
                 </div>
 
@@ -184,7 +172,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.28-3.28C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-                    Login with Google G
+                    Login with Google 
                   </Button>
 
                   <Button 
