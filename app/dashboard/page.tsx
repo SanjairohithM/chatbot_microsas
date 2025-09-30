@@ -244,7 +244,7 @@ export default function DashboardPage() {
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900">AI Dashboard</h1>
               </div>
-              <span className="text-gray-600">Welcome back, Alex</span>
+   
             </div>
             
             <div className="flex items-center gap-4">
@@ -255,7 +255,10 @@ export default function DashboardPage() {
                   className="pl-10 pr-4 py-2 w-64 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+              <Button 
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Bot
               </Button>
