@@ -9,6 +9,7 @@ import { SectionTestimonials } from "@/components/section-testimonials"
 import { SectionResources } from "@/components/section-resources"
 import { SectionCta } from "@/components/section-cta"
 import { SectionFooter } from "@/components/section-footer"
+import { SectionPricing } from "@/components/section-pricing"
 
 export default function Page() {
   return (
@@ -20,6 +21,7 @@ export default function Page() {
         <SectionValues />
         <SectionBenefits />
         <SectionProcess />
+        <SectionPricing />
         <SectionTestimonials />
         <SectionResources />
         <SectionCta />

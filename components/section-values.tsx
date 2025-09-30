@@ -2,7 +2,7 @@
 
 import type { ElementType } from "react"
 import { cn } from "@/lib/utils"
-import { Lightbulb, TrendingUp, ShieldCheck, Users, Workflow, Smile } from "lucide-react"
+import { Heart, Mic, BarChart3, Bot, Workflow, Smile } from "lucide-react"
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid"
 
 type ValueItem = {
@@ -18,7 +18,7 @@ const VALUES: ValueItem[] = [
   {
     title: "Emotion-Aware Support",
     description: "AI bots instantly adapt tone and style.Detects every customer emotion.Adjusts tone automatically before issues escalate.",
-    icon: Lightbulb,
+    icon: Heart,
     featured: true,
     className: "md:col-span-2",
     animationDirection: "forward",
@@ -26,21 +26,21 @@ const VALUES: ValueItem[] = [
   {
     title: "Multimodal Interaction",
     description: "Go beyond text. AI seamlessly handlesvoice queries, can send images, and respond with the right medium every time.",
-    icon: TrendingUp,
+    icon: Mic,
     className: "md:col-span-1",
     animationDirection: "reverse",
   },
   {
     title: "Analytics Dashboard",
     description: "From data to decisions. Visualize performance .Emotion heatmaps, resolution metrics, and knowledge gapsacross every language and channel.",
-    icon: ShieldCheck,
+    icon: BarChart3,
     className: "md:col-span-1",
     animationDirection: "forward",
   },
   {
     title: "AI Quality Control",
     description: "Ensure every response stays sharp Detect errors instantly and let AI optimizes itself for peak performance.",
-    icon: Users,
+    icon: Bot,
     className: "md:col-span-2",
     animationDirection: "reverse",
   },

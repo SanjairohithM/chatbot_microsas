@@ -14,33 +14,32 @@ type Resource = {
 const resources: Resource[] = [
   {
     id: 1,
-    category: "Analytics",
-    read: "5 min read",
-    title: "Maximizing Productivity with the Latest SaaS Solutions",
-    excerpt: "In the ever‑evolving landscape of business and technology, staying ahead of the curve is crucial.",
+    category: "24/7 Support",
+    read: "Always Available",
+    title: "Never Miss a Lead Again",
+    excerpt: "AI bots work around the clock, engaging visitors even after business hours. Every inquiry is answered instantly, turning missed opportunities into qualified leads.",
     href: "#",
-    imgAlt: "Laptop with dashboards and plants on work desk",
-    // Use placeholder image per guidelines
+    imgAlt: "AI chatbot working 24/7 on laptop screen",
     img: "/laptop-dashboard-on-desk.jpg",
   },
   {
     id: 2,
-    category: "Business",
-    read: "5 min read",
-    title: "5 Ways SaaS Is Revolutionizing Business Operations",
-    excerpt: "Gone are the days when you were tied to your desktop computer. SaaS solutions provide.",
+    category: "Cost Savings",
+    read: "Automated Support",
+    title: "Cut Support Costs, Not Quality",
+    excerpt: "Handle FAQs, order updates automatically. Free up your team for complex, high-value tasks without sacrificing response speed or accuracy.",
     href: "#",
-    imgAlt: "Team collaborating with colorful UI on screens",
+    imgAlt: "Team collaborating with AI chatbot interface",
     img: "/team-collaboration-ui-screens.jpg",
   },
   {
     id: 3,
-    category: "Marketing",
-    read: "5 min read",
-    title: "Artificial Intelligence and Machine Learning Integration",
-    excerpt: "With data breaches on the rise, cybersecurity and data privacy have become paramount concerns.",
+    category: "Scalability",
+    read: "Growth Ready",
+    title: "Scale Engagement As You Grow",
+    excerpt: "Transform your website into a dynamic, conversational experience with multilingual, emotion-aware support that scales effortlessly as your business expands.",
     href: "#",
-    imgAlt: "Person writing on glass board with sticky notes",
+    imgAlt: "Planning board with AI chatbot growth strategy",
     img: "/sticky-notes-planning-board.jpg",
   },
 ]
@@ -52,10 +51,10 @@ export function SectionResources() {
         <div className="mb-8 flex items-start justify-between gap-6">
           <div>
             <h2 id="useful-resources" className="text-pretty text-3xl font-semibold tracking-tight md:text-4xl">
-              Useful Resources
+              Why Choose Our AI Chatbot
             </h2>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-              Discover our useful resources and read articles on different categories
+              Discover the key benefits that make our AI chatbot the perfect solution for your business
             </p>
           </div>
 
@@ -63,7 +62,7 @@ export function SectionResources() {
             href="#"
             className="mt-1 inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            Show more..
+            Learn more..
           </a>
         </div>
 
