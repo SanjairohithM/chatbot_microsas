@@ -32,8 +32,8 @@ export function SectionProcess() {
               {/* Left side - Image */}
               <div className="w-full ">
                 <img 
-                  src="images/instagram.jpeg" 
-                  alt="Instagram" 
+                  src="signup-screengif.gif" 
+                  alt="Signup Screen Demo" 
                   className="w-full h-full object-cover rounded-2xl shadow-lg"
                 />
               </div>
