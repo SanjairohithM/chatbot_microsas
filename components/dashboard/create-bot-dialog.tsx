@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle, X } from "lucide-react"
+import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle, X, Volume2, MessageCircle } from "lucide-react"
 import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 
 interface CreateBotDialogProps {
@@ -40,6 +40,8 @@ export function CreateBotDialog({ open, onOpenChange, onSave, editingBot }: Crea
     model: editingBot?.model || "gpt-4o-mini",
     temperature: editingBot?.temperature || 0.7,
     max_tokens: editingBot?.max_tokens || 1000,
+    // Response model
+    interaction_mode: editingBot?.interaction_mode || "chat",
     // Website integration
     website_url: "",
     website_content: "",
@@ -127,6 +129,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
         model: formData.model,
         temperature: formData.temperature,
         max_tokens: formData.max_tokens,
+        interaction_mode: formData.interaction_mode,
         status: "draft" as const,
         is_deployed: false,
         // Include website data for scraping after bot creation
@@ -147,6 +150,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
           model: "gpt-4o-mini",
           temperature: 0.7,
           max_tokens: 1000,
+          interaction_mode: "chat",
           website_url: "",
           website_content: "",
           auto_scrape: true,
@@ -257,6 +261,72 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       placeholder="Brief description of what this bot does"
                       required
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Response Mode</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div 
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          formData.interaction_mode === 'chat' 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setFormData({ ...formData, interaction_mode: 'chat' })}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            formData.interaction_mode === 'chat' ? 'bg-blue-100' : 'bg-gray-100'
+                          }`}>
+                            <MessageCircle className={`h-5 w-5 ${
+                              formData.interaction_mode === 'chat' ? 'text-blue-600' : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <h4 className={`font-medium ${
+                              formData.interaction_mode === 'chat' ? 'text-blue-900' : 'text-gray-900'
+                            }`}>
+                              Chat Response
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              Bot responds with text messages
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div 
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          formData.interaction_mode === 'voice' 
+                            ? 'border-blue-500 bg-blue-50' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setFormData({ ...formData, interaction_mode: 'voice' })}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            formData.interaction_mode === 'voice' ? 'bg-blue-100' : 'bg-gray-100'
+                          }`}>
+                            <Volume2 className={`h-5 w-5 ${
+                              formData.interaction_mode === 'voice' ? 'text-blue-600' : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <h4 className={`font-medium ${
+                              formData.interaction_mode === 'voice' ? 'text-blue-900' : 'text-gray-900'
+                            }`}>
+                              Voice Response
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              Bot responds with natural speech
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Choose how your bot will respond to users. Voice mode includes speech-to-text input and text-to-speech output.
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">

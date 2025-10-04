@@ -11,6 +11,7 @@ export interface CreateBotRequest {
   status?: 'draft' | 'active' | 'inactive'
   is_deployed?: boolean
   deployment_url?: string
+  interaction_mode?: 'chat' | 'voice'
 }
 
 export interface UpdateBotRequest {
@@ -23,6 +24,7 @@ export interface UpdateBotRequest {
   status?: 'draft' | 'active' | 'inactive'
   is_deployed?: boolean
   deployment_url?: string
+  interaction_mode?: 'chat' | 'voice'
 }
 
 export interface BotFilters {
@@ -70,6 +72,7 @@ export class BotService {
           status: botData.status || 'draft',
           is_deployed: botData.is_deployed || false,
           deployment_url: botData.deployment_url,
+          interaction_mode: botData.interaction_mode || 'chat',
         },
       })
 
@@ -322,6 +325,7 @@ export class BotService {
       status: bot.status as 'draft' | 'active' | 'inactive',
       is_deployed: bot.is_deployed,
       deployment_url: bot.deployment_url || undefined,
+      interaction_mode: bot.interaction_mode || 'chat',
       created_at: bot.created_at.toISOString(),
       updated_at: bot.updated_at.toISOString(),
     }

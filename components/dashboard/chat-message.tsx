@@ -2,9 +2,10 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Bot, User, Volume2, MessageCircle, UserCircle } from "lucide-react"
+import { Bot, User, Volume2, VolumeX, MessageCircle, UserCircle } from "lucide-react"
 import type { Message } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { useState, useRef } from "react"
 
 interface ChatMessageProps {
   message: Message
@@ -83,31 +84,94 @@ export function ChatMessage({ message, isLast }: ChatMessageProps) {
           {message.tokens_used && <span>• {message.tokens_used}</span>}
           {message.response_time_ms && <span>• {message.response_time_ms}ms</span>}
           {!isUser && message.content && (
-            <button
-              className="ml-1 text-gray-400 hover:text-gray-600"
-              onClick={async () => {
-                try {
-                  const res = await fetch('/api/audio/tts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text: message.content })
-                  })
-                  if (!res.ok) return
-                  const blob = await res.blob()
-                  const url = URL.createObjectURL(blob)
-                  const audio = new Audio(url)
-                  audio.play()
-                } catch (e) {
-                  console.error('TTS playback failed:', e)
-                }
-              }}
-              title="Play voice"
-            >
-              <Volume2 className="h-3 w-3" />
-            </button>
+            <VoicePlayButton text={message.content} />
           )}
         </div>
       </div>
     </div>
+  )
+}
+
+interface VoicePlayButtonProps {
+  text: string
+}
+
+function VoicePlayButton({ text }: VoicePlayButtonProps) {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  const handlePlay = async () => {
+    if (isPlaying) {
+      // Stop playing
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+      setIsPlaying(false)
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      
+      const res = await fetch('/api/audio/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          text,
+          voice: 'alloy',
+          model: 'tts-1',
+          format: 'mp3'
+        })
+      })
+      
+      if (!res.ok) {
+        throw new Error('TTS request failed')
+      }
+      
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audioRef.current = audio
+      
+      audio.onended = () => {
+        setIsPlaying(false)
+        URL.revokeObjectURL(url)
+        audioRef.current = null
+      }
+      
+      audio.onerror = () => {
+        setIsPlaying(false)
+        setIsLoading(false)
+        URL.revokeObjectURL(url)
+        audioRef.current = null
+      }
+      
+      await audio.play()
+      setIsPlaying(true)
+      
+    } catch (e) {
+      console.error('TTS playback failed:', e)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <button
+      className="ml-1 text-gray-400 hover:text-gray-600 transition-colors"
+      onClick={handlePlay}
+      disabled={isLoading}
+      title={isPlaying ? "Stop speaking" : "Play voice"}
+    >
+      {isLoading ? (
+        <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+      ) : isPlaying ? (
+        <VolumeX className="h-3 w-3" />
+      ) : (
+        <Volume2 className="h-3 w-3" />
+      )}
+    </button>
   )
 }
