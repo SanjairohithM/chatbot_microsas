@@ -6,7 +6,9 @@ import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+})
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -19,10 +21,12 @@ export const authOptions: NextAuthOptions = {
         },
       },
     }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
+    ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET ? [
+      GitHubProvider({
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      })
+    ] : []),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -30,7 +34,10 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log('🔐 Credentials received:', { email: credentials?.email, hasPassword: !!credentials?.password });
+        
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Missing credentials');
           return null
         }
 
@@ -40,7 +47,10 @@ export const authOptions: NextAuthOptions = {
           }
         })
 
+        console.log('👤 User found:', { id: user?.id, email: user?.email, hasPasswordHash: !!user?.password_hash });
+
         if (!user || !user.password_hash) {
+          console.log('❌ User not found or no password hash');
           return null
         }
 
@@ -49,15 +59,21 @@ export const authOptions: NextAuthOptions = {
           user.password_hash
         )
 
+        console.log('🔑 Password valid:', isPasswordValid);
+
         if (!isPasswordValid) {
+          console.log('❌ Invalid password');
           return null
         }
 
-        return {
-          id: user.id.toString(),
+        const result = {
+          id: user.id,
           email: user.email,
           name: user.name,
-        }
+        };
+        
+        console.log('✅ Auth successful, returning:', result);
+        return result;
       }
     })
   ],
