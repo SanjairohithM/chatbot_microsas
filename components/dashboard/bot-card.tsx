@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare, Code } from "lucide-react"
+import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare, Code, Volume2, MessageCircle } from "lucide-react"
 import { WidgetExportDialog } from "@/components/dashboard/embeddable-widget"
 import type { Bot as BotType } from "@/lib/types"
 
@@ -121,8 +121,17 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
               <p className="text-sm font-semibold text-gray-900">{bot.model}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">TEMPERATURE</p>
-              <p className="text-sm font-semibold text-gray-900">{bot.temperature}</p>
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">RESPONSE MODE</p>
+              <div className="flex items-center gap-2">
+                {bot.interaction_mode === 'voice' ? (
+                  <Volume2 className="h-4 w-4 text-blue-600" />
+                ) : (
+                  <MessageCircle className="h-4 w-4 text-green-600" />
+                )}
+                <p className="text-sm font-semibold text-gray-900 capitalize">
+                  {bot.interaction_mode}
+                </p>
+              </div>
             </div>
             {/* <div className="space-y-1">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">CONVERSATIONS</p>

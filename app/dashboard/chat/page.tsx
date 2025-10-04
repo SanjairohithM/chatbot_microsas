@@ -10,6 +10,8 @@ import { Sidebar } from "@/components/dashboard/sidebar"
 import { ConversationSidebar } from "@/components/dashboard/conversation-sidebar"
 import { ChatMessage } from "@/components/dashboard/chat-message"
 import { ChatInput } from "@/components/dashboard/chat-input"
+import { AdaptiveChatInterface } from "@/components/dashboard/adaptive-chat-interface"
+import { StreamingChatInterface } from "@/components/dashboard/streaming-chat-interface"
 import { useAuth } from "@/hooks/use-auth"
 import { useChat } from "@/hooks/use-chat"
 import type { Bot, Conversation, Message } from "@/lib/types"
@@ -406,35 +408,28 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            <>
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-6 bg-white">
-                <div className="max-w-4xl mx-auto">
-                  {messages.map((message, index) => (
-                    <ChatMessage key={message.id} message={message} isLast={index === messages.length - 1} />
-                  ))}
-                  {isLoading && (
-                    <div className="flex gap-4 mb-6">
-                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                      </div>
-                      <div className="bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-200">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                          
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-
-              {/* Chat Input */}
-              <ChatInput onSendMessage={handleSendMessage} isLoading={isLoading || chatLoading} disabled={!selectedBot} />
-            </>
+            <StreamingChatInterface
+              botId={selectedBot.id}
+              conversationId={selectedConversationId}
+              userId={user.id}
+              onConversationUpdate={(conversationId) => {
+                setSelectedConversationId(conversationId)
+                // Reload conversations to get the new one
+                const loadConversations = async () => {
+                  try {
+                    const conversationsResponse = await fetch(`/api/conversations?userId=${user.id}`)
+                    if (conversationsResponse.ok) {
+                      const conversationsResult = await conversationsResponse.json()
+                      setConversations(conversationsResult.data)
+                    }
+                  } catch (error) {
+                    console.error('Failed to reload conversations:', error)
+                  }
+                }
+                loadConversations()
+              }}
+              className="flex-1"
+            />
           )}
         </div>
       </div>

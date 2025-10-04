@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Features Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; }
+        audio { width: 100%; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Voice Features Test Page</h1>
+    <p>This page helps you test the voice functionality step by step.</p>
+
+    <!-- Test 1: TTS (Text-to-Speech) -->
+    <div class="test-section">
+        <h2>1. Test Text-to-Speech (TTS)</h2>
+        <p>Enter some text and click "Speak" to test the TTS functionality:</p>
+        <textarea id="ttsText" placeholder="Enter text to convert to speech...">Hello! This is a test of the text-to-speech functionality.</textarea>
+        <br>
+        <button onclick="testTTS()">Speak Text</button>
+        <button onclick="stopTTS()">Stop Speaking</button>
+        <div id="ttsStatus"></div>
+        <audio id="ttsAudio" controls style="display: none;"></audio>
+    </div>
+
+    <!-- Test 2: STT (Speech-to-Text) -->
+    <div class="test-section">
+        <h2>2. Test Speech-to-Text (STT)</h2>
+        <p>Click "Start Recording" and speak, then click "Stop Recording" to test STT:</p>
+        <button onclick="startRecording()">Start Recording</button>
+        <button onclick="stopRecording()" disabled id="stopBtn">Stop Recording</button>
+        <div id="sttStatus"></div>
+        <div id="sttResult"></div>
+    </div>
+
+    <!-- Test 3: Full Voice Conversation -->
+    <div class="test-section">
+        <h2>3. Test Full Voice Conversation (STS)</h2>
+        <p>Click "Start Voice Conversation" to test the complete flow:</p>
+        <button onclick="startVoiceConversation()">Start Voice Conversation</button>
+        <button onclick="stopVoiceConversation()" disabled id="stopVoiceBtn">Stop Voice Conversation</button>
+        <div id="voiceStatus"></div>
+        <div id="voiceResult"></div>
+        <audio id="voiceAudio" controls style="display: none;"></audio>
+    </div>
+
+    <!-- Test 4: Check API Endpoints -->
+    <div class="test-section">
+        <h2>4. Test API Endpoints</h2>
+        <p>Test if the voice API endpoints are working:</p>
+        <button onclick="testTTSAPI()">Test TTS API</button>
+        <button onclick="testSTTAPI()">Test STT API</button>
+        <button onclick="testVoiceConversationAPI()">Test Voice Conversation API</button>
+        <div id="apiStatus"></div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+        let currentAudio = null;
+
+        // Test 1: TTS
+        async function testTTS() {
+            const text = document.getElementById('ttsText').value;
+            const status = document.getElementById('ttsStatus');
+            const audio = document.getElementById('ttsAudio');
+            
+            if (!text.trim()) {
+                status.innerHTML = '<div class="error">Please enter some text first</div>';
+                return;
+            }
+
+            try {
+                status.innerHTML = '<div class="info">Converting text to speech...</div>';
+                
+                const response = await fetch('/api/audio/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        text: text,
+                        voice: 'alloy',
+                        model: 'tts-1',
+                        format: 'mp3'
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`TTS API error: ${response.status}`);
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                audio.src = audioUrl;
+                audio.style.display = 'block';
+                audio.play();
+                
+                status.innerHTML = '<div class="success">TTS working! Audio is playing.</div>';
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">TTS failed: ${error.message}</div>`;
+            }
+        }
+
+        function stopTTS() {
+            const audio = document.getElementById('ttsAudio');
+            audio.pause();
+            audio.currentTime = 0;
+        }
+
+        // Test 2: STT
+        async function startRecording() {
+            const status = document.getElementById('sttStatus');
+            const stopBtn = document.getElementById('stopBtn');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    
+                    try {
+                        status.innerHTML = '<div class="info">Converting speech to text...</div>';
+                        
+                        const formData = new FormData();
+                        const file = new File([blob], 'audio.webm', { type: 'audio/webm' });
+                        formData.append('file', file);
+                        
+                        const response = await fetch('/api/audio/stt', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`STT API error: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        document.getElementById('sttResult').innerHTML = 
+                            `<div class="success"><strong>Transcribed:</strong> ${result.text}</div>`;
+                        status.innerHTML = '<div class="success">STT working! Speech converted to text.</div>';
+                        
+                    } catch (error) {
+                        status.innerHTML = `<div class="error">STT failed: ${error.message}</div>`;
+                    }
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                stopBtn.disabled = false;
+                status.innerHTML = '<div class="info">Recording... Speak now!</div>';
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">Microphone access failed: ${error.message}</div>`;
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            document.getElementById('stopBtn').disabled = true;
+        }
+
+        // Test 3: Full Voice Conversation
+        async function startVoiceConversation() {
+            const status = document.getElementById('voiceStatus');
+            const stopBtn = document.getElementById('stopVoiceBtn');
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    
+                    try {
+                        status.innerHTML = '<div class="info">Processing voice conversation...</div>';
+                        
+                        const formData = new FormData();
+                        const file = new File([blob], 'audio.webm', { type: 'audio/webm' });
+                        formData.append('audio', file);
+                        formData.append('botId', '1');
+                        formData.append('voice', 'alloy');
+                        
+                        const response = await fetch('/api/voice-conversation', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (!response.ok) {
+                            throw new Error(`Voice conversation API error: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        
+                        document.getElementById('voiceResult').innerHTML = 
+                            `<div class="success">
+                                <strong>You said:</strong> ${result.transcription}<br>
+                                <strong>Bot responded:</strong> ${result.text}
+                            </div>`;
+                        
+                        // Play the response audio
+                        if (result.audio) {
+                            const audioBlob = new Blob([Uint8Array.from(atob(result.audio), c => c.charCodeAt(0))], { type: 'audio/mp3' });
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            const audio = document.getElementById('voiceAudio');
+                            audio.src = audioUrl;
+                            audio.style.display = 'block';
+                            audio.play();
+                        }
+                        
+                        status.innerHTML = '<div class="success">Voice conversation working! Full STS flow completed.</div>';
+                        
+                    } catch (error) {
+                        status.innerHTML = `<div class="error">Voice conversation failed: ${error.message}</div>`;
+                    }
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                stopBtn.disabled = false;
+                status.innerHTML = '<div class="info">Recording... Speak your message!</div>';
+                
+            } catch (error) {
+                status.innerHTML = `<div class="error">Microphone access failed: ${error.message}</div>`;
+            }
+        }
+
+        function stopVoiceConversation() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            document.getElementById('stopVoiceBtn').disabled = true;
+        }
+
+        // Test 4: API Endpoints
+        async function testTTSAPI() {
+            const status = document.getElementById('apiStatus');
+            try {
+                const response = await fetch('/api/audio/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: 'Test', voice: 'alloy' })
+                });
+                
+                if (response.ok) {
+                    status.innerHTML += '<div class="success">✅ TTS API is working</div>';
+                } else {
+                    status.innerHTML += `<div class="error">❌ TTS API error: ${response.status}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML += `<div class="error">❌ TTS API failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testSTTAPI() {
+            const status = document.getElementById('apiStatus');
+            try {
+                // Create a dummy audio file for testing
+                const dummyBlob = new Blob(['dummy'], { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('file', dummyBlob);
+                
+                const response = await fetch('/api/audio/stt', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.status === 400) {
+                    status.innerHTML += '<div class="success">✅ STT API is working (expected error for dummy file)</div>';
+                } else {
+                    status.innerHTML += `<div class="error">❌ STT API unexpected response: ${response.status}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML += `<div class="error">❌ STT API failed: ${error.message}</div>`;
+            }
+        }
+
+        async function testVoiceConversationAPI() {
+            const status = document.getElementById('apiStatus');
+            try {
+                const response = await fetch('/api/voice-conversation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                if (response.status === 400) {
+                    status.innerHTML += '<div class="success">✅ Voice Conversation API is working (expected error for missing audio)</div>';
+                } else {
+                    status.innerHTML += `<div class="error">❌ Voice Conversation API unexpected response: ${response.status}</div>`;
+                }
+            } catch (error) {
+                status.innerHTML += `<div class="error">❌ Voice Conversation API failed: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

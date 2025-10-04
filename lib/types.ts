@@ -18,6 +18,7 @@ export interface Bot {
   status: "draft" | "active" | "inactive"
   is_deployed: boolean
   deployment_url?: string
+  interaction_mode: "chat" | "voice"
   created_at: string
   updated_at: string
 }

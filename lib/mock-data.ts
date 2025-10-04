@@ -4,7 +4,7 @@ import type { Bot, KnowledgeDocument, Conversation, BotAnalytics } from "./types
 export const mockBots: Bot[] = [
   {
     id: 1,
-    user_id: 1,
+    user_id: "1",
     name: "Customer Support Bot",
     description: "Handles customer inquiries and support tickets",
     system_prompt:
@@ -15,12 +15,13 @@ export const mockBots: Bot[] = [
     status: "active",
     is_deployed: true,
     deployment_url: "https://bot1.example.com",
+    interaction_mode: "chat",
     created_at: "2024-01-15T10:00:00Z",
     updated_at: "2024-01-20T14:30:00Z",
   },
   {
     id: 2,
-    user_id: 1,
+    user_id: "1",
     name: "Sales Assistant",
     description: "Helps with product recommendations and sales inquiries",
     system_prompt:
@@ -30,12 +31,13 @@ export const mockBots: Bot[] = [
     max_tokens: 800,
     status: "active",
     is_deployed: false,
+    interaction_mode: "voice",
     created_at: "2024-01-18T09:15:00Z",
     updated_at: "2024-01-22T11:45:00Z",
   },
   {
     id: 3,
-    user_id: 1,
+    user_id: "1",
     name: "FAQ Bot",
     description: "Answers frequently asked questions",
     system_prompt:
@@ -45,6 +47,7 @@ export const mockBots: Bot[] = [
     max_tokens: 500,
     status: "draft",
     is_deployed: false,
+    interaction_mode: "chat",
     created_at: "2024-01-20T16:20:00Z",
     updated_at: "2024-01-20T16:20:00Z",
   },
@@ -79,7 +82,7 @@ export const mockConversations: Conversation[] = [
   {
     id: 1,
     bot_id: 1,
-    user_id: 1,
+    user_id: "1",
     title: "Product inquiry about laptops",
     is_test: false,
     created_at: "2024-01-21T09:00:00Z",
@@ -88,7 +91,7 @@ export const mockConversations: Conversation[] = [
   {
     id: 2,
     bot_id: 1,
-    user_id: 1,
+    user_id: "1",
     title: "Return request assistance",
     is_test: false,
     created_at: "2024-01-21T14:30:00Z",

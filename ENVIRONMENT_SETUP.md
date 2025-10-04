@@ -4,6 +4,8 @@
 
 You need to create a `.env` file in your project root with the following variables:
 
+
+
 ### Essential Variables
 ```env
 # Pinecone Configuration

@@ -75,8 +75,8 @@ model Conversation {
   is_test    Boolean   @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  bot        Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  bot        Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
   messages   Message[]
 
   @@map("conversations")

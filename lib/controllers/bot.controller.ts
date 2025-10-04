@@ -38,7 +38,8 @@ export class BotController {
         max_tokens: { type: 'number', min: 100, max: 4000 },
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
         is_deployed: { type: 'boolean' },
-        deployment_url: { type: 'string', maxLength: 500 }
+        deployment_url: { type: 'string', maxLength: 500 },
+        interaction_mode: { type: 'string', enum: ['chat', 'voice'] }
       }, { ...body, userId })
 
       if (!validation.isValid) {
@@ -147,7 +148,8 @@ export class BotController {
         max_tokens: { type: 'number', min: 100, max: 4000 },
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
         is_deployed: { type: 'boolean' },
-        deployment_url: { type: 'string', maxLength: 500 }
+        deployment_url: { type: 'string', maxLength: 500 },
+        interaction_mode: { type: 'string', enum: ['chat', 'voice'] }
       }, updates)
 
       if (!validation.isValid) {

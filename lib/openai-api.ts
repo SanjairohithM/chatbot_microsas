@@ -54,6 +54,21 @@ export class OpenAIAPI {
 		}
 	}
 
+	async generateChatStream(
+		messages: OpenAIMessage[],
+		options: OpenAIChatOptions = {}
+	): Promise<AsyncIterable<any> & { usage?: any; model?: string; finish_reason?: string }> {
+		const stream = await this.client.chat.completions.create({
+			model: options.model || 'gpt-4o-mini',
+			messages: messages as any,
+			temperature: options.temperature ?? 0.7,
+			max_tokens: options.max_tokens ?? 1000,
+			stream: true
+		})
+
+		return stream as any
+	}
+
 	async createEmbedding(text: string, model: string = 'text-embedding-3-small'): Promise<number[]> {
 		const res = await this.client.embeddings.create({
 			model,
