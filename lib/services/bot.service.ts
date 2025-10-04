@@ -34,6 +34,48 @@ export interface BotFilters {
   search?: string
 }
 
+export interface BotToken {
+  id: number
+  bot_id: number
+  token_name: string
+  access_token: string
+  secret_key: string
+  permissions: string[]
+  expires_at: Date
+  description?: string
+  is_active: boolean
+  created_at: Date
+  updated_at: Date
+  last_used_at?: Date
+}
+
+export interface CreateBotTokenRequest {
+  bot_id: number
+  token_name: string
+  access_token: string
+  secret_key: string
+  permissions: string[]
+  expires_at: Date
+  description?: string
+  is_active: boolean
+  created_at: Date
+  last_used_at?: Date
+}
+
+export interface UpdateBotTokenRequest {
+  token_name?: string
+  permissions?: string[]
+  expires_in_days?: number
+  description?: string
+  is_active?: boolean
+}
+
+export interface TokenValidationResult {
+  valid: boolean
+  reason?: string
+  token?: BotToken
+}
+
 export class BotService {
   /**
    * Create a new bot
@@ -306,6 +348,224 @@ export class BotService {
     } catch (error) {
       console.error('BotService.getBotStats error:', error)
       throw error
+    }
+  }
+
+  /**
+   * Create a bot token
+   */
+  static async createBotToken(tokenData: CreateBotTokenRequest): Promise<BotToken> {
+    try {
+      const token = await db.botToken.create({
+        data: {
+          bot_id: tokenData.bot_id,
+          token_name: tokenData.token_name,
+          access_token: tokenData.access_token,
+          secret_key: tokenData.secret_key,
+          permissions: tokenData.permissions,
+          expires_at: tokenData.expires_at,
+          description: tokenData.description,
+          is_active: tokenData.is_active,
+          created_at: tokenData.created_at,
+          last_used_at: tokenData.last_used_at
+        }
+      })
+
+      return this.mapTokenToResponse(token)
+    } catch (error) {
+      console.error('BotService.createBotToken error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get bot tokens with pagination
+   */
+  static async getBotTokens(
+    botId: number, 
+    options: { page: number; limit: number; status?: 'active' | 'expired' | 'all' } = { page: 1, limit: 10, status: 'all' }
+  ): Promise<{ data: BotToken[]; page: number; limit: number; total: number }> {
+    try {
+      const { page, limit, status } = options
+      const skip = (page - 1) * limit
+
+      const where: any = { bot_id: botId }
+      
+      if (status === 'active') {
+        where.is_active = true
+        where.expires_at = { gt: new Date() }
+      } else if (status === 'expired') {
+        where.OR = [
+          { is_active: false },
+          { expires_at: { lte: new Date() } }
+        ]
+      }
+
+      const [tokens, total] = await Promise.all([
+        db.botToken.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { created_at: 'desc' }
+        }),
+        db.botToken.count({ where })
+      ])
+
+      return {
+        data: tokens.map(token => this.mapTokenToResponse(token)),
+        page,
+        limit,
+        total
+      }
+    } catch (error) {
+      console.error('BotService.getBotTokens error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update a bot token
+   */
+  static async updateBotToken(tokenId: number, botId: number, updates: UpdateBotTokenRequest): Promise<BotToken | null> {
+    try {
+      // Check if token exists and belongs to bot
+      const existingToken = await db.botToken.findFirst({
+        where: { id: tokenId, bot_id: botId }
+      })
+
+      if (!existingToken) {
+        return null
+      }
+
+      const updateData: any = {}
+      
+      if (updates.token_name) {
+        updateData.token_name = updates.token_name
+      }
+      if (updates.permissions) {
+        updateData.permissions = updates.permissions
+      }
+      if (updates.description !== undefined) {
+        updateData.description = updates.description
+      }
+      if (updates.is_active !== undefined) {
+        updateData.is_active = updates.is_active
+      }
+      if (updates.expires_in_days) {
+        const newExpiry = new Date()
+        newExpiry.setDate(newExpiry.getDate() + updates.expires_in_days)
+        updateData.expires_at = newExpiry
+      }
+
+      updateData.updated_at = new Date()
+
+      const token = await db.botToken.update({
+        where: { id: tokenId },
+        data: updateData
+      })
+
+      return this.mapTokenToResponse(token)
+    } catch (error) {
+      console.error('BotService.updateBotToken error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Revoke a bot token
+   */
+  static async revokeBotToken(tokenId: number, botId: number): Promise<boolean> {
+    try {
+      const result = await db.botToken.updateMany({
+        where: { id: tokenId, bot_id: botId },
+        data: { 
+          is_active: false,
+          updated_at: new Date()
+        }
+      })
+
+      return result.count > 0
+    } catch (error) {
+      console.error('BotService.revokeBotToken error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Validate a bot token
+   */
+  static async validateBotToken(botId: number, accessToken: string, secretKey: string): Promise<TokenValidationResult> {
+    try {
+      const token = await db.botToken.findFirst({
+        where: {
+          bot_id: botId,
+          access_token: accessToken,
+          secret_key: secretKey
+        }
+      })
+
+      if (!token) {
+        return { valid: false, reason: 'Token not found' }
+      }
+
+      if (!token.is_active) {
+        return { valid: false, reason: 'Token is inactive' }
+      }
+
+      if (token.expires_at <= new Date()) {
+        return { valid: false, reason: 'Token has expired' }
+      }
+
+      // Update last used timestamp
+      await db.botToken.update({
+        where: { id: token.id },
+        data: { last_used_at: new Date() }
+      })
+
+      return { valid: true, token: this.mapTokenToResponse(token) }
+    } catch (error) {
+      console.error('BotService.validateBotToken error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get token by ID
+   */
+  static async getBotTokenById(tokenId: number, botId: number): Promise<BotToken | null> {
+    try {
+      const token = await db.botToken.findFirst({
+        where: { id: tokenId, bot_id: botId }
+      })
+
+      if (!token) {
+        return null
+      }
+
+      return this.mapTokenToResponse(token)
+    } catch (error) {
+      console.error('BotService.getBotTokenById error:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Map database token to response format
+   */
+  private static mapTokenToResponse(token: any): BotToken {
+    return {
+      id: token.id,
+      bot_id: token.bot_id,
+      token_name: token.token_name,
+      access_token: token.access_token,
+      secret_key: token.secret_key,
+      permissions: token.permissions,
+      expires_at: token.expires_at,
+      description: token.description,
+      is_active: token.is_active,
+      created_at: token.created_at,
+      updated_at: token.updated_at,
+      last_used_at: token.last_used_at
     }
   }
 

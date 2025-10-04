@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test ZIP Download</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <h1>Test WordPress Plugin ZIP Download</h1>
+    <button onclick="testZipDownload()">Test ZIP Download</button>
+    <div id="status"></div>
+
+    <script>
+        async function testZipDownload() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = 'Creating ZIP file...';
+            
+            try {
+                const zip = new JSZip();
+                
+                // Add some test files
+                zip.file('test.txt', 'This is a test file');
+                zip.file('folder/test2.txt', 'This is another test file');
+                
+                // Generate the ZIP file
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                
+                // Create download link and trigger download
+                const url = URL.createObjectURL(zipBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'test-plugin.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                statusDiv.innerHTML = 'ZIP download successful!';
+                
+            } catch (error) {
+                console.error('Error creating ZIP file:', error);
+                statusDiv.innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

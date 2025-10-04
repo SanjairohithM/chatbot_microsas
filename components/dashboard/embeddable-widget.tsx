@@ -23,7 +23,12 @@ import {
   Settings,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  FileText,
+  Database,
+  Key,
+  Shield,
+  Zap
 } from 'lucide-react'
 import type { Bot, Message } from '@/lib/types'
 
@@ -47,7 +52,7 @@ export function EmbeddableWidget({
   const [inputValue, setInputValue] = useState('')
   const [isMinimized, setIsMinimized] = useState(false)
   const [isListening, setIsListening] = useState(false)
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [recognition, setRecognition] = useState<any>(null)
   const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   
@@ -153,14 +158,14 @@ export function EmbeddableWidget({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       {!isOpen ? (
         <Button
           onClick={onToggle}
-          className="rounded-full w-14 h-14 shadow-lg hover:scale-105 transition-transform"
+          className="w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105"
           style={{ backgroundColor: '#3b82f6' }}
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageSquare className="w-6 h-6" />
         </Button>
       ) : (
         <Card 
@@ -176,49 +181,49 @@ export function EmbeddableWidget({
             className="p-3 pb-2"
             style={{ backgroundColor: '#3b82f6' }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2 items-center">
                 <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                  className="flex justify-center items-center w-8 h-8 text-sm font-medium text-white rounded-full"
                   style={{ backgroundColor: '#1e40af' }}
                 >
                   {bot.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <CardTitle className="text-white text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     {bot.name}
                   </CardTitle>
                   <div className="text-xs text-white/80">Online</div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex gap-1 items-center">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  className="p-0 w-6 h-6 text-white hover:bg-white/20"
                 >
-                  {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+                  {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onToggle}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  className="p-0 w-6 h-6 text-white hover:bg-white/20"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="w-3 h-3" />
                 </Button>
               </div>
             </div>
           </CardHeader>
 
           {!isMinimized && (
-            <CardContent className="p-0 flex flex-col h-full">
+            <CardContent className="flex flex-col p-0 h-full">
               {/* Messages */}
               <ScrollArea className="flex-1 p-3">
                 <div className="space-y-3">
                   {messages.length === 0 ? (
-                    <div className="text-center py-4">
+                    <div className="py-4 text-center">
                       <div className="text-sm text-muted-foreground">
                         Hi! I'm {bot.name}. How can I help you today?
                       </div>
@@ -249,10 +254,10 @@ export function EmbeddableWidget({
                               onClick={() => speakText(message.content)}
                               size="sm"
                               variant="ghost"
-                              className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+                              className="p-0 w-6 h-6 opacity-60 hover:opacity-100"
                               title="Play message"
                             >
-                              <Volume2 className="h-3 w-3" />
+                              <Volume2 className="w-3 h-3" />
                             </Button>
                           )}
                         </div>
@@ -261,9 +266,9 @@ export function EmbeddableWidget({
                   )}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                      <div className="px-3 py-2 text-sm rounded-lg bg-muted">
+                        <div className="flex gap-2 items-center">
+                          <div className="w-2 h-2 rounded-full animate-bounce bg-muted-foreground"></div>
                           <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.1s]"></div>
                           <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.2s]"></div>
                         </div>
@@ -292,7 +297,7 @@ export function EmbeddableWidget({
                       variant={isListening ? "destructive" : "outline"}
                       title={isListening ? "Stop listening" : "Start voice input"}
                     >
-                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                     </Button>
                   )}
                   <Button
@@ -301,7 +306,7 @@ export function EmbeddableWidget({
                     size="sm"
                     style={{ backgroundColor: '#3b82f6' }}
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -332,11 +337,31 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
     voiceLanguage: 'en-US',
     autoSpeak: false,
     voiceRate: 1.0,
-    voicePitch: 1.0
+    voicePitch: 1.0,
+    enableDatabase: false,
+    databaseType: 'mysql',
+    databaseHost: '',
+    databasePort: 3306,
+    databaseName: '',
+    databaseUsername: '',
+    databasePassword: '',
+    databaseSSL: false,
+    databasePermissions: ['read']
   })
 
   const generateWidgetScript = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    const databaseConfig = customization.enableDatabase ? `
+        data-enable-database="${customization.enableDatabase}"
+        data-database-type="${customization.databaseType}"
+        data-database-host="${customization.databaseHost}"
+        data-database-port="${customization.databasePort}"
+        data-database-name="${customization.databaseName}"
+        data-database-username="${customization.databaseUsername}"
+        data-database-password="${customization.databasePassword}"
+        data-database-ssl="${customization.databaseSSL}"
+        data-database-permissions="${customization.databasePermissions.join(',')}"` : ''
     
     return `<!-- ${bot.name} Chatbot Widget -->
 <script src="${baseUrl}/widgets/chatbot-widget.js" 
@@ -354,7 +379,8 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
         data-voice-rate="${customization.voiceRate}"
         data-voice-pitch="${customization.voicePitch}"
         data-api-url="${baseUrl}/api/chat"
-        data-bot-name="${bot.name}">
+        data-database-api-url="${baseUrl}/api/chatbot/database-chat"
+        data-bot-name="${bot.name}"${databaseConfig}>
 </script>`
   }
 
@@ -384,6 +410,1359 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
   title="${bot.name} Chat Button"
   allow="microphone; camera">
 </iframe>`
+  }
+
+  const generateWordPressShortcode = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `[omnix_chatbot 
+    bot_id="${bot.id}" 
+    access_token="YOUR_ACCESS_TOKEN_HERE" 
+    theme="default" 
+    position="${customization.position}" 
+    auto_open="${customization.autoOpen}" 
+    show_avatar="${customization.showAvatar}" 
+    show_title="${customization.showTitle}" 
+    enable_voice="${customization.enableVoice}" 
+    voice_language="${customization.voiceLanguage}" 
+    auto_speak="${customization.autoSpeak}"]`
+  }
+
+  const generateTokenAPIExample = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Generate access token for WordPress integration
+curl -X POST "${baseUrl}/api/tokens" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "bot_id": ${bot.id},
+    "token_name": "WordPress Integration",
+    "permissions": "chat,analytics,conversations",
+    "expires_days": 365
+  }'
+
+// Response:
+{
+  "success": true,
+  "access_token": "ox_abc123...",
+  "secret_key": "ox_sk_def456...",
+  "bot_id": ${bot.id},
+  "token_name": "WordPress Integration",
+  "permissions": ["chat", "analytics", "conversations"],
+  "expires_at": "2025-12-31T23:59:59.000Z"
+}`
+  }
+
+  const generateWordPressAPIExample = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Send chat message via WordPress REST API
+fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: 'Hello, how can you help me?',
+    conversationId: null
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Bot response:', data.message);
+});
+
+// Available WordPress REST API endpoints:
+// GET  /wp-json/omnix-chatbot/v1/chat
+// POST /wp-json/omnix-chatbot/v1/chat
+// GET  /wp-json/omnix-chatbot/v1/bots
+// GET  /wp-json/omnix-chatbot/v1/conversations
+// GET  /wp-json/omnix-chatbot/v1/analytics`
+  }
+
+  const [selectedLanguage, setSelectedLanguage] = useState('curl')
+
+  const generateCurlExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `# cURL Examples for Database Chatbot API
+
+# ========================================
+# 1. Token Management
+# ========================================
+
+# Create Access Token for Bot
+curl -X POST "${baseUrl}/api/bots/${bot.id}/tokens" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "token_name": "Database Integration Token",
+    "permissions": ["read", "write"],
+    "expires_in_days": 365,
+    "description": "Token for database integration"
+  }'
+
+# List All Tokens for Bot
+curl -X GET "${baseUrl}/api/bots/${bot.id}/tokens?page=1&limit=10&status=active"
+
+# Validate Token
+curl -X POST "${baseUrl}/api/bots/${bot.id}/tokens/validate" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "access_token": "YOUR_ACCESS_TOKEN",
+    "secret_key": "YOUR_SECRET_KEY"
+  }'
+
+# Update Token
+curl -X PUT "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "token_name": "Updated Token Name",
+    "permissions": ["read", "write", "admin"],
+    "expires_in_days": 180
+  }'
+
+# Revoke Token
+curl -X DELETE "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1"
+
+# ========================================
+# 2. Database Operations
+# ========================================
+
+# Create Database Credentials for Bot
+curl -X POST "${baseUrl}/api/bots/${bot.id}/database-credentials" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "permissions": ["read", "write"],
+    "expires_in_days": 365
+  }'
+
+# Test Database Connection
+curl -X GET "${baseUrl}/api/database/query?action=test&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
+
+# Execute Direct SQL Query
+curl -X POST "${baseUrl}/api/database/query" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    },
+    "query": "SELECT COUNT(*) as user_count FROM users WHERE active = ?",
+    "params": [true]
+  }'
+
+# AI-Powered Database Chat
+curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "How many active users do we have?",
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    }
+  }'
+
+# Get Database Schema
+curl -X GET "${baseUrl}/api/database/query?action=schema&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
+
+# Get Table Structure
+curl -X GET "${baseUrl}/api/database/query?action=table&table=users&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"`
+  }
+
+  const generateNodeJSExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Node.js Examples for Database Chatbot API
+const axios = require('axios');
+
+const baseUrl = '${baseUrl}';
+const accessToken = 'YOUR_ACCESS_TOKEN';
+const secretKey = 'YOUR_SECRET_KEY';
+const authHeader = \`Bearer \${accessToken}:\${secretKey}\`;
+
+// ========================================
+// 1. Token Management
+// ========================================
+
+// Create Access Token for Bot
+async function createToken() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/tokens\`, {
+      token_name: 'Database Integration Token',
+      permissions: ['read', 'write'],
+      expires_in_days: 365,
+      description: 'Token for database integration'
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token created:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create token:', error.response?.data || error.message);
+  }
+}
+
+// List All Tokens for Bot
+async function listTokens() {
+  try {
+    const response = await axios.get(\`\${baseUrl}/api/bots/${bot.id}/tokens\`, {
+      params: {
+        page: 1,
+        limit: 10,
+        status: 'active'
+      }
+    });
+    console.log('Tokens:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to list tokens:', error.response?.data || error.message);
+  }
+}
+
+// Validate Token
+async function validateToken() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/tokens/validate\`, {
+      access_token: accessToken,
+      secret_key: secretKey
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token validation:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Token validation failed:', error.response?.data || error.message);
+  }
+}
+
+// Update Token
+async function updateToken(tokenId) {
+  try {
+    const response = await axios.put(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`, {
+      token_name: 'Updated Token Name',
+      permissions: ['read', 'write', 'admin'],
+      expires_in_days: 180
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token updated:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update token:', error.response?.data || error.message);
+  }
+}
+
+// Revoke Token
+async function revokeToken(tokenId) {
+  try {
+    const response = await axios.delete(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`);
+    console.log('Token revoked:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to revoke token:', error.response?.data || error.message);
+  }
+}
+
+// ========================================
+// 2. Database Operations
+// ========================================
+
+// Test Database Connection
+async function testDatabaseConnection() {
+  try {
+    const response = await axios.get(\`\${baseUrl}/api/database/query\`, {
+      params: {
+        action: 'test',
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      },
+      headers: {
+        'Authorization': authHeader
+      }
+    });
+    console.log('Connection test:', response.data);
+  } catch (error) {
+    console.error('Connection test failed:', error.response?.data || error.message);
+  }
+}
+
+// Execute SQL Query
+async function executeQuery() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/database/query\`, {
+      database_config: {
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      },
+      query: 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+      params: [true]
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Query result:', response.data);
+  } catch (error) {
+    console.error('Query failed:', error.response?.data || error.message);
+  }
+}
+
+// AI-Powered Database Chat
+async function databaseChat() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/chatbot/database-chat\`, {
+      message: 'How many active users do we have?',
+      database_config: {
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      }
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('AI Response:', response.data);
+  } catch (error) {
+    console.error('Chat failed:', error.response?.data || error.message);
+  }
+}
+
+// Create Database Credentials
+async function createCredentials() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/database-credentials\`, {
+      permissions: ['read', 'write'],
+      expires_in_days: 365
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Credentials created:', response.data);
+  } catch (error) {
+    console.error('Failed to create credentials:', error.response?.data || error.message);
+  }
+}
+
+// Run examples
+async function runExamples() {
+  // Token management
+  await createToken();
+  await listTokens();
+  await validateToken();
+  
+  // Database operations
+  await testDatabaseConnection();
+  await executeQuery();
+  await databaseChat();
+  await createCredentials();
+}
+
+runExamples();`
+  }
+
+  const generatePHPExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `<?php
+// PHP Examples for Database Chatbot API
+$baseUrl = '${baseUrl}';
+$accessToken = 'YOUR_ACCESS_TOKEN';
+$secretKey = 'YOUR_SECRET_KEY';
+$authHeader = "Bearer $accessToken:$secretKey";
+
+// Test Database Connection
+function testDatabaseConnection() {
+    global $baseUrl, $authHeader;
+    
+    $url = $baseUrl . '/api/database/query?' . http_build_query([
+        'action' => 'test',
+        'type' => 'mysql',
+        'host' => 'localhost',
+        'port' => 3306,
+        'database' => 'myapp',
+        'username' => 'user',
+        'password' => 'pass'
+    ]);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Connection test: " . $response . "\n";
+    } else {
+        echo "Connection test failed: " . $response . "\n";
+    }
+}
+
+// Execute SQL Query
+function executeQuery() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'database_config' => [
+            'type' => 'mysql',
+            'host' => 'localhost',
+            'port' => 3306,
+            'database' => 'myapp',
+            'username' => 'user',
+            'password' => 'pass'
+        ],
+        'query' => 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+        'params' => [true]
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/database/query');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Query result: " . $response . "\n";
+    } else {
+        echo "Query failed: " . $response . "\n";
+    }
+}
+
+// AI-Powered Database Chat
+function databaseChat() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'message' => 'How many active users do we have?',
+        'database_config' => [
+            'type' => 'mysql',
+            'host' => 'localhost',
+            'port' => 3306,
+            'database' => 'myapp',
+            'username' => 'user',
+            'password' => 'pass'
+        ]
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/chatbot/database-chat');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "AI Response: " . $response . "\n";
+    } else {
+        echo "Chat failed: " . $response . "\n";
+    }
+}
+
+// Create Database Credentials
+function createCredentials() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'permissions' => ['read', 'write'],
+        'expires_in_days' => 365
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/bots/${bot.id}/database-credentials');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Credentials created: " . $response . "\n";
+    } else {
+        echo "Failed to create credentials: " . $response . "\n";
+    }
+}
+
+// Run examples
+testDatabaseConnection();
+executeQuery();
+databaseChat();
+createCredentials();
+?>`
+  }
+
+  const generatePythonExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `# Python Examples for Database Chatbot API
+import requests
+import json
+
+base_url = '${baseUrl}'
+access_token = 'YOUR_ACCESS_TOKEN'
+secret_key = 'YOUR_SECRET_KEY'
+auth_header = f'Bearer {access_token}:{secret_key}'
+
+# Test Database Connection
+def test_database_connection():
+    url = f'{base_url}/api/database/query'
+    params = {
+        'action': 'test',
+        'type': 'mysql',
+        'host': 'localhost',
+        'port': 3306,
+        'database': 'myapp',
+        'username': 'user',
+        'password': 'pass'
+    }
+    
+    headers = {'Authorization': auth_header}
+    
+    try:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        print(f"Connection test: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Connection test failed: {e}")
+
+# Execute SQL Query
+def execute_query():
+    url = f'{base_url}/api/database/query'
+    data = {
+        'database_config': {
+            'type': 'mysql',
+            'host': 'localhost',
+            'port': 3306,
+            'database': 'myapp',
+            'username': 'user',
+            'password': 'pass'
+        },
+        'query': 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+        'params': [True]
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"Query result: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Query failed: {e}")
+
+# AI-Powered Database Chat
+def database_chat():
+    url = f'{base_url}/api/chatbot/database-chat'
+    data = {
+        'message': 'How many active users do we have?',
+        'database_config': {
+            'type': 'mysql',
+            'host': 'localhost',
+            'port': 3306,
+            'database': 'myapp',
+            'username': 'user',
+            'password': 'pass'
+        }
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"AI Response: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Chat failed: {e}")
+
+# Create Database Credentials
+def create_credentials():
+    url = f'{base_url}/api/bots/${bot.id}/database-credentials'
+    data = {
+        'permissions': ['read', 'write'],
+        'expires_in_days': 365
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"Credentials created: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to create credentials: {e}")
+
+# Run examples
+if __name__ == "__main__":
+    test_database_connection()
+    execute_query()
+    database_chat()
+    create_credentials()`
+  }
+
+  const generateGolangExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Golang Examples for Database Chatbot API
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "net/url"
+)
+
+const (
+    baseURL     = "${baseUrl}"
+    accessToken = "YOUR_ACCESS_TOKEN"
+    secretKey   = "YOUR_SECRET_KEY"
+)
+
+var authHeader = fmt.Sprintf("Bearer %s:%s", accessToken, secretKey)
+
+// Test Database Connection
+func testDatabaseConnection() {
+    params := url.Values{}
+    params.Add("action", "test")
+    params.Add("type", "mysql")
+    params.Add("host", "localhost")
+    params.Add("port", "3306")
+    params.Add("database", "myapp")
+    params.Add("username", "user")
+    params.Add("password", "pass")
+    
+    url := fmt.Sprintf("%s/api/database/query?%s", baseURL, params.Encode())
+    
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Connection test failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Connection test: %s\n", string(body))
+    } else {
+        fmt.Printf("Connection test failed: %s\n", string(body))
+    }
+}
+
+// Execute SQL Query
+func executeQuery() {
+    data := map[string]interface{}{
+        "database_config": map[string]interface{}{
+            "type":     "mysql",
+            "host":     "localhost",
+            "port":     3306,
+            "database": "myapp",
+            "username": "user",
+            "password": "pass",
+        },
+        "query":  "SELECT COUNT(*) as user_count FROM users WHERE active = ?",
+        "params": []interface{}{true},
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/database/query", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Query failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Query result: %s\n", string(body))
+    } else {
+        fmt.Printf("Query failed: %s\n", string(body))
+    }
+}
+
+// AI-Powered Database Chat
+func databaseChat() {
+    data := map[string]interface{}{
+        "message": "How many active users do we have?",
+        "database_config": map[string]interface{}{
+            "type":     "mysql",
+            "host":     "localhost",
+            "port":     3306,
+            "database": "myapp",
+            "username": "user",
+            "password": "pass",
+        },
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/chatbot/database-chat", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Chat failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("AI Response: %s\n", string(body))
+    } else {
+        fmt.Printf("Chat failed: %s\n", string(body))
+    }
+}
+
+// Create Database Credentials
+func createCredentials() {
+    data := map[string]interface{}{
+        "permissions":      []string{"read", "write"},
+        "expires_in_days": 365,
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/bots/${bot.id}/database-credentials", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Failed to create credentials: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Credentials created: %s\n", string(body))
+    } else {
+        fmt.Printf("Failed to create credentials: %s\n", string(body))
+    }
+}
+
+func main() {
+    testDatabaseConnection()
+    executeQuery()
+    databaseChat()
+    createCredentials()
+}`
+  }
+
+  const getCurrentLanguageContent = () => {
+    switch (selectedLanguage) {
+      case 'curl':
+        return generateCurlExamples()
+      case 'nodejs':
+        return generateNodeJSExamples()
+      case 'php':
+        return generatePHPExamples()
+      case 'python':
+        return generatePythonExamples()
+      case 'golang':
+        return generateGolangExamples()
+      default:
+        return generateCurlExamples()
+    }
+  }
+
+  const generateTokenIntegrationGuide = () => {
+    return `# Access Token & Secret Key Management Guide
+
+## Overview
+The Access Token and Secret Key Management system provides secure authentication for your chatbot APIs. Each bot can have multiple tokens with different permissions and expiration dates.
+
+## Features
+- **Secure Token Generation**: Cryptographically secure access tokens and secret keys
+- **Permission System**: Granular access control (read, write, admin, all)
+- **Expiration Control**: Configurable token lifetime (1-365 days)
+- **Token Management**: Create, list, update, validate, and revoke tokens
+- **Usage Tracking**: Monitor token usage and last access times
+
+## Authentication Methods
+1. **Authorization Header**: \`Bearer access_token:secret_key\`
+2. **JSON Body**: \`{"access_token": "token", "secret_key": "key"}\`
+3. **Query Parameters**: \`?access_token=token&secret_key=key\`
+
+## API Endpoints
+
+### Token Management
+- \`POST /api/bots/{botId}/tokens\` - Create new token
+- \`GET /api/bots/{botId}/tokens\` - List all tokens
+- \`PUT /api/bots/{botId}/tokens\` - Update token
+- \`DELETE /api/bots/{botId}/tokens\` - Revoke token
+- \`POST /api/bots/{botId}/tokens/validate\` - Validate token
+
+### Token Permissions
+- **read**: Read-only access to bot data
+- **write**: Read and write access to bot data
+- **admin**: Full administrative access
+- **all**: All permissions (equivalent to admin)
+
+## Security Best Practices
+1. **Store Securely**: Keep tokens in secure environment variables
+2. **Rotate Regularly**: Update tokens periodically
+3. **Minimal Permissions**: Use least privilege principle
+4. **Monitor Usage**: Track token usage and revoke unused tokens
+5. **Secure Transmission**: Always use HTTPS
+
+## Rate Limits
+- Token Creation: 10 tokens per bot per hour
+- Token Validation: 100 requests per minute per token
+- Token Management: 50 requests per minute per bot
+
+## Error Handling
+- 400 Bad Request: Invalid token data or missing fields
+- 401 Unauthorized: Invalid or expired token
+- 403 Forbidden: Insufficient permissions
+- 404 Not Found: Token or bot not found
+- 429 Too Many Requests: Rate limit exceeded
+
+## Examples
+See the language-specific examples in the embeddable widget for complete implementation details in cURL, Node.js, PHP, Python, and Golang.`
+
+  }
+
+  const generateDatabaseIntegrationGuide = () => {
+    return `# Database Chatbot Integration Guide
+
+## Overview
+The Database Chatbot API enables your chatbot to connect to external databases (MySQL, PostgreSQL, MariaDB) and generate intelligent responses based on database queries using natural language processing.
+
+## Features
+- Multi-Database Support: MySQL, PostgreSQL, MariaDB
+- Natural Language to SQL conversion
+- Secure token-based authentication
+- AI-powered response generation
+- Connection pooling and management
+- Query security and permission controls
+
+## Authentication
+The API uses a two-factor authentication system:
+- Access Token: Unique identifier for the bot
+- Secret Key: Secret key for additional security
+
+### Authentication Methods:
+1. Authorization Header: \`Bearer access_token:secret_key\`
+2. JSON Body: \`{"access_token": "token", "secret_key": "key"}\`
+3. Query Parameters: \`?access_token=token&secret_key=key\`
+
+## Database Configuration
+\`\`\`json
+{
+  "type": "mysql|postgresql|mariadb",
+  "host": "database_host",
+  "port": 3306,
+  "database": "database_name",
+  "username": "username",
+  "password": "password",
+  "ssl": false,
+  "connectionLimit": 10
+}
+\`\`\`
+
+## API Endpoints
+
+### 1. Database Query API
+- \`POST /api/database/query\` - Execute SQL queries
+- \`GET /api/database/query?action=test\` - Test database connection
+- \`GET /api/database/query?action=schema\` - Get database schema
+- \`GET /api/database/query?action=table&table=NAME\` - Get table structure
+
+### 2. Chatbot Database Chat
+- \`POST /api/chatbot/database-chat\` - AI-powered database chat
+- \`GET /api/chatbot/database-chat\` - API documentation
+
+### 3. Bot Management
+- \`POST /api/bots/{botId}/database-credentials\` - Create credentials
+- \`GET /api/bots/{botId}/database-credentials\` - Get credentials info
+- \`PUT /api/bots/{botId}/database-credentials\` - Update credentials
+- \`DELETE /api/bots/{botId}/database-credentials\` - Revoke credentials
+
+## Usage Examples
+
+### Basic Database Chat
+\`\`\`javascript
+const response = await fetch('/api/chatbot/database-chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer token:secret',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: "How many users are in the database?",
+    database_config: {
+      type: "mysql",
+      host: "localhost",
+      port: 3306,
+      database: "myapp",
+      username: "user",
+      password: "pass"
+    }
+  })
+});
+\`\`\`
+
+### E-commerce Analytics
+\`\`\`javascript
+const response = await fetch('/api/chatbot/database-chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer token:secret',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: "What are the top 5 products by sales this month?",
+    database_config: {
+      type: "mysql",
+      host: "analytics-db.company.com",
+      port: 3306,
+      database: "ecommerce",
+      username: "analyst",
+      password: "secure_password",
+      ssl: true
+    },
+    system_prompt: "You are an e-commerce analytics expert.",
+    max_rows: 5,
+    temperature: 0.2
+  })
+});
+\`\`\`
+
+## Security Features
+- SQL injection prevention with parameterized queries
+- Permission-based access control (read, write, admin, all)
+- Query timeout and row limits
+- Encrypted credential storage
+- Connection pooling to prevent resource exhaustion
+
+## Rate Limits
+- Database Queries: 100 requests/minute per bot
+- Chatbot Responses: 50 requests/minute per bot
+- Connection Tests: 10 requests/minute per bot
+
+## Error Handling
+- 401 Unauthorized: Invalid credentials
+- 403 Forbidden: Insufficient permissions
+- 400 Bad Request: Missing required fields
+- 408 Timeout: Query execution timeout
+- 500 Internal Error: Database connection or server error
+
+## Testing
+Run the test suite:
+\`\`\`bash
+npm run test:database-api
+\`\`\`
+
+## Support
+For technical support or questions about the Database Chatbot API, please refer to the main API documentation or contact the development team.`
+  }
+
+  const downloadWordPressPlugin = async () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    try {
+      // Import JSZip dynamically to avoid SSR issues
+      const JSZip = (await import('jszip')).default
+      const zip = new JSZip()
+      
+      // Fetch the actual plugin files from the server
+      const pluginFiles = [
+        'omnix-chatbot-plugin.php',
+        'admin/dashboard.php', 
+        'admin/tokens.php',
+        'admin/settings.php',
+        'admin/logs.php',
+        'assets/chatbot-widget.js',
+        'assets/chatbot-widget.css'
+      ]
+      
+      // Fetch each file and add to ZIP
+      for (const filePath of pluginFiles) {
+        try {
+          const response = await fetch(`/wordpress-plugin/${filePath}`)
+          if (response.ok) {
+            const content = await response.text()
+            zip.file(filePath, content)
+          } else {
+            // Fallback to generated content if file not found
+            const fallbackContent = getFallbackContent(filePath, baseUrl)
+            zip.file(filePath, fallbackContent)
+          }
+        } catch (error) {
+          console.warn(`Could not fetch ${filePath}, using fallback content`)
+          const fallbackContent = getFallbackContent(filePath, baseUrl)
+          zip.file(filePath, fallbackContent)
+        }
+      }
+      
+      // Add readme.txt
+      zip.file('readme.txt', generateWordPressReadme())
+      
+      // Generate the ZIP file
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      
+      // Create download link and trigger download
+      const url = URL.createObjectURL(zipBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `omnix-chatbot-plugin-${bot.id}.zip`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+    } catch (error) {
+      console.error('Error creating ZIP file:', error)
+      // Fallback to showing file list if ZIP creation fails
+      const fileList = [
+        'omnix-chatbot-plugin.php',
+        'admin/dashboard.php',
+        'admin/tokens.php', 
+        'admin/settings.php',
+        'admin/logs.php',
+        'assets/chatbot-widget.js',
+        'assets/chatbot-widget.css',
+        'readme.txt'
+      ].join('\n')
+      alert(`Error creating ZIP file. Files that would be included:\n\n${fileList}\n\nPlease try again or contact support.`)
+    }
+  }
+  
+  const getFallbackContent = (filePath: string, baseUrl: string) => {
+    switch (filePath) {
+      case 'omnix-chatbot-plugin.php':
+        return generateWordPressPluginMain()
+      case 'admin/dashboard.php':
+        return generateWordPressAdminDashboard()
+      case 'admin/tokens.php':
+        return generateWordPressAdminTokens()
+      case 'admin/settings.php':
+        return generateWordPressAdminSettings()
+      case 'admin/logs.php':
+        return generateWordPressAdminLogs()
+      case 'assets/chatbot-widget.js':
+        return generateWordPressWidgetJS()
+      case 'assets/chatbot-widget.css':
+        return generateWordPressWidgetCSS()
+      default:
+        return `// ${filePath} - Generated content`
+    }
+  }
+
+  const generateWordPressPluginMain = () => {
+    return `<?php
+/**
+ * Plugin Name: OmniX Chatbot Integration
+ * Plugin URI: ${typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}
+ * Description: Integrate AI chatbots with access token authentication for external websites
+ * Version: 1.0.0
+ * Author: Your Name
+ * License: GPL v2 or later
+ * Text Domain: omnix-chatbot
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Define plugin constants
+define('OMNIX_CHATBOT_VERSION', '1.0.0');
+define('OMNIX_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('OMNIX_CHATBOT_PLUGIN_PATH', plugin_dir_path(__FILE__));
+
+class OmniXChatbotPlugin {
+    // Plugin implementation here...
+}
+
+// Initialize the plugin
+new OmniXChatbotPlugin();`
+  }
+
+  const generateWordPressAdminDashboard = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Admin dashboard implementation
+echo '<div class="wrap">';
+echo '<h1>OmniX Chatbot Dashboard</h1>';
+echo '<p>Welcome to the OmniX Chatbot plugin dashboard.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminTokens = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Token management implementation
+echo '<div class="wrap">';
+echo '<h1>Access Tokens</h1>';
+echo '<p>Manage your chatbot access tokens here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminSettings = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Settings page implementation
+echo '<div class="wrap">';
+echo '<h1>OmniX Chatbot Settings</h1>';
+echo '<p>Configure your chatbot settings here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminLogs = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Logs page implementation
+echo '<div class="wrap">';
+echo '<h1>API Logs</h1>';
+echo '<p>View your chatbot API logs here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressWidgetJS = () => {
+    return `/**
+ * OmniX Chatbot Widget
+ * A lightweight JavaScript widget for embedding chatbots
+ */
+
+(function() {
+    'use strict';
+    
+    // Widget implementation here...
+    console.log('OmniX Chatbot Widget loaded');
+})();`
+  }
+
+  const generateWordPressWidgetCSS = () => {
+    return `/**
+ * OmniX Chatbot Widget Styles
+ * Additional CSS for the chatbot widget
+ */
+
+.omnix-chatbot-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+/* Additional styles here... */`
+  }
+
+  const generateWordPressReadme = () => {
+    return `=== OmniX Chatbot Integration ===
+Contributors: yourname
+Tags: chatbot, ai, integration, wordpress
+Requires at least: 5.0
+Tested up to: 6.4
+Requires PHP: 7.4
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Integrate AI chatbots with access token authentication for external websites.
+
+== Description ==
+
+The OmniX Chatbot Integration plugin allows you to easily embed AI chatbots on your WordPress site using secure access tokens. Features include:
+
+* Secure token-based authentication
+* Easy shortcode integration
+* Voice features support
+* Multiple themes and customization options
+* Analytics and usage tracking
+* REST API support
+
+== Installation ==
+
+1. Upload the plugin files to the \`/wp-content/plugins/omnix-chatbot/\` directory
+2. Activate the plugin through the 'Plugins' screen in WordPress
+3. Go to OmniX Chatbot > Settings to configure your API settings
+4. Generate access tokens in OmniX Chatbot > Access Tokens
+5. Use the shortcode in your posts, pages, or widgets
+
+== Frequently Asked Questions ==
+
+= How do I get an access token? =
+
+Generate access tokens in the OmniX Chatbot > Access Tokens section of your WordPress admin.
+
+= Can I customize the chatbot appearance? =
+
+Yes, you can customize colors, position, themes, and more through the shortcode parameters.
+
+= Does it support voice features? =
+
+Yes, the plugin supports both speech recognition and text-to-speech features.
+
+== Screenshots ==
+
+1. Admin dashboard
+2. Token management
+3. Settings page
+4. Chatbot widget
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial release
+* Token-based authentication
+* Shortcode integration
+* Voice features support
+* Analytics tracking`
   }
 
   const generateReactComponent = () => {
@@ -504,29 +1883,29 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 shadow-lg hover:scale-105 transition-transform"
+          className="w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105"
           style={{ backgroundColor: '${customization.primaryColor}', color: 'white' }}
         >
           <MessageSquare size={24} />
         </button>
       ) : (
         <div 
-          className="w-80 shadow-xl border-2 rounded-lg bg-white"
+          className="w-80 bg-white rounded-lg border-2 shadow-xl"
           style={{ borderColor: '${customization.primaryColor}', height: isMinimized ? '64px' : '400px' }}
         >
           {/* Header */}
           <div 
-            className="p-3 flex items-center justify-between text-white"
+            className="flex justify-between items-center p-3 text-white"
             style={{ backgroundColor: '${customization.primaryColor}' }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2 items-center">
               ${customization.showAvatar ? `
               <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                className="flex justify-center items-center w-8 h-8 text-sm font-medium rounded-full"
                 style={{ backgroundColor: '${customization.secondaryColor}' }}
               >
                 ${bot.name.charAt(0).toUpperCase()}
@@ -542,13 +1921,13 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
             <div className="flex gap-1">
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded"
+                className="flex justify-center items-center w-6 h-6 rounded hover:bg-white/20"
               >
                 {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded"
+                className="flex justify-center items-center w-6 h-6 rounded hover:bg-white/20"
               >
                 <X size={12} />
               </button>
@@ -558,9 +1937,9 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
           {!isMinimized && (
             <>
               {/* Messages */}
-              <div className="flex-1 p-3 overflow-y-auto" style={{ height: '280px' }}>
+              <div className="overflow-y-auto flex-1 p-3" style={{ height: '280px' }}>
                 {messages.length === 0 ? (
-                  <div className="text-center py-4 text-sm text-gray-600">
+                  <div className="py-4 text-sm text-center text-gray-600">
                     Hi! I'm ${bot.name}. How can I help you today?
                   </div>
                 ) : (
@@ -580,7 +1959,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                         {message.role === 'assistant' && voiceConfig.enableVoice && speechSynthesis && (
                           <button
                             onClick={() => speakText(message.content)}
-                            className="w-6 h-6 flex items-center justify-center opacity-60 hover:opacity-100"
+                            className="flex justify-center items-center w-6 h-6 opacity-60 hover:opacity-100"
                             title="Play message"
                           >
                             <Volume2 size={12} />
@@ -592,7 +1971,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                 )}
                 {isLoading && (
                   <div className="flex justify-start mb-3">
-                    <div className="bg-gray-100 rounded-lg px-3 py-2">
+                    <div className="px-3 py-2 bg-gray-100 rounded-lg">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -604,7 +1983,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
               </div>
 
               {/* Input */}
-              <div className="p-3 border-t flex gap-2">
+              <div className="flex gap-2 p-3 border-t">
                 <input
                   type="text"
                   value={inputValue}
@@ -612,7 +1991,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                   onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type your message..."
                   disabled={isLoading}
-                  className="flex-1 px-3 py-2 border rounded-full outline-none text-sm"
+                  className="flex-1 px-3 py-2 text-sm rounded-full border outline-none"
                 />
                 {voiceConfig.enableVoice && isVoiceSupported && (
                   <button
@@ -629,7 +2008,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                 <button
                   onClick={() => sendMessage()}
                   disabled={!inputValue.trim() || isLoading}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white disabled:opacity-50"
+                  className="flex justify-center items-center w-9 h-9 text-white rounded-full disabled:opacity-50"
                   style={{ backgroundColor: '${customization.primaryColor}' }}
                 >
                   <Send size={16} />
@@ -671,8 +2050,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ExternalLink className="h-5 w-5" />
+          <DialogTitle className="flex gap-2 items-center">
+            <ExternalLink className="w-5 h-5" />
             Export {bot.name} Widget
           </DialogTitle>
           <DialogDescription>
@@ -682,21 +2061,33 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 gap-1 p-1">
-              <TabsTrigger value="widget" className="flex items-center gap-2">
-                <Code className="h-4 w-4" />
+            <TabsList className="grid grid-cols-7 gap-1 p-1 w-full">
+              <TabsTrigger value="widget" className="flex gap-2 items-center">
+                <Code className="w-4 h-4" />
                 Widget
               </TabsTrigger>
-              <TabsTrigger value="iframe" className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
+              <TabsTrigger value="iframe" className="flex gap-2 items-center">
+                <Globe className="w-4 h-4" />
                 Iframe
               </TabsTrigger>
-              <TabsTrigger value="react" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <TabsTrigger value="react" className="flex gap-2 items-center">
+                <Settings className="w-4 h-4" />
                 React
               </TabsTrigger>
-              <TabsTrigger value="customize" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <TabsTrigger value="wordpress" className="flex gap-2 items-center">
+                <FileText className="w-4 h-4" />
+                WordPress
+              </TabsTrigger>
+              <TabsTrigger value="database" className="flex gap-2 items-center">
+                <Database className="w-4 h-4" />
+                Database
+              </TabsTrigger>
+              <TabsTrigger value="tokens" className="flex gap-2 items-center">
+                <Key className="w-4 h-4" />
+                Tokens
+              </TabsTrigger>
+              <TabsTrigger value="customize" className="flex gap-2 items-center">
+                <Settings className="w-4 h-4" />
                 Customize
               </TabsTrigger>
             </TabsList>
@@ -744,7 +2135,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <select
                     value={customization.position}
                     onChange={(e) => setCustomization(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full p-2 border rounded"
+                    className="p-2 w-full rounded border"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -758,7 +2149,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <select
                     value={customization.size}
                     onChange={(e) => setCustomization(prev => ({ ...prev, size: e.target.value }))}
-                    className="w-full p-2 border rounded"
+                    className="p-2 w-full rounded border"
                   >
                     <option value="small">Small</option>
                     <option value="medium">Medium</option>
@@ -803,10 +2194,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
 
               {/* Voice Settings Section */}
-              <div className="border-t pt-4">
-                <h4 className="text-sm font-semibold mb-3">Voice Settings</h4>
+              <div className="pt-4 border-t">
+                <h4 className="mb-3 text-sm font-semibold">Voice Settings</h4>
                 
-                <div className="flex items-center space-x-2 mb-4">
+                <div className="flex items-center mb-4 space-x-2">
                   <input
                     type="checkbox"
                     id="enableVoice"
@@ -818,14 +2209,14 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </div>
 
                 {customization.enableVoice && (
-                  <div className="space-y-4 pl-4">
+                  <div className="pl-4 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Voice Language</label>
                         <select
                           value={customization.voiceLanguage}
                           onChange={(e) => setCustomization(prev => ({ ...prev, voiceLanguage: e.target.value }))}
-                          className="w-full p-2 border rounded text-sm"
+                          className="p-2 w-full text-sm rounded border"
                         >
                           <option value="en-US">English (US)</option>
                           <option value="en-GB">English (UK)</option>
@@ -871,7 +2262,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                             onChange={(e) => setCustomization(prev => ({ ...prev, voiceRate: parseFloat(e.target.value) }))}
                             className="flex-1"
                           />
-                          <span className="text-xs text-muted-foreground w-8">{customization.voiceRate}x</span>
+                          <span className="w-8 text-xs text-muted-foreground">{customization.voiceRate}x</span>
                         </div>
                       </div>
                       
@@ -887,7 +2278,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                             onChange={(e) => setCustomization(prev => ({ ...prev, voicePitch: parseFloat(e.target.value) }))}
                             className="flex-1"
                           />
-                          <span className="text-xs text-muted-foreground w-8">{customization.voicePitch}x</span>
+                          <span className="w-8 text-xs text-muted-foreground">{customization.voicePitch}x</span>
                         </div>
                       </div>
                     </div>
@@ -898,31 +2289,31 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
 
             <TabsContent value="widget" className="space-y-4 w-full">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">JavaScript Widget Code</label>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(generateWidgetScript())}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="w-4 h-4" />
                       Copy
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => downloadScript(generateWidgetScript(), `${bot.name.toLowerCase().replace(/\s+/g, '-')}-widget.js`)}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="w-4 h-4" />
                       Download
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-48 w-full rounded border p-3">
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                <ScrollArea className="p-3 w-full h-48 rounded border">
+                  <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                     {generateWidgetScript()}
                   </pre>
                 </ScrollArea>
@@ -932,44 +2323,44 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             <TabsContent value="iframe" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Standard Iframe Embed</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateIframeEmbed())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-32 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateIframeEmbed()}
                     </pre>
                   </ScrollArea>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Mobile Iframe Embed (Chat Icon)</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateMobileIframeEmbed())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-32 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateMobileIframeEmbed()}
                     </pre>
                   </ScrollArea>
@@ -982,57 +2373,527 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
 
             <TabsContent value="react" className="space-y-4 w-full">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">React Component</label>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(generateReactComponent())}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="w-4 h-4" />
                       Copy
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => downloadScript(generateReactComponent(), `${bot.name.replace(/\s+/g, '')}Chatbot.jsx`)}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="w-4 h-4" />
                       Download
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-64 w-full rounded border p-3">
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                <ScrollArea className="p-3 w-full h-64 rounded border">
+                  <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                     {generateReactComponent()}
                   </pre>
                 </ScrollArea>
               </div>
             </TabsContent>
+
+            <TabsContent value="wordpress" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">WordPress Shortcode</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateWordPressShortcode())}
+                        className="flex gap-2 items-center"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                      {generateWordPressShortcode()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">WordPress Plugin Files</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadWordPressPlugin()}
+                        className="flex gap-2 items-center"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download Plugin
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Download the complete WordPress plugin with all necessary files for installation.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">Installation Instructions</label>
+                  </div>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div>1. Upload the plugin files to <code>/wp-content/plugins/omnix-chatbot/</code></div>
+                    <div>2. Activate the plugin in WordPress admin</div>
+                    <div>3. Go to <strong>OmniX Chatbot &gt; Settings</strong> to configure</div>
+                    <div>4. Generate access tokens in <strong>OmniX Chatbot &gt; Access Tokens</strong></div>
+                    <div>5. Use the shortcode in posts, pages, or widgets</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">Token Generation API</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateTokenAPIExample())}
+                        className="flex gap-2 items-center"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="p-3 w-full h-40 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                      {generateTokenAPIExample()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium">WordPress REST API Usage</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateWordPressAPIExample())}
+                        className="flex gap-2 items-center"
+                      >
+                        <Copy className="w-4 h-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="p-3 w-full h-40 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                      {generateWordPressAPIExample()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tokens" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                  <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-green-800">
+                    <Key className="w-5 h-5" />
+                    Access Token & Secret Key Management
+                  </h4>
+                  <p className="text-sm text-green-700">
+                    Create, manage, and validate access tokens and secret keys for your bot. These tokens provide secure authentication for API access and database operations.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">Token Management Examples</label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(getCurrentLanguageContent())}
+                          className="flex gap-2 items-center"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy {selectedLanguage.toUpperCase()} Examples
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadScript(generateTokenIntegrationGuide(), 'token-management-guide.md')}
+                          className="flex gap-2 items-center"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Guide
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() => setSelectedLanguage('curl')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'curl' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        cURL
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('nodejs')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'nodejs' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Node.js
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('php')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'php' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        PHP
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('python')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'python' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Python
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('golang')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'golang' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Golang
+                      </button>
+                    </div>
+                    
+                    <ScrollArea className="p-3 w-full h-80 rounded border">
+                      <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                        {getCurrentLanguageContent()}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Shield className="w-4 h-4" />
+                        Security Features
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Secure Generation:</strong> Cryptographically secure tokens</div>
+                        <div>• <strong>Expiration Control:</strong> Configurable token lifetime</div>
+                        <div>• <strong>Permission System:</strong> Granular access control</div>
+                        <div>• <strong>Token Revocation:</strong> Instant token deactivation</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Zap className="w-4 h-4" />
+                        Token Operations
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Create:</strong> Generate new access tokens</div>
+                        <div>• <strong>List:</strong> View all bot tokens</div>
+                        <div>• <strong>Validate:</strong> Check token validity</div>
+                        <div>• <strong>Update:</strong> Modify token permissions</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="text-sm font-semibold">API Endpoints</h5>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Create new token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>GET /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">List tokens</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;botId&#125;/tokens/validate</code></span>
+                        <span className="text-muted-foreground">Validate token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>PUT /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Update token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>DELETE /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Revoke token</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <h5 className="mb-2 text-sm font-medium text-blue-800">🔑 Quick Start</h5>
+                    <div className="space-y-1 text-xs text-blue-700">
+                      <div>1. Create a new access token for your bot</div>
+                      <div>2. Use the token for API authentication</div>
+                      <div>3. Set appropriate permissions (read, write, admin)</div>
+                      <div>4. Monitor token usage and expiration</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="database" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-blue-800">
+                    <Database className="w-5 h-5" />
+                    Database Chatbot API
+                  </h4>
+                  <p className="text-sm text-blue-700">
+                    Enable your chatbot to connect to external databases (MySQL, PostgreSQL, MariaDB) and generate intelligent responses based on database queries using natural language processing.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">API Examples & Documentation</label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(getCurrentLanguageContent())}
+                          className="flex gap-2 items-center"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy {selectedLanguage.toUpperCase()} Examples
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadScript(generateDatabaseIntegrationGuide(), 'database-integration-guide.md')}
+                          className="flex gap-2 items-center"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Guide
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() => setSelectedLanguage('curl')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'curl' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        cURL
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('nodejs')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'nodejs' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Node.js
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('php')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'php' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        PHP
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('python')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'python' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Python
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('golang')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'golang' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Golang
+                      </button>
+                    </div>
+                    
+                    <ScrollArea className="p-3 w-full h-80 rounded border">
+                      <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                        {getCurrentLanguageContent()}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Key className="w-4 h-4" />
+                        Authentication
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Access Token:</strong> Unique identifier for the bot</div>
+                        <div>• <strong>Secret Key:</strong> Additional security layer</div>
+                        <div>• <strong>Methods:</strong> Header, JSON body, or query params</div>
+                        <div>• <strong>Format:</strong> <code>Bearer token:secret</code></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Zap className="w-4 h-4" />
+                        Features
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Multi-Database:</strong> MySQL, PostgreSQL, MariaDB</div>
+                        <div>• <strong>AI-Powered:</strong> Natural language to SQL</div>
+                        <div>• <strong>Secure:</strong> SQL injection prevention</div>
+                        <div>• <strong>Scalable:</strong> Connection pooling</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="flex gap-2 items-center text-sm font-semibold">
+                      <Shield className="w-4 h-4" />
+                      Security Features
+                    </h5>
+                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                      <div className="space-y-1">
+                        <div>• Parameterized queries</div>
+                        <div>• Permission-based access</div>
+                        <div>• Query timeout limits</div>
+                        <div>• Row count limits</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div>• Encrypted credential storage</div>
+                        <div>• Connection pooling</div>
+                        <div>• Rate limiting</div>
+                        <div>• Audit logging</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="text-sm font-semibold">API Endpoints</h5>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/database/query</code></span>
+                        <span className="text-muted-foreground">Execute SQL queries</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/chatbot/database-chat</code></span>
+                        <span className="text-muted-foreground">AI-powered database chat</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>GET /api/database/query?action=test</code></span>
+                        <span className="text-muted-foreground">Test database connection</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;id&#125;/database-credentials</code></span>
+                        <span className="text-muted-foreground">Manage credentials</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <h5 className="mb-2 text-sm font-medium text-green-800">🚀 Quick Start</h5>
+                    <div className="space-y-1 text-xs text-green-700">
+                      <div>1. Create database credentials for your bot</div>
+                      <div>2. Test the database connection</div>
+                      <div>3. Use the chatbot API with database config</div>
+                      <div>4. Ask natural language questions about your data</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
           
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Integration Instructions:</h4>
+          <div className="p-4 mt-6 rounded-lg bg-muted">
+            <h4 className="mb-2 text-sm font-medium">Integration Instructions:</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div>• <strong>JavaScript Widget:</strong> Add the script tag to your HTML head section</div>
               <div>• <strong>Standard Iframe:</strong> Insert the iframe code where you want the chat to appear</div>
               <div>• <strong>Mobile Iframe:</strong> Shows a floating chat button that opens a chat window in the center of the screen (perfect for external websites)</div>
               <div>• <strong>React Component:</strong> Import and use the component in your React application</div>
+              <div>• <strong>WordPress Plugin:</strong> Install the plugin and use shortcodes in posts, pages, or widgets</div>
+              <div>• <strong>Database Integration:</strong> Connect to external databases for AI-powered data queries</div>
               <div>• <strong>API Integration:</strong> Use the REST API endpoints for custom implementations</div>
             </div>
             
             {customization.enableVoice && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <h5 className="font-medium text-sm mb-2 text-blue-800">🎤 Voice Features Enabled:</h5>
+              <div className="p-3 mt-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h5 className="mb-2 text-sm font-medium text-blue-800">🎤 Voice Features Enabled:</h5>
                 <div className="space-y-1 text-xs text-blue-700">
                   <div>• <strong>Voice Input:</strong> Users can speak to the chatbot using the microphone button</div>
                   <div>• <strong>Text-to-Speech:</strong> Bot responses can be played aloud {customization.autoSpeak ? '(auto-enabled)' : '(click speaker icon)'}</div>
                   <div>• <strong>Language:</strong> {customization.voiceLanguage}</div>
                   <div>• <strong>Browser Support:</strong> Requires modern browsers with Web Speech API support</div>
                   <div>• <strong>Permissions:</strong> Users will be prompted to allow microphone access</div>
+                </div>
+              </div>
+            )}
+
+            {customization.enableDatabase && (
+              <div className="p-3 mt-4 bg-green-50 rounded-lg border border-green-200">
+                <h5 className="flex gap-2 items-center mb-2 text-sm font-medium text-green-800">
+                  <Database className="w-4 h-4" />
+                  Database Integration Enabled:
+                </h5>
+                <div className="space-y-1 text-xs text-green-700">
+                  <div>• <strong>Database Type:</strong> {customization.databaseType.toUpperCase()}</div>
+                  <div>• <strong>Host:</strong> {customization.databaseHost || 'Not configured'}</div>
+                  <div>• <strong>Database:</strong> {customization.databaseName || 'Not configured'}</div>
+                  <div>• <strong>Permissions:</strong> {customization.databasePermissions.join(', ')}</div>
+                  <div>• <strong>SSL:</strong> {customization.databaseSSL ? 'Enabled' : 'Disabled'}</div>
+                  <div>• <strong>AI Queries:</strong> Users can ask natural language questions about your data</div>
+                  <div>• <strong>Security:</strong> All queries use parameterized statements and permission controls</div>
                 </div>
               </div>
             )}
