@@ -1,3 +1,5 @@
 {
-    "liveServer.settings.port": 5500
+    "liveServer.settings.port": 5500,
+    "WillLuke.nextjs.addTypesOnSave": true,
+    "WillLuke.nextjs.hasPrompted": true
 }
