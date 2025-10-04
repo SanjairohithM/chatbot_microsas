@@ -3,113 +3,478 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Chatbot Widget</title>
+    <title>OmniX Chatbot Widget Test</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
+        
         .container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
+            border-radius: 12px;
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
+        
         h1 {
             color: #333;
-            margin-bottom: 20px;
+            text-align: center;
+            margin-bottom: 30px;
         }
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
         }
+        
+        .test-section h2 {
+            margin-top: 0;
+            color: #3b82f6;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
         .status {
             padding: 10px;
-            border-radius: 4px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        
+        .widget-preview {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            background: #f9fafb;
+        }
+        
+        .instructions {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 15px;
             margin: 20px 0;
         }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #92400e;
         }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
         }
-        .info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+        
+        .instructions li {
+            margin: 5px 0;
+            color: #92400e;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🤖 Chatbot Widget Test</h1>
+        <h1>🤖 OmniX Chatbot Widget Test</h1>
         
-        <p>This page tests the chatbot widget integration. The widget should appear in the bottom-right corner.</p>
-        
-        <div class="status info">
-            <strong>Test Status:</strong> Widget should be loading...
+        <div class="instructions">
+            <h3>📋 Setup Instructions</h3>
+            <ol>
+                <li>Replace the placeholder values below with your actual bot ID and access token</li>
+                <li>Make sure your OmniX Chatbot API is running and accessible</li>
+                <li>If using WordPress, ensure the plugin is installed and configured</li>
+                <li>Click "Test Widget" to load the chatbot widget</li>
+            </ol>
         </div>
         
-        <h2>Test Instructions:</h2>
-        <ol>
-            <li>Look for the blue chat button in the bottom-right corner</li>
-            <li>Click the button to open the chat widget</li>
-            <li>Type a message and press Enter or click Send</li>
-            <li>Check the browser console (F12) for any errors</li>
-        </ol>
+        <div class="test-section">
+            <h2>🔧 Configuration</h2>
+            
+            <div class="input-group">
+                <label for="botId">Bot ID:</label>
+                <input type="number" id="botId" value="1" placeholder="Enter your bot ID">
+            </div>
+            
+            <div class="input-group">
+                <label for="accessToken">Access Token:</label>
+                <input type="text" id="accessToken" value="ox_your_access_token_here" placeholder="Enter your access token">
+            </div>
+            
+            <div class="input-group">
+                <label for="apiUrl">API URL:</label>
+                <input type="url" id="apiUrl" value="https://your-domain.com" placeholder="Enter your API URL">
+            </div>
+            
+            <button class="button" onclick="testConnection()">Test Connection</button>
+            <div id="connectionStatus"></div>
+        </div>
         
-        <h2>Configuration:</h2>
-        <ul>
-            <li><strong>Bot ID:</strong> 1 (replace with your actual bot ID)</li>
-            <li><strong>API URL:</strong> /api/chat</li>
-            <li><strong>Position:</strong> bottom-right</li>
-            <li><strong>Size:</strong> medium</li>
-        </ul>
+        <div class="test-section">
+            <h2>🎨 Widget Customization</h2>
+            
+            <div class="input-group">
+                <label for="theme">Theme:</label>
+                <select id="theme">
+                    <option value="default">Default</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="position">Position:</label>
+                <select id="position">
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="enableVoice" checked> Enable Voice Features
+                </label>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="autoOpen"> Auto Open Widget
+                </label>
+            </div>
+            
+            <button class="button" onclick="loadWidget()">Load Widget</button>
+            <button class="button" onclick="removeWidget()">Remove Widget</button>
+        </div>
         
-        <div class="status success">
-            <strong>✅ Widget Loaded Successfully!</strong><br>
-            If you can see the chat button, the widget is working correctly.
+        <div class="test-section">
+            <h2>📝 Generated Code</h2>
+            
+            <h3>HTML Widget Code:</h3>
+            <div class="code-block" id="htmlCode">
+                <!-- Generated HTML will appear here -->
+            </div>
+            
+            <h3>WordPress Shortcode:</h3>
+            <div class="code-block" id="shortcode">
+                <!-- Generated shortcode will appear here -->
+            </div>
+            
+            <h3>JavaScript Integration:</h3>
+            <div class="code-block" id="jsCode">
+                <!-- Generated JavaScript will appear here -->
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Widget Preview</h2>
+            <div class="widget-preview" id="widgetPreview">
+                <p>Click "Load Widget" to see the chatbot widget in action!</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="testResults">
+                <p>Run tests to see results here.</p>
+            </div>
+            <button class="button" onclick="runTests()">Run All Tests</button>
         </div>
     </div>
 
-    <!-- Test widget integration -->
-    <script src="/widgets/chatbot-widget.js" 
-            data-bot-id="1"
-            data-primary-color="#3b82f6"
-            data-secondary-color="#1e40af"
-            data-position="bottom-right"
-            data-size="medium"
-            data-show-avatar="true"
-            data-show-title="true"
-            data-auto-open="false"
-            data-api-url="/api/chat"
-            data-bot-name="Test Bot">
-    </script>
-
+    <!-- Include the chatbot widget script -->
+    <script src="/widgets/chatbot-widget.js"></script>
+    
     <script>
-        // Test script to check if widget loaded
-        setTimeout(() => {
-            const widget = document.getElementById('chatbot-widget-1');
-            const statusDiv = document.querySelector('.status.info');
+        let currentWidget = null;
+        
+        function getConfig() {
+            return {
+                botId: document.getElementById('botId').value,
+                accessToken: document.getElementById('accessToken').value,
+                apiUrl: document.getElementById('apiUrl').value,
+                theme: document.getElementById('theme').value,
+                position: document.getElementById('position').value,
+                enableVoice: document.getElementById('enableVoice').checked,
+                autoOpen: document.getElementById('autoOpen').checked
+            };
+        }
+        
+        function updateGeneratedCode() {
+            const config = getConfig();
             
-            if (widget) {
-                statusDiv.className = 'status success';
-                statusDiv.innerHTML = '<strong>✅ Widget Loaded Successfully!</strong><br>You can see the chat button in the bottom-right corner.';
-            } else {
-                statusDiv.className = 'status error';
-                statusDiv.innerHTML = '<strong>❌ Widget Failed to Load</strong><br>Check the browser console for errors.';
+            // HTML Widget Code
+            const htmlCode = `<div id="omnix-chatbot-test" 
+     class="omnix-chatbot-widget" 
+     data-bot-id="${config.botId}"
+     data-access-token="${config.accessToken}"
+     data-api-url="${config.apiUrl}"
+     data-theme="${config.theme}"
+     data-position="${config.position}"
+     data-enable-voice="${config.enableVoice}"
+     data-auto-open="${config.autoOpen}">
+</div>`;
+            
+            document.getElementById('htmlCode').textContent = htmlCode;
+            
+            // WordPress Shortcode
+            const shortcode = `[omnix_chatbot bot_id="${config.botId}" access_token="${config.accessToken}" theme="${config.theme}" position="${config.position}" enable_voice="${config.enableVoice}" auto_open="${config.autoOpen}"]`;
+            document.getElementById('shortcode').textContent = shortcode;
+            
+            // JavaScript Integration
+            const jsCode = `// Include the script
+<script src="${config.apiUrl}/widgets/chatbot-widget.js" 
+        data-bot-id="${config.botId}"
+        data-access-token="${config.accessToken}"
+        data-api-url="${config.apiUrl}"
+        data-theme="${config.theme}"
+        data-position="${config.position}"
+        data-enable-voice="${config.enableVoice}"
+        data-auto-open="${config.autoOpen}">
+</script>
+
+// Or initialize programmatically
+const chatbot = new OmniXChatbotWidget({
+    botId: "${config.botId}",
+    accessToken: "${config.accessToken}",
+    apiUrl: "${config.apiUrl}",
+    theme: "${config.theme}",
+    position: "${config.position}",
+    enableVoice: ${config.enableVoice},
+    autoOpen: ${config.autoOpen}
+});`;
+            
+            document.getElementById('jsCode').textContent = jsCode;
+        }
+        
+        async function testConnection() {
+            const config = getConfig();
+            const statusDiv = document.getElementById('connectionStatus');
+            
+            statusDiv.innerHTML = '<div class="status info">Testing connection...</div>';
+            
+            try {
+                const response = await fetch(`${config.apiUrl}/api/auth/token?access_token=${config.accessToken}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '<div class="status success">✅ Connection successful! Token is valid.</div>';
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Connection failed: ${data.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Connection error: ${error.message}</div>`;
             }
-        }, 2000);
+        }
+        
+        function loadWidget() {
+            removeWidget();
+            
+            const config = getConfig();
+            
+            // Create widget container
+            const widgetContainer = document.createElement('div');
+            widgetContainer.id = 'test-widget-container';
+            widgetContainer.innerHTML = `
+                <div id="omnix-chatbot-test" 
+                     class="omnix-chatbot-widget" 
+                     data-bot-id="${config.botId}"
+                     data-access-token="${config.accessToken}"
+                     data-api-url="${config.apiUrl}"
+                     data-theme="${config.theme}"
+                     data-position="${config.position}"
+                     data-enable-voice="${config.enableVoice}"
+                     data-auto-open="${config.autoOpen}">
+                </div>
+            `;
+            
+            document.getElementById('widgetPreview').appendChild(widgetContainer);
+            
+            // Initialize widget if OmniXChatbotWidget is available
+            if (typeof OmniXChatbotWidget !== 'undefined') {
+                currentWidget = new OmniXChatbotWidget({
+                    botId: config.botId,
+                    accessToken: config.accessToken,
+                    apiUrl: config.apiUrl,
+                    theme: config.theme,
+                    position: 'static', // Use static positioning for preview
+                    enableVoice: config.enableVoice,
+                    autoOpen: config.autoOpen
+                });
+            }
+            
+            document.getElementById('widgetPreview').innerHTML = '<p>✅ Widget loaded! Check the bottom-right corner of the page.</p>';
+        }
+        
+        function removeWidget() {
+            if (currentWidget) {
+                // Remove widget from DOM
+                const widgetElement = document.querySelector('#test-widget-container');
+                if (widgetElement) {
+                    widgetElement.remove();
+                }
+                currentWidget = null;
+            }
+            
+            document.getElementById('widgetPreview').innerHTML = '<p>Click "Load Widget" to see the chatbot widget in action!</p>';
+        }
+        
+        async function runTests() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="status info">Running tests...</div>';
+            
+            const config = getConfig();
+            const results = [];
+            
+            // Test 1: Token validation
+            try {
+                const response = await fetch(`${config.apiUrl}/api/auth/token?access_token=${config.accessToken}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.push('✅ Token validation: PASSED');
+                } else {
+                    results.push(`❌ Token validation: FAILED - ${data.error}`);
+                }
+            } catch (error) {
+                results.push(`❌ Token validation: ERROR - ${error.message}`);
+            }
+            
+            // Test 2: Chat API
+            try {
+                const response = await fetch(`${config.apiUrl}/api/chat/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${config.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: 'Test message from widget test page',
+                        conversationId: null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    results.push('✅ Chat API: PASSED');
+                } else {
+                    results.push(`❌ Chat API: FAILED - ${data.error}`);
+                }
+            } catch (error) {
+                results.push(`❌ Chat API: ERROR - ${error.message}`);
+            }
+            
+            // Test 3: Widget initialization
+            try {
+                if (typeof OmniXChatbotWidget !== 'undefined') {
+                    results.push('✅ Widget script: LOADED');
+                } else {
+                    results.push('❌ Widget script: NOT LOADED');
+                }
+            } catch (error) {
+                results.push(`❌ Widget script: ERROR - ${error.message}`);
+            }
+            
+            resultsDiv.innerHTML = results.map(result => `<div class="status ${result.includes('✅') ? 'success' : 'error'}">${result}</div>`).join('');
+        }
+        
+        // Update generated code when inputs change
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = ['botId', 'accessToken', 'apiUrl', 'theme', 'position', 'enableVoice', 'autoOpen'];
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', updateGeneratedCode);
+                    element.addEventListener('input', updateGeneratedCode);
+                }
+            });
+            
+            updateGeneratedCode();
+        });
     </script>
 </body>
 </html>

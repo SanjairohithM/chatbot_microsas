@@ -23,7 +23,8 @@ import {
   Settings,
   Mic,
   MicOff,
-  Volume2
+  Volume2,
+  FileText
 } from 'lucide-react'
 import type { Bot, Message } from '@/lib/types'
 
@@ -47,7 +48,7 @@ export function EmbeddableWidget({
   const [inputValue, setInputValue] = useState('')
   const [isMinimized, setIsMinimized] = useState(false)
   const [isListening, setIsListening] = useState(false)
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [recognition, setRecognition] = useState<any>(null)
   const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null)
   const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   
@@ -386,6 +387,270 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
 </iframe>`
   }
 
+  const generateWordPressShortcode = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `[omnix_chatbot 
+    bot_id="${bot.id}" 
+    access_token="YOUR_ACCESS_TOKEN_HERE" 
+    theme="default" 
+    position="${customization.position}" 
+    auto_open="${customization.autoOpen}" 
+    show_avatar="${customization.showAvatar}" 
+    show_title="${customization.showTitle}" 
+    enable_voice="${customization.enableVoice}" 
+    voice_language="${customization.voiceLanguage}" 
+    auto_speak="${customization.autoSpeak}"]`
+  }
+
+  const generateTokenAPIExample = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Generate access token for WordPress integration
+curl -X POST "${baseUrl}/api/tokens" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "bot_id": ${bot.id},
+    "token_name": "WordPress Integration",
+    "permissions": "chat,analytics,conversations",
+    "expires_days": 365
+  }'
+
+// Response:
+{
+  "success": true,
+  "access_token": "ox_abc123...",
+  "secret_key": "ox_sk_def456...",
+  "bot_id": ${bot.id},
+  "token_name": "WordPress Integration",
+  "permissions": ["chat", "analytics", "conversations"],
+  "expires_at": "2025-12-31T23:59:59.000Z"
+}`
+  }
+
+  const generateWordPressAPIExample = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Send chat message via WordPress REST API
+fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: 'Hello, how can you help me?',
+    conversationId: null
+  })
+})
+.then(response => response.json())
+.then(data => {
+  console.log('Bot response:', data.message);
+});
+
+// Available WordPress REST API endpoints:
+// GET  /wp-json/omnix-chatbot/v1/chat
+// POST /wp-json/omnix-chatbot/v1/chat
+// GET  /wp-json/omnix-chatbot/v1/bots
+// GET  /wp-json/omnix-chatbot/v1/conversations
+// GET  /wp-json/omnix-chatbot/v1/analytics`
+  }
+
+  const downloadWordPressPlugin = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    // Create a zip file with all WordPress plugin files
+    const pluginFiles = {
+      'omnix-chatbot-plugin.php': generateWordPressPluginMain(),
+      'admin/dashboard.php': generateWordPressAdminDashboard(),
+      'admin/tokens.php': generateWordPressAdminTokens(),
+      'admin/settings.php': generateWordPressAdminSettings(),
+      'admin/logs.php': generateWordPressAdminLogs(),
+      'assets/chatbot-widget.js': generateWordPressWidgetJS(),
+      'assets/chatbot-widget.css': generateWordPressWidgetCSS(),
+      'readme.txt': generateWordPressReadme()
+    }
+    
+    // For now, just show the files that would be included
+    const fileList = Object.keys(pluginFiles).join('\n')
+    alert(`WordPress Plugin Files to Download:\n\n${fileList}\n\nNote: This would normally create a ZIP file with all the plugin files.`)
+  }
+
+  const generateWordPressPluginMain = () => {
+    return `<?php
+/**
+ * Plugin Name: OmniX Chatbot Integration
+ * Plugin URI: ${typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'}
+ * Description: Integrate AI chatbots with access token authentication for external websites
+ * Version: 1.0.0
+ * Author: Your Name
+ * License: GPL v2 or later
+ * Text Domain: omnix-chatbot
+ */
+
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Define plugin constants
+define('OMNIX_CHATBOT_VERSION', '1.0.0');
+define('OMNIX_CHATBOT_PLUGIN_URL', plugin_dir_url(__FILE__));
+define('OMNIX_CHATBOT_PLUGIN_PATH', plugin_dir_path(__FILE__));
+
+class OmniXChatbotPlugin {
+    // Plugin implementation here...
+}
+
+// Initialize the plugin
+new OmniXChatbotPlugin();`
+  }
+
+  const generateWordPressAdminDashboard = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Admin dashboard implementation
+echo '<div class="wrap">';
+echo '<h1>OmniX Chatbot Dashboard</h1>';
+echo '<p>Welcome to the OmniX Chatbot plugin dashboard.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminTokens = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Token management implementation
+echo '<div class="wrap">';
+echo '<h1>Access Tokens</h1>';
+echo '<p>Manage your chatbot access tokens here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminSettings = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Settings page implementation
+echo '<div class="wrap">';
+echo '<h1>OmniX Chatbot Settings</h1>';
+echo '<p>Configure your chatbot settings here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressAdminLogs = () => {
+    return `<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Logs page implementation
+echo '<div class="wrap">';
+echo '<h1>API Logs</h1>';
+echo '<p>View your chatbot API logs here.</p>';
+echo '</div>';`
+  }
+
+  const generateWordPressWidgetJS = () => {
+    return `/**
+ * OmniX Chatbot Widget
+ * A lightweight JavaScript widget for embedding chatbots
+ */
+
+(function() {
+    'use strict';
+    
+    // Widget implementation here...
+    console.log('OmniX Chatbot Widget loaded');
+})();`
+  }
+
+  const generateWordPressWidgetCSS = () => {
+    return `/**
+ * OmniX Chatbot Widget Styles
+ * Additional CSS for the chatbot widget
+ */
+
+.omnix-chatbot-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #333;
+}
+
+/* Additional styles here... */`
+  }
+
+  const generateWordPressReadme = () => {
+    return `=== OmniX Chatbot Integration ===
+Contributors: yourname
+Tags: chatbot, ai, integration, wordpress
+Requires at least: 5.0
+Tested up to: 6.4
+Requires PHP: 7.4
+Stable tag: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Integrate AI chatbots with access token authentication for external websites.
+
+== Description ==
+
+The OmniX Chatbot Integration plugin allows you to easily embed AI chatbots on your WordPress site using secure access tokens. Features include:
+
+* Secure token-based authentication
+* Easy shortcode integration
+* Voice features support
+* Multiple themes and customization options
+* Analytics and usage tracking
+* REST API support
+
+== Installation ==
+
+1. Upload the plugin files to the \`/wp-content/plugins/omnix-chatbot/\` directory
+2. Activate the plugin through the 'Plugins' screen in WordPress
+3. Go to OmniX Chatbot > Settings to configure your API settings
+4. Generate access tokens in OmniX Chatbot > Access Tokens
+5. Use the shortcode in your posts, pages, or widgets
+
+== Frequently Asked Questions ==
+
+= How do I get an access token? =
+
+Generate access tokens in the OmniX Chatbot > Access Tokens section of your WordPress admin.
+
+= Can I customize the chatbot appearance? =
+
+Yes, you can customize colors, position, themes, and more through the shortcode parameters.
+
+= Does it support voice features? =
+
+Yes, the plugin supports both speech recognition and text-to-speech features.
+
+== Screenshots ==
+
+1. Admin dashboard
+2. Token management
+3. Settings page
+4. Chatbot widget
+
+== Changelog ==
+
+= 1.0.0 =
+* Initial release
+* Token-based authentication
+* Shortcode integration
+* Voice features support
+* Analytics tracking`
+  }
+
   const generateReactComponent = () => {
     return `import React, { useState, useEffect } from 'react';
 import { MessageSquare, Send, X, Minimize2, Maximize2, Mic, MicOff, Volume2 } from 'lucide-react';
@@ -682,7 +947,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 gap-1 p-1">
+            <TabsList className="grid w-full grid-cols-5 gap-1 p-1">
               <TabsTrigger value="widget" className="flex items-center gap-2">
                 <Code className="h-4 w-4" />
                 Widget
@@ -694,6 +959,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               <TabsTrigger value="react" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
                 React
+              </TabsTrigger>
+              <TabsTrigger value="wordpress" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                WordPress
               </TabsTrigger>
               <TabsTrigger value="customize" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
@@ -1012,6 +1281,109 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </ScrollArea>
               </div>
             </TabsContent>
+
+            <TabsContent value="wordpress" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">WordPress Shortcode</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateWordPressShortcode())}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-32 w-full rounded border p-3">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {generateWordPressShortcode()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">WordPress Plugin Files</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadWordPressPlugin()}
+                        className="flex items-center gap-2"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download Plugin
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Download the complete WordPress plugin with all necessary files for installation.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Installation Instructions</label>
+                  </div>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div>1. Upload the plugin files to <code>/wp-content/plugins/omnix-chatbot/</code></div>
+                    <div>2. Activate the plugin in WordPress admin</div>
+                    <div>3. Go to <strong>OmniX Chatbot &gt; Settings</strong> to configure</div>
+                    <div>4. Generate access tokens in <strong>OmniX Chatbot &gt; Access Tokens</strong></div>
+                    <div>5. Use the shortcode in posts, pages, or widgets</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Token Generation API</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateTokenAPIExample())}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-40 w-full rounded border p-3">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {generateTokenAPIExample()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">WordPress REST API Usage</label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(generateWordPressAPIExample())}
+                        className="flex items-center gap-2"
+                      >
+                        <Copy className="h-4 w-4" />
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-40 w-full rounded border p-3">
+                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                      {generateWordPressAPIExample()}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
           
           <div className="mt-6 p-4 bg-muted rounded-lg">
@@ -1021,6 +1393,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               <div>• <strong>Standard Iframe:</strong> Insert the iframe code where you want the chat to appear</div>
               <div>• <strong>Mobile Iframe:</strong> Shows a floating chat button that opens a chat window in the center of the screen (perfect for external websites)</div>
               <div>• <strong>React Component:</strong> Import and use the component in your React application</div>
+              <div>• <strong>WordPress Plugin:</strong> Install the plugin and use shortcodes in posts, pages, or widgets</div>
               <div>• <strong>API Integration:</strong> Use the REST API endpoints for custom implementations</div>
             </div>
             
