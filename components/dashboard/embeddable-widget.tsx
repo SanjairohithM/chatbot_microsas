@@ -154,14 +154,14 @@ export function EmbeddableWidget({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       {!isOpen ? (
         <Button
           onClick={onToggle}
-          className="rounded-full w-14 h-14 shadow-lg hover:scale-105 transition-transform"
+          className="w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105"
           style={{ backgroundColor: '#3b82f6' }}
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageSquare className="w-6 h-6" />
         </Button>
       ) : (
         <Card 
@@ -177,49 +177,49 @@ export function EmbeddableWidget({
             className="p-3 pb-2"
             style={{ backgroundColor: '#3b82f6' }}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex justify-between items-center">
+              <div className="flex gap-2 items-center">
                 <div 
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
+                  className="flex justify-center items-center w-8 h-8 text-sm font-medium text-white rounded-full"
                   style={{ backgroundColor: '#1e40af' }}
                 >
                   {bot.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <CardTitle className="text-white text-sm font-medium">
+                  <CardTitle className="text-sm font-medium text-white">
                     {bot.name}
                   </CardTitle>
                   <div className="text-xs text-white/80">Online</div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex gap-1 items-center">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  className="p-0 w-6 h-6 text-white hover:bg-white/20"
                 >
-                  {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+                  {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onToggle}
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  className="p-0 w-6 h-6 text-white hover:bg-white/20"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="w-3 h-3" />
                 </Button>
               </div>
             </div>
           </CardHeader>
 
           {!isMinimized && (
-            <CardContent className="p-0 flex flex-col h-full">
+            <CardContent className="flex flex-col p-0 h-full">
               {/* Messages */}
               <ScrollArea className="flex-1 p-3">
                 <div className="space-y-3">
                   {messages.length === 0 ? (
-                    <div className="text-center py-4">
+                    <div className="py-4 text-center">
                       <div className="text-sm text-muted-foreground">
                         Hi! I'm {bot.name}. How can I help you today?
                       </div>
@@ -250,10 +250,10 @@ export function EmbeddableWidget({
                               onClick={() => speakText(message.content)}
                               size="sm"
                               variant="ghost"
-                              className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+                              className="p-0 w-6 h-6 opacity-60 hover:opacity-100"
                               title="Play message"
                             >
-                              <Volume2 className="h-3 w-3" />
+                              <Volume2 className="w-3 h-3" />
                             </Button>
                           )}
                         </div>
@@ -262,9 +262,9 @@ export function EmbeddableWidget({
                   )}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                      <div className="px-3 py-2 text-sm rounded-lg bg-muted">
+                        <div className="flex gap-2 items-center">
+                          <div className="w-2 h-2 rounded-full animate-bounce bg-muted-foreground"></div>
                           <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.1s]"></div>
                           <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.2s]"></div>
                         </div>
@@ -293,7 +293,7 @@ export function EmbeddableWidget({
                       variant={isListening ? "destructive" : "outline"}
                       title={isListening ? "Stop listening" : "Start voice input"}
                     >
-                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
                     </Button>
                   )}
                   <Button
@@ -302,7 +302,7 @@ export function EmbeddableWidget({
                     size="sm"
                     style={{ backgroundColor: '#3b82f6' }}
                   >
-                    <Send className="h-4 w-4" />
+                    <Send className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -456,24 +456,96 @@ fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
 // GET  /wp-json/omnix-chatbot/v1/analytics`
   }
 
-  const downloadWordPressPlugin = () => {
+  const downloadWordPressPlugin = async () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
     
-    // Create a zip file with all WordPress plugin files
-    const pluginFiles = {
-      'omnix-chatbot-plugin.php': generateWordPressPluginMain(),
-      'admin/dashboard.php': generateWordPressAdminDashboard(),
-      'admin/tokens.php': generateWordPressAdminTokens(),
-      'admin/settings.php': generateWordPressAdminSettings(),
-      'admin/logs.php': generateWordPressAdminLogs(),
-      'assets/chatbot-widget.js': generateWordPressWidgetJS(),
-      'assets/chatbot-widget.css': generateWordPressWidgetCSS(),
-      'readme.txt': generateWordPressReadme()
+    try {
+      // Import JSZip dynamically to avoid SSR issues
+      const JSZip = (await import('jszip')).default
+      const zip = new JSZip()
+      
+      // Fetch the actual plugin files from the server
+      const pluginFiles = [
+        'omnix-chatbot-plugin.php',
+        'admin/dashboard.php', 
+        'admin/tokens.php',
+        'admin/settings.php',
+        'admin/logs.php',
+        'assets/chatbot-widget.js',
+        'assets/chatbot-widget.css'
+      ]
+      
+      // Fetch each file and add to ZIP
+      for (const filePath of pluginFiles) {
+        try {
+          const response = await fetch(`/wordpress-plugin/${filePath}`)
+          if (response.ok) {
+            const content = await response.text()
+            zip.file(filePath, content)
+          } else {
+            // Fallback to generated content if file not found
+            const fallbackContent = getFallbackContent(filePath, baseUrl)
+            zip.file(filePath, fallbackContent)
+          }
+        } catch (error) {
+          console.warn(`Could not fetch ${filePath}, using fallback content`)
+          const fallbackContent = getFallbackContent(filePath, baseUrl)
+          zip.file(filePath, fallbackContent)
+        }
+      }
+      
+      // Add readme.txt
+      zip.file('readme.txt', generateWordPressReadme())
+      
+      // Generate the ZIP file
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+      
+      // Create download link and trigger download
+      const url = URL.createObjectURL(zipBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `omnix-chatbot-plugin-${bot.id}.zip`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      
+    } catch (error) {
+      console.error('Error creating ZIP file:', error)
+      // Fallback to showing file list if ZIP creation fails
+      const fileList = [
+        'omnix-chatbot-plugin.php',
+        'admin/dashboard.php',
+        'admin/tokens.php', 
+        'admin/settings.php',
+        'admin/logs.php',
+        'assets/chatbot-widget.js',
+        'assets/chatbot-widget.css',
+        'readme.txt'
+      ].join('\n')
+      alert(`Error creating ZIP file. Files that would be included:\n\n${fileList}\n\nPlease try again or contact support.`)
     }
-    
-    // For now, just show the files that would be included
-    const fileList = Object.keys(pluginFiles).join('\n')
-    alert(`WordPress Plugin Files to Download:\n\n${fileList}\n\nNote: This would normally create a ZIP file with all the plugin files.`)
+  }
+  
+  const getFallbackContent = (filePath: string, baseUrl: string) => {
+    switch (filePath) {
+      case 'omnix-chatbot-plugin.php':
+        return generateWordPressPluginMain()
+      case 'admin/dashboard.php':
+        return generateWordPressAdminDashboard()
+      case 'admin/tokens.php':
+        return generateWordPressAdminTokens()
+      case 'admin/settings.php':
+        return generateWordPressAdminSettings()
+      case 'admin/logs.php':
+        return generateWordPressAdminLogs()
+      case 'assets/chatbot-widget.js':
+        return generateWordPressWidgetJS()
+      case 'assets/chatbot-widget.css':
+        return generateWordPressWidgetCSS()
+      default:
+        return `// ${filePath} - Generated content`
+    }
   }
 
   const generateWordPressPluginMain = () => {
@@ -769,29 +841,29 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       {!isOpen ? (
         <button
           onClick={() => setIsOpen(true)}
-          className="rounded-full w-14 h-14 shadow-lg hover:scale-105 transition-transform"
+          className="w-14 h-14 rounded-full shadow-lg transition-transform hover:scale-105"
           style={{ backgroundColor: '${customization.primaryColor}', color: 'white' }}
         >
           <MessageSquare size={24} />
         </button>
       ) : (
         <div 
-          className="w-80 shadow-xl border-2 rounded-lg bg-white"
+          className="w-80 bg-white rounded-lg border-2 shadow-xl"
           style={{ borderColor: '${customization.primaryColor}', height: isMinimized ? '64px' : '400px' }}
         >
           {/* Header */}
           <div 
-            className="p-3 flex items-center justify-between text-white"
+            className="flex justify-between items-center p-3 text-white"
             style={{ backgroundColor: '${customization.primaryColor}' }}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2 items-center">
               ${customization.showAvatar ? `
               <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
+                className="flex justify-center items-center w-8 h-8 text-sm font-medium rounded-full"
                 style={{ backgroundColor: '${customization.secondaryColor}' }}
               >
                 ${bot.name.charAt(0).toUpperCase()}
@@ -807,13 +879,13 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
             <div className="flex gap-1">
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded"
+                className="flex justify-center items-center w-6 h-6 rounded hover:bg-white/20"
               >
                 {isMinimized ? <Maximize2 size={12} /> : <Minimize2 size={12} />}
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-6 h-6 flex items-center justify-center hover:bg-white/20 rounded"
+                className="flex justify-center items-center w-6 h-6 rounded hover:bg-white/20"
               >
                 <X size={12} />
               </button>
@@ -823,9 +895,9 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
           {!isMinimized && (
             <>
               {/* Messages */}
-              <div className="flex-1 p-3 overflow-y-auto" style={{ height: '280px' }}>
+              <div className="overflow-y-auto flex-1 p-3" style={{ height: '280px' }}>
                 {messages.length === 0 ? (
-                  <div className="text-center py-4 text-sm text-gray-600">
+                  <div className="py-4 text-sm text-center text-gray-600">
                     Hi! I'm ${bot.name}. How can I help you today?
                   </div>
                 ) : (
@@ -845,7 +917,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                         {message.role === 'assistant' && voiceConfig.enableVoice && speechSynthesis && (
                           <button
                             onClick={() => speakText(message.content)}
-                            className="w-6 h-6 flex items-center justify-center opacity-60 hover:opacity-100"
+                            className="flex justify-center items-center w-6 h-6 opacity-60 hover:opacity-100"
                             title="Play message"
                           >
                             <Volume2 size={12} />
@@ -857,7 +929,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                 )}
                 {isLoading && (
                   <div className="flex justify-start mb-3">
-                    <div className="bg-gray-100 rounded-lg px-3 py-2">
+                    <div className="px-3 py-2 bg-gray-100 rounded-lg">
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -869,7 +941,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
               </div>
 
               {/* Input */}
-              <div className="p-3 border-t flex gap-2">
+              <div className="flex gap-2 p-3 border-t">
                 <input
                   type="text"
                   value={inputValue}
@@ -877,7 +949,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                   onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="Type your message..."
                   disabled={isLoading}
-                  className="flex-1 px-3 py-2 border rounded-full outline-none text-sm"
+                  className="flex-1 px-3 py-2 text-sm rounded-full border outline-none"
                 />
                 {voiceConfig.enableVoice && isVoiceSupported && (
                   <button
@@ -894,7 +966,7 @@ const ${bot.name.replace(/\s+/g, '')}Chatbot = () => {
                 <button
                   onClick={() => sendMessage()}
                   disabled={!inputValue.trim() || isLoading}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white disabled:opacity-50"
+                  className="flex justify-center items-center w-9 h-9 text-white rounded-full disabled:opacity-50"
                   style={{ backgroundColor: '${customization.primaryColor}' }}
                 >
                   <Send size={16} />
@@ -936,8 +1008,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ExternalLink className="h-5 w-5" />
+          <DialogTitle className="flex gap-2 items-center">
+            <ExternalLink className="w-5 h-5" />
             Export {bot.name} Widget
           </DialogTitle>
           <DialogDescription>
@@ -947,25 +1019,25 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 gap-1 p-1">
-              <TabsTrigger value="widget" className="flex items-center gap-2">
-                <Code className="h-4 w-4" />
+            <TabsList className="grid grid-cols-5 gap-1 p-1 w-full">
+              <TabsTrigger value="widget" className="flex gap-2 items-center">
+                <Code className="w-4 h-4" />
                 Widget
               </TabsTrigger>
-              <TabsTrigger value="iframe" className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
+              <TabsTrigger value="iframe" className="flex gap-2 items-center">
+                <Globe className="w-4 h-4" />
                 Iframe
               </TabsTrigger>
-              <TabsTrigger value="react" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <TabsTrigger value="react" className="flex gap-2 items-center">
+                <Settings className="w-4 h-4" />
                 React
               </TabsTrigger>
-              <TabsTrigger value="wordpress" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
+              <TabsTrigger value="wordpress" className="flex gap-2 items-center">
+                <FileText className="w-4 h-4" />
                 WordPress
               </TabsTrigger>
-              <TabsTrigger value="customize" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
+              <TabsTrigger value="customize" className="flex gap-2 items-center">
+                <Settings className="w-4 h-4" />
                 Customize
               </TabsTrigger>
             </TabsList>
@@ -1013,7 +1085,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <select
                     value={customization.position}
                     onChange={(e) => setCustomization(prev => ({ ...prev, position: e.target.value }))}
-                    className="w-full p-2 border rounded"
+                    className="p-2 w-full rounded border"
                   >
                     <option value="bottom-right">Bottom Right</option>
                     <option value="bottom-left">Bottom Left</option>
@@ -1027,7 +1099,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <select
                     value={customization.size}
                     onChange={(e) => setCustomization(prev => ({ ...prev, size: e.target.value }))}
-                    className="w-full p-2 border rounded"
+                    className="p-2 w-full rounded border"
                   >
                     <option value="small">Small</option>
                     <option value="medium">Medium</option>
@@ -1072,10 +1144,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
 
               {/* Voice Settings Section */}
-              <div className="border-t pt-4">
-                <h4 className="text-sm font-semibold mb-3">Voice Settings</h4>
+              <div className="pt-4 border-t">
+                <h4 className="mb-3 text-sm font-semibold">Voice Settings</h4>
                 
-                <div className="flex items-center space-x-2 mb-4">
+                <div className="flex items-center mb-4 space-x-2">
                   <input
                     type="checkbox"
                     id="enableVoice"
@@ -1087,14 +1159,14 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </div>
 
                 {customization.enableVoice && (
-                  <div className="space-y-4 pl-4">
+                  <div className="pl-4 space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Voice Language</label>
                         <select
                           value={customization.voiceLanguage}
                           onChange={(e) => setCustomization(prev => ({ ...prev, voiceLanguage: e.target.value }))}
-                          className="w-full p-2 border rounded text-sm"
+                          className="p-2 w-full text-sm rounded border"
                         >
                           <option value="en-US">English (US)</option>
                           <option value="en-GB">English (UK)</option>
@@ -1140,7 +1212,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                             onChange={(e) => setCustomization(prev => ({ ...prev, voiceRate: parseFloat(e.target.value) }))}
                             className="flex-1"
                           />
-                          <span className="text-xs text-muted-foreground w-8">{customization.voiceRate}x</span>
+                          <span className="w-8 text-xs text-muted-foreground">{customization.voiceRate}x</span>
                         </div>
                       </div>
                       
@@ -1156,7 +1228,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                             onChange={(e) => setCustomization(prev => ({ ...prev, voicePitch: parseFloat(e.target.value) }))}
                             className="flex-1"
                           />
-                          <span className="text-xs text-muted-foreground w-8">{customization.voicePitch}x</span>
+                          <span className="w-8 text-xs text-muted-foreground">{customization.voicePitch}x</span>
                         </div>
                       </div>
                     </div>
@@ -1167,31 +1239,31 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
 
             <TabsContent value="widget" className="space-y-4 w-full">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">JavaScript Widget Code</label>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(generateWidgetScript())}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="w-4 h-4" />
                       Copy
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => downloadScript(generateWidgetScript(), `${bot.name.toLowerCase().replace(/\s+/g, '-')}-widget.js`)}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="w-4 h-4" />
                       Download
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-48 w-full rounded border p-3">
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                <ScrollArea className="p-3 w-full h-48 rounded border">
+                  <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                     {generateWidgetScript()}
                   </pre>
                 </ScrollArea>
@@ -1201,44 +1273,44 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             <TabsContent value="iframe" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Standard Iframe Embed</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateIframeEmbed())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-32 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateIframeEmbed()}
                     </pre>
                   </ScrollArea>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Mobile Iframe Embed (Chat Icon)</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateMobileIframeEmbed())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-32 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateMobileIframeEmbed()}
                     </pre>
                   </ScrollArea>
@@ -1251,31 +1323,31 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
 
             <TabsContent value="react" className="space-y-4 w-full">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
+                <div className="flex justify-between items-center">
                   <label className="text-sm font-medium">React Component</label>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => copyToClipboard(generateReactComponent())}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Copy className="h-4 w-4" />
+                      <Copy className="w-4 h-4" />
                       Copy
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => downloadScript(generateReactComponent(), `${bot.name.replace(/\s+/g, '')}Chatbot.jsx`)}
-                      className="flex items-center gap-2"
+                      className="flex gap-2 items-center"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="w-4 h-4" />
                       Download
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="h-64 w-full rounded border p-3">
-                  <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                <ScrollArea className="p-3 w-full h-64 rounded border">
+                  <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                     {generateReactComponent()}
                   </pre>
                 </ScrollArea>
@@ -1285,38 +1357,38 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             <TabsContent value="wordpress" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">WordPress Shortcode</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateWordPressShortcode())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-32 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-32 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateWordPressShortcode()}
                     </pre>
                   </ScrollArea>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">WordPress Plugin Files</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => downloadWordPressPlugin()}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="w-4 h-4" />
                         Download Plugin
                       </Button>
                     </div>
@@ -1327,7 +1399,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Installation Instructions</label>
                   </div>
                   <div className="space-y-2 text-sm text-muted-foreground">
@@ -1340,44 +1412,44 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">Token Generation API</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateTokenAPIExample())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-40 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-40 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateTokenAPIExample()}
                     </pre>
                   </ScrollArea>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">WordPress REST API Usage</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(generateWordPressAPIExample())}
-                        className="flex items-center gap-2"
+                        className="flex gap-2 items-center"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="w-4 h-4" />
                         Copy
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="h-40 w-full rounded border p-3">
-                    <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                  <ScrollArea className="p-3 w-full h-40 rounded border">
+                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
                       {generateWordPressAPIExample()}
                     </pre>
                   </ScrollArea>
@@ -1386,8 +1458,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             </TabsContent>
           </Tabs>
           
-          <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Integration Instructions:</h4>
+          <div className="p-4 mt-6 rounded-lg bg-muted">
+            <h4 className="mb-2 text-sm font-medium">Integration Instructions:</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div>• <strong>JavaScript Widget:</strong> Add the script tag to your HTML head section</div>
               <div>• <strong>Standard Iframe:</strong> Insert the iframe code where you want the chat to appear</div>
@@ -1398,8 +1470,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
             </div>
             
             {customization.enableVoice && (
-              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <h5 className="font-medium text-sm mb-2 text-blue-800">🎤 Voice Features Enabled:</h5>
+              <div className="p-3 mt-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h5 className="mb-2 text-sm font-medium text-blue-800">🎤 Voice Features Enabled:</h5>
                 <div className="space-y-1 text-xs text-blue-700">
                   <div>• <strong>Voice Input:</strong> Users can speak to the chatbot using the microphone button</div>
                   <div>• <strong>Text-to-Speech:</strong> Bot responses can be played aloud {customization.autoSpeak ? '(auto-enabled)' : '(click speaker icon)'}</div>
