@@ -11,6 +11,7 @@ import { ConversationSidebar } from "@/components/dashboard/conversation-sidebar
 import { ChatMessage } from "@/components/dashboard/chat-message"
 import { ChatInput } from "@/components/dashboard/chat-input"
 import { AdaptiveChatInterface } from "@/components/dashboard/adaptive-chat-interface"
+import { StreamingChatInterface } from "@/components/dashboard/streaming-chat-interface"
 import { useAuth } from "@/hooks/use-auth"
 import { useChat } from "@/hooks/use-chat"
 import type { Bot, Conversation, Message } from "@/lib/types"
@@ -407,7 +408,7 @@ export default function ChatPage() {
               </div>
             </div>
           ) : (
-            <AdaptiveChatInterface
+            <StreamingChatInterface
               botId={selectedBot.id}
               conversationId={selectedConversationId}
               userId={user.id}
