@@ -112,6 +112,17 @@ export class ApiResponse {
   }
 
   /**
+   * Request timeout response
+   */
+  static requestTimeout(message: string = 'Request timeout'): NextResponse<ApiResponseData> {
+    return NextResponse.json({
+      success: false,
+      message,
+      timestamp: new Date().toISOString()
+    }, { status: 408 })
+  }
+
+  /**
    * Custom response
    */
   static custom<T>(

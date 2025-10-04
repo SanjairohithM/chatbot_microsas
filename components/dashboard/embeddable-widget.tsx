@@ -24,7 +24,11 @@ import {
   Mic,
   MicOff,
   Volume2,
-  FileText
+  FileText,
+  Database,
+  Key,
+  Shield,
+  Zap
 } from 'lucide-react'
 import type { Bot, Message } from '@/lib/types'
 
@@ -333,11 +337,31 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
     voiceLanguage: 'en-US',
     autoSpeak: false,
     voiceRate: 1.0,
-    voicePitch: 1.0
+    voicePitch: 1.0,
+    enableDatabase: false,
+    databaseType: 'mysql',
+    databaseHost: '',
+    databasePort: 3306,
+    databaseName: '',
+    databaseUsername: '',
+    databasePassword: '',
+    databaseSSL: false,
+    databasePermissions: ['read']
   })
 
   const generateWidgetScript = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    const databaseConfig = customization.enableDatabase ? `
+        data-enable-database="${customization.enableDatabase}"
+        data-database-type="${customization.databaseType}"
+        data-database-host="${customization.databaseHost}"
+        data-database-port="${customization.databasePort}"
+        data-database-name="${customization.databaseName}"
+        data-database-username="${customization.databaseUsername}"
+        data-database-password="${customization.databasePassword}"
+        data-database-ssl="${customization.databaseSSL}"
+        data-database-permissions="${customization.databasePermissions.join(',')}"` : ''
     
     return `<!-- ${bot.name} Chatbot Widget -->
 <script src="${baseUrl}/widgets/chatbot-widget.js" 
@@ -355,7 +379,8 @@ export function WidgetExportDialog({ bot, open, onOpenChange }: {
         data-voice-rate="${customization.voiceRate}"
         data-voice-pitch="${customization.voicePitch}"
         data-api-url="${baseUrl}/api/chat"
-        data-bot-name="${bot.name}">
+        data-database-api-url="${baseUrl}/api/chatbot/database-chat"
+        data-bot-name="${bot.name}"${databaseConfig}>
 </script>`
   }
 
@@ -454,6 +479,201 @@ fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
 // GET  /wp-json/omnix-chatbot/v1/bots
 // GET  /wp-json/omnix-chatbot/v1/conversations
 // GET  /wp-json/omnix-chatbot/v1/analytics`
+  }
+
+  const generateDatabaseAPIExample = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Database Chatbot API Examples
+
+// 1. Create Database Credentials for Bot
+curl -X POST "${baseUrl}/api/bots/${bot.id}/database-credentials" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "permissions": ["read", "write"],
+    "expires_in_days": 365
+  }'
+
+// 2. Test Database Connection
+curl -X GET "${baseUrl}/api/database/query?action=test&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
+
+// 3. Execute Direct SQL Query
+curl -X POST "${baseUrl}/api/database/query" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    },
+    "query": "SELECT COUNT(*) as user_count FROM users WHERE active = ?",
+    "params": [true]
+  }'
+
+// 4. AI-Powered Database Chat
+curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "How many active users do we have?",
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    }
+  }'
+
+// 5. Get Database Schema
+curl -X GET "${baseUrl}/api/database/query?action=schema&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
+
+// 6. Get Table Structure
+curl -X GET "${baseUrl}/api/database/query?action=table&table=users&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"`
+  }
+
+  const generateDatabaseIntegrationGuide = () => {
+    return `# Database Chatbot Integration Guide
+
+## Overview
+The Database Chatbot API enables your chatbot to connect to external databases (MySQL, PostgreSQL, MariaDB) and generate intelligent responses based on database queries using natural language processing.
+
+## Features
+- Multi-Database Support: MySQL, PostgreSQL, MariaDB
+- Natural Language to SQL conversion
+- Secure token-based authentication
+- AI-powered response generation
+- Connection pooling and management
+- Query security and permission controls
+
+## Authentication
+The API uses a two-factor authentication system:
+- Access Token: Unique identifier for the bot
+- Secret Key: Secret key for additional security
+
+### Authentication Methods:
+1. Authorization Header: \`Bearer access_token:secret_key\`
+2. JSON Body: \`{"access_token": "token", "secret_key": "key"}\`
+3. Query Parameters: \`?access_token=token&secret_key=key\`
+
+## Database Configuration
+\`\`\`json
+{
+  "type": "mysql|postgresql|mariadb",
+  "host": "database_host",
+  "port": 3306,
+  "database": "database_name",
+  "username": "username",
+  "password": "password",
+  "ssl": false,
+  "connectionLimit": 10
+}
+\`\`\`
+
+## API Endpoints
+
+### 1. Database Query API
+- \`POST /api/database/query\` - Execute SQL queries
+- \`GET /api/database/query?action=test\` - Test database connection
+- \`GET /api/database/query?action=schema\` - Get database schema
+- \`GET /api/database/query?action=table&table=NAME\` - Get table structure
+
+### 2. Chatbot Database Chat
+- \`POST /api/chatbot/database-chat\` - AI-powered database chat
+- \`GET /api/chatbot/database-chat\` - API documentation
+
+### 3. Bot Management
+- \`POST /api/bots/{botId}/database-credentials\` - Create credentials
+- \`GET /api/bots/{botId}/database-credentials\` - Get credentials info
+- \`PUT /api/bots/{botId}/database-credentials\` - Update credentials
+- \`DELETE /api/bots/{botId}/database-credentials\` - Revoke credentials
+
+## Usage Examples
+
+### Basic Database Chat
+\`\`\`javascript
+const response = await fetch('/api/chatbot/database-chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer token:secret',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: "How many users are in the database?",
+    database_config: {
+      type: "mysql",
+      host: "localhost",
+      port: 3306,
+      database: "myapp",
+      username: "user",
+      password: "pass"
+    }
+  })
+});
+\`\`\`
+
+### E-commerce Analytics
+\`\`\`javascript
+const response = await fetch('/api/chatbot/database-chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer token:secret',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    message: "What are the top 5 products by sales this month?",
+    database_config: {
+      type: "mysql",
+      host: "analytics-db.company.com",
+      port: 3306,
+      database: "ecommerce",
+      username: "analyst",
+      password: "secure_password",
+      ssl: true
+    },
+    system_prompt: "You are an e-commerce analytics expert.",
+    max_rows: 5,
+    temperature: 0.2
+  })
+});
+\`\`\`
+
+## Security Features
+- SQL injection prevention with parameterized queries
+- Permission-based access control (read, write, admin, all)
+- Query timeout and row limits
+- Encrypted credential storage
+- Connection pooling to prevent resource exhaustion
+
+## Rate Limits
+- Database Queries: 100 requests/minute per bot
+- Chatbot Responses: 50 requests/minute per bot
+- Connection Tests: 10 requests/minute per bot
+
+## Error Handling
+- 401 Unauthorized: Invalid credentials
+- 403 Forbidden: Insufficient permissions
+- 400 Bad Request: Missing required fields
+- 408 Timeout: Query execution timeout
+- 500 Internal Error: Database connection or server error
+
+## Testing
+Run the test suite:
+\`\`\`bash
+npm run test:database-api
+\`\`\`
+
+## Support
+For technical support or questions about the Database Chatbot API, please refer to the main API documentation or contact the development team.`
   }
 
   const downloadWordPressPlugin = async () => {
@@ -1019,7 +1239,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-5 gap-1 p-1 w-full">
+            <TabsList className="grid grid-cols-6 gap-1 p-1 w-full">
               <TabsTrigger value="widget" className="flex gap-2 items-center">
                 <Code className="w-4 h-4" />
                 Widget
@@ -1035,6 +1255,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               <TabsTrigger value="wordpress" className="flex gap-2 items-center">
                 <FileText className="w-4 h-4" />
                 WordPress
+              </TabsTrigger>
+              <TabsTrigger value="database" className="flex gap-2 items-center">
+                <Database className="w-4 h-4" />
+                Database
               </TabsTrigger>
               <TabsTrigger value="customize" className="flex gap-2 items-center">
                 <Settings className="w-4 h-4" />
@@ -1456,6 +1680,134 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 </div>
               </div>
             </TabsContent>
+
+            <TabsContent value="database" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-blue-800">
+                    <Database className="w-5 h-5" />
+                    Database Chatbot API
+                  </h4>
+                  <p className="text-sm text-blue-700">
+                    Enable your chatbot to connect to external databases (MySQL, PostgreSQL, MariaDB) and generate intelligent responses based on database queries using natural language processing.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">API Examples & Documentation</label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(generateDatabaseAPIExample())}
+                          className="flex gap-2 items-center"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy Examples
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadScript(generateDatabaseIntegrationGuide(), 'database-integration-guide.md')}
+                          className="flex gap-2 items-center"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Guide
+                        </Button>
+                      </div>
+                    </div>
+                    <ScrollArea className="p-3 w-full h-64 rounded border">
+                      <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                        {generateDatabaseAPIExample()}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Key className="w-4 h-4" />
+                        Authentication
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Access Token:</strong> Unique identifier for the bot</div>
+                        <div>• <strong>Secret Key:</strong> Additional security layer</div>
+                        <div>• <strong>Methods:</strong> Header, JSON body, or query params</div>
+                        <div>• <strong>Format:</strong> <code>Bearer token:secret</code></div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Zap className="w-4 h-4" />
+                        Features
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Multi-Database:</strong> MySQL, PostgreSQL, MariaDB</div>
+                        <div>• <strong>AI-Powered:</strong> Natural language to SQL</div>
+                        <div>• <strong>Secure:</strong> SQL injection prevention</div>
+                        <div>• <strong>Scalable:</strong> Connection pooling</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="flex gap-2 items-center text-sm font-semibold">
+                      <Shield className="w-4 h-4" />
+                      Security Features
+                    </h5>
+                    <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                      <div className="space-y-1">
+                        <div>• Parameterized queries</div>
+                        <div>• Permission-based access</div>
+                        <div>• Query timeout limits</div>
+                        <div>• Row count limits</div>
+                      </div>
+                      <div className="space-y-1">
+                        <div>• Encrypted credential storage</div>
+                        <div>• Connection pooling</div>
+                        <div>• Rate limiting</div>
+                        <div>• Audit logging</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="text-sm font-semibold">API Endpoints</h5>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/database/query</code></span>
+                        <span className="text-muted-foreground">Execute SQL queries</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/chatbot/database-chat</code></span>
+                        <span className="text-muted-foreground">AI-powered database chat</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>GET /api/database/query?action=test</code></span>
+                        <span className="text-muted-foreground">Test database connection</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;id&#125;/database-credentials</code></span>
+                        <span className="text-muted-foreground">Manage credentials</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <h5 className="mb-2 text-sm font-medium text-green-800">🚀 Quick Start</h5>
+                    <div className="space-y-1 text-xs text-green-700">
+                      <div>1. Create database credentials for your bot</div>
+                      <div>2. Test the database connection</div>
+                      <div>3. Use the chatbot API with database config</div>
+                      <div>4. Ask natural language questions about your data</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
           
           <div className="p-4 mt-6 rounded-lg bg-muted">
@@ -1466,6 +1818,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               <div>• <strong>Mobile Iframe:</strong> Shows a floating chat button that opens a chat window in the center of the screen (perfect for external websites)</div>
               <div>• <strong>React Component:</strong> Import and use the component in your React application</div>
               <div>• <strong>WordPress Plugin:</strong> Install the plugin and use shortcodes in posts, pages, or widgets</div>
+              <div>• <strong>Database Integration:</strong> Connect to external databases for AI-powered data queries</div>
               <div>• <strong>API Integration:</strong> Use the REST API endpoints for custom implementations</div>
             </div>
             
@@ -1478,6 +1831,24 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <div>• <strong>Language:</strong> {customization.voiceLanguage}</div>
                   <div>• <strong>Browser Support:</strong> Requires modern browsers with Web Speech API support</div>
                   <div>• <strong>Permissions:</strong> Users will be prompted to allow microphone access</div>
+                </div>
+              </div>
+            )}
+
+            {customization.enableDatabase && (
+              <div className="p-3 mt-4 bg-green-50 rounded-lg border border-green-200">
+                <h5 className="flex gap-2 items-center mb-2 text-sm font-medium text-green-800">
+                  <Database className="w-4 h-4" />
+                  Database Integration Enabled:
+                </h5>
+                <div className="space-y-1 text-xs text-green-700">
+                  <div>• <strong>Database Type:</strong> {customization.databaseType.toUpperCase()}</div>
+                  <div>• <strong>Host:</strong> {customization.databaseHost || 'Not configured'}</div>
+                  <div>• <strong>Database:</strong> {customization.databaseName || 'Not configured'}</div>
+                  <div>• <strong>Permissions:</strong> {customization.databasePermissions.join(', ')}</div>
+                  <div>• <strong>SSL:</strong> {customization.databaseSSL ? 'Enabled' : 'Disabled'}</div>
+                  <div>• <strong>AI Queries:</strong> Users can ask natural language questions about your data</div>
+                  <div>• <strong>Security:</strong> All queries use parameterized statements and permission controls</div>
                 </div>
               </div>
             )}
