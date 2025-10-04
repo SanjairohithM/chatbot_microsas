@@ -481,12 +481,55 @@ fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
 // GET  /wp-json/omnix-chatbot/v1/analytics`
   }
 
-  const generateDatabaseAPIExample = () => {
+  const [selectedLanguage, setSelectedLanguage] = useState('curl')
+
+  const generateCurlExamples = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
     
-    return `// Database Chatbot API Examples
+    return `# cURL Examples for Database Chatbot API
 
-// 1. Create Database Credentials for Bot
+# ========================================
+# 1. Token Management
+# ========================================
+
+# Create Access Token for Bot
+curl -X POST "${baseUrl}/api/bots/${bot.id}/tokens" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "token_name": "Database Integration Token",
+    "permissions": ["read", "write"],
+    "expires_in_days": 365,
+    "description": "Token for database integration"
+  }'
+
+# List All Tokens for Bot
+curl -X GET "${baseUrl}/api/bots/${bot.id}/tokens?page=1&limit=10&status=active"
+
+# Validate Token
+curl -X POST "${baseUrl}/api/bots/${bot.id}/tokens/validate" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "access_token": "YOUR_ACCESS_TOKEN",
+    "secret_key": "YOUR_SECRET_KEY"
+  }'
+
+# Update Token
+curl -X PUT "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "token_name": "Updated Token Name",
+    "permissions": ["read", "write", "admin"],
+    "expires_in_days": 180
+  }'
+
+# Revoke Token
+curl -X DELETE "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1"
+
+# ========================================
+# 2. Database Operations
+# ========================================
+
+# Create Database Credentials for Bot
 curl -X POST "${baseUrl}/api/bots/${bot.id}/database-credentials" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
   -H "Content-Type: application/json" \\
@@ -495,11 +538,11 @@ curl -X POST "${baseUrl}/api/bots/${bot.id}/database-credentials" \\
     "expires_in_days": 365
   }'
 
-// 2. Test Database Connection
+# Test Database Connection
 curl -X GET "${baseUrl}/api/database/query?action=test&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
 
-// 3. Execute Direct SQL Query
+# Execute Direct SQL Query
 curl -X POST "${baseUrl}/api/database/query" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
   -H "Content-Type: application/json" \\
@@ -516,7 +559,7 @@ curl -X POST "${baseUrl}/api/database/query" \\
     "params": [true]
   }'
 
-// 4. AI-Powered Database Chat
+# AI-Powered Database Chat
 curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
   -H "Content-Type: application/json" \\
@@ -532,13 +575,792 @@ curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
     }
   }'
 
-// 5. Get Database Schema
+# Get Database Schema
 curl -X GET "${baseUrl}/api/database/query?action=schema&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
 
-// 6. Get Table Structure
+# Get Table Structure
 curl -X GET "${baseUrl}/api/database/query?action=table&table=users&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"`
+  }
+
+  const generateNodeJSExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Node.js Examples for Database Chatbot API
+const axios = require('axios');
+
+const baseUrl = '${baseUrl}';
+const accessToken = 'YOUR_ACCESS_TOKEN';
+const secretKey = 'YOUR_SECRET_KEY';
+const authHeader = \`Bearer \${accessToken}:\${secretKey}\`;
+
+// ========================================
+// 1. Token Management
+// ========================================
+
+// Create Access Token for Bot
+async function createToken() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/tokens\`, {
+      token_name: 'Database Integration Token',
+      permissions: ['read', 'write'],
+      expires_in_days: 365,
+      description: 'Token for database integration'
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token created:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create token:', error.response?.data || error.message);
+  }
+}
+
+// List All Tokens for Bot
+async function listTokens() {
+  try {
+    const response = await axios.get(\`\${baseUrl}/api/bots/${bot.id}/tokens\`, {
+      params: {
+        page: 1,
+        limit: 10,
+        status: 'active'
+      }
+    });
+    console.log('Tokens:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to list tokens:', error.response?.data || error.message);
+  }
+}
+
+// Validate Token
+async function validateToken() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/tokens/validate\`, {
+      access_token: accessToken,
+      secret_key: secretKey
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token validation:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Token validation failed:', error.response?.data || error.message);
+  }
+}
+
+// Update Token
+async function updateToken(tokenId) {
+  try {
+    const response = await axios.put(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`, {
+      token_name: 'Updated Token Name',
+      permissions: ['read', 'write', 'admin'],
+      expires_in_days: 180
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Token updated:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update token:', error.response?.data || error.message);
+  }
+}
+
+// Revoke Token
+async function revokeToken(tokenId) {
+  try {
+    const response = await axios.delete(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`);
+    console.log('Token revoked:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to revoke token:', error.response?.data || error.message);
+  }
+}
+
+// ========================================
+// 2. Database Operations
+// ========================================
+
+// Test Database Connection
+async function testDatabaseConnection() {
+  try {
+    const response = await axios.get(\`\${baseUrl}/api/database/query\`, {
+      params: {
+        action: 'test',
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      },
+      headers: {
+        'Authorization': authHeader
+      }
+    });
+    console.log('Connection test:', response.data);
+  } catch (error) {
+    console.error('Connection test failed:', error.response?.data || error.message);
+  }
+}
+
+// Execute SQL Query
+async function executeQuery() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/database/query\`, {
+      database_config: {
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      },
+      query: 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+      params: [true]
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Query result:', response.data);
+  } catch (error) {
+    console.error('Query failed:', error.response?.data || error.message);
+  }
+}
+
+// AI-Powered Database Chat
+async function databaseChat() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/chatbot/database-chat\`, {
+      message: 'How many active users do we have?',
+      database_config: {
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      }
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('AI Response:', response.data);
+  } catch (error) {
+    console.error('Chat failed:', error.response?.data || error.message);
+  }
+}
+
+// Create Database Credentials
+async function createCredentials() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/database-credentials\`, {
+      permissions: ['read', 'write'],
+      expires_in_days: 365
+    }, {
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Credentials created:', response.data);
+  } catch (error) {
+    console.error('Failed to create credentials:', error.response?.data || error.message);
+  }
+}
+
+// Run examples
+async function runExamples() {
+  // Token management
+  await createToken();
+  await listTokens();
+  await validateToken();
+  
+  // Database operations
+  await testDatabaseConnection();
+  await executeQuery();
+  await databaseChat();
+  await createCredentials();
+}
+
+runExamples();`
+  }
+
+  const generatePHPExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `<?php
+// PHP Examples for Database Chatbot API
+$baseUrl = '${baseUrl}';
+$accessToken = 'YOUR_ACCESS_TOKEN';
+$secretKey = 'YOUR_SECRET_KEY';
+$authHeader = "Bearer $accessToken:$secretKey";
+
+// Test Database Connection
+function testDatabaseConnection() {
+    global $baseUrl, $authHeader;
+    
+    $url = $baseUrl . '/api/database/query?' . http_build_query([
+        'action' => 'test',
+        'type' => 'mysql',
+        'host' => 'localhost',
+        'port' => 3306,
+        'database' => 'myapp',
+        'username' => 'user',
+        'password' => 'pass'
+    ]);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Connection test: " . $response . "\n";
+    } else {
+        echo "Connection test failed: " . $response . "\n";
+    }
+}
+
+// Execute SQL Query
+function executeQuery() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'database_config' => [
+            'type' => 'mysql',
+            'host' => 'localhost',
+            'port' => 3306,
+            'database' => 'myapp',
+            'username' => 'user',
+            'password' => 'pass'
+        ],
+        'query' => 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+        'params' => [true]
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/database/query');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Query result: " . $response . "\n";
+    } else {
+        echo "Query failed: " . $response . "\n";
+    }
+}
+
+// AI-Powered Database Chat
+function databaseChat() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'message' => 'How many active users do we have?',
+        'database_config' => [
+            'type' => 'mysql',
+            'host' => 'localhost',
+            'port' => 3306,
+            'database' => 'myapp',
+            'username' => 'user',
+            'password' => 'pass'
+        ]
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/chatbot/database-chat');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "AI Response: " . $response . "\n";
+    } else {
+        echo "Chat failed: " . $response . "\n";
+    }
+}
+
+// Create Database Credentials
+function createCredentials() {
+    global $baseUrl, $authHeader;
+    
+    $data = [
+        'permissions' => ['read', 'write'],
+        'expires_in_days' => 365
+    ];
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $baseUrl . '/api/bots/${bot.id}/database-credentials');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        "Authorization: $authHeader",
+        "Content-Type: application/json"
+    ]);
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        echo "Credentials created: " . $response . "\n";
+    } else {
+        echo "Failed to create credentials: " . $response . "\n";
+    }
+}
+
+// Run examples
+testDatabaseConnection();
+executeQuery();
+databaseChat();
+createCredentials();
+?>`
+  }
+
+  const generatePythonExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `# Python Examples for Database Chatbot API
+import requests
+import json
+
+base_url = '${baseUrl}'
+access_token = 'YOUR_ACCESS_TOKEN'
+secret_key = 'YOUR_SECRET_KEY'
+auth_header = f'Bearer {access_token}:{secret_key}'
+
+# Test Database Connection
+def test_database_connection():
+    url = f'{base_url}/api/database/query'
+    params = {
+        'action': 'test',
+        'type': 'mysql',
+        'host': 'localhost',
+        'port': 3306,
+        'database': 'myapp',
+        'username': 'user',
+        'password': 'pass'
+    }
+    
+    headers = {'Authorization': auth_header}
+    
+    try:
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        print(f"Connection test: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Connection test failed: {e}")
+
+# Execute SQL Query
+def execute_query():
+    url = f'{base_url}/api/database/query'
+    data = {
+        'database_config': {
+            'type': 'mysql',
+            'host': 'localhost',
+            'port': 3306,
+            'database': 'myapp',
+            'username': 'user',
+            'password': 'pass'
+        },
+        'query': 'SELECT COUNT(*) as user_count FROM users WHERE active = ?',
+        'params': [True]
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"Query result: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Query failed: {e}")
+
+# AI-Powered Database Chat
+def database_chat():
+    url = f'{base_url}/api/chatbot/database-chat'
+    data = {
+        'message': 'How many active users do we have?',
+        'database_config': {
+            'type': 'mysql',
+            'host': 'localhost',
+            'port': 3306,
+            'database': 'myapp',
+            'username': 'user',
+            'password': 'pass'
+        }
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"AI Response: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Chat failed: {e}")
+
+# Create Database Credentials
+def create_credentials():
+    url = f'{base_url}/api/bots/${bot.id}/database-credentials'
+    data = {
+        'permissions': ['read', 'write'],
+        'expires_in_days': 365
+    }
+    
+    headers = {
+        'Authorization': auth_header,
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        response.raise_for_status()
+        print(f"Credentials created: {response.json()}")
+    except requests.exceptions.RequestException as e:
+        print(f"Failed to create credentials: {e}")
+
+# Run examples
+if __name__ == "__main__":
+    test_database_connection()
+    execute_query()
+    database_chat()
+    create_credentials()`
+  }
+
+  const generateGolangExamples = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
+    
+    return `// Golang Examples for Database Chatbot API
+package main
+
+import (
+    "bytes"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "net/url"
+)
+
+const (
+    baseURL     = "${baseUrl}"
+    accessToken = "YOUR_ACCESS_TOKEN"
+    secretKey   = "YOUR_SECRET_KEY"
+)
+
+var authHeader = fmt.Sprintf("Bearer %s:%s", accessToken, secretKey)
+
+// Test Database Connection
+func testDatabaseConnection() {
+    params := url.Values{}
+    params.Add("action", "test")
+    params.Add("type", "mysql")
+    params.Add("host", "localhost")
+    params.Add("port", "3306")
+    params.Add("database", "myapp")
+    params.Add("username", "user")
+    params.Add("password", "pass")
+    
+    url := fmt.Sprintf("%s/api/database/query?%s", baseURL, params.Encode())
+    
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Connection test failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Connection test: %s\n", string(body))
+    } else {
+        fmt.Printf("Connection test failed: %s\n", string(body))
+    }
+}
+
+// Execute SQL Query
+func executeQuery() {
+    data := map[string]interface{}{
+        "database_config": map[string]interface{}{
+            "type":     "mysql",
+            "host":     "localhost",
+            "port":     3306,
+            "database": "myapp",
+            "username": "user",
+            "password": "pass",
+        },
+        "query":  "SELECT COUNT(*) as user_count FROM users WHERE active = ?",
+        "params": []interface{}{true},
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/database/query", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Query failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Query result: %s\n", string(body))
+    } else {
+        fmt.Printf("Query failed: %s\n", string(body))
+    }
+}
+
+// AI-Powered Database Chat
+func databaseChat() {
+    data := map[string]interface{}{
+        "message": "How many active users do we have?",
+        "database_config": map[string]interface{}{
+            "type":     "mysql",
+            "host":     "localhost",
+            "port":     3306,
+            "database": "myapp",
+            "username": "user",
+            "password": "pass",
+        },
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/chatbot/database-chat", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Chat failed: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("AI Response: %s\n", string(body))
+    } else {
+        fmt.Printf("Chat failed: %s\n", string(body))
+    }
+}
+
+// Create Database Credentials
+func createCredentials() {
+    data := map[string]interface{}{
+        "permissions":      []string{"read", "write"},
+        "expires_in_days": 365,
+    }
+    
+    jsonData, err := json.Marshal(data)
+    if err != nil {
+        fmt.Printf("Error marshaling data: %v\n", err)
+        return
+    }
+    
+    url := fmt.Sprintf("%s/api/bots/${bot.id}/database-credentials", baseURL)
+    req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+    if err != nil {
+        fmt.Printf("Error creating request: %v\n", err)
+        return
+    }
+    
+    req.Header.Set("Authorization", authHeader)
+    req.Header.Set("Content-Type", "application/json")
+    
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        fmt.Printf("Failed to create credentials: %v\n", err)
+        return
+    }
+    defer resp.Body.Close()
+    
+    body, err := io.ReadAll(resp.Body)
+    if err != nil {
+        fmt.Printf("Error reading response: %v\n", err)
+        return
+    }
+    
+    if resp.StatusCode == 200 {
+        fmt.Printf("Credentials created: %s\n", string(body))
+    } else {
+        fmt.Printf("Failed to create credentials: %s\n", string(body))
+    }
+}
+
+func main() {
+    testDatabaseConnection()
+    executeQuery()
+    databaseChat()
+    createCredentials()
+}`
+  }
+
+  const getCurrentLanguageContent = () => {
+    switch (selectedLanguage) {
+      case 'curl':
+        return generateCurlExamples()
+      case 'nodejs':
+        return generateNodeJSExamples()
+      case 'php':
+        return generatePHPExamples()
+      case 'python':
+        return generatePythonExamples()
+      case 'golang':
+        return generateGolangExamples()
+      default:
+        return generateCurlExamples()
+    }
+  }
+
+  const generateTokenIntegrationGuide = () => {
+    return `# Access Token & Secret Key Management Guide
+
+## Overview
+The Access Token and Secret Key Management system provides secure authentication for your chatbot APIs. Each bot can have multiple tokens with different permissions and expiration dates.
+
+## Features
+- **Secure Token Generation**: Cryptographically secure access tokens and secret keys
+- **Permission System**: Granular access control (read, write, admin, all)
+- **Expiration Control**: Configurable token lifetime (1-365 days)
+- **Token Management**: Create, list, update, validate, and revoke tokens
+- **Usage Tracking**: Monitor token usage and last access times
+
+## Authentication Methods
+1. **Authorization Header**: \`Bearer access_token:secret_key\`
+2. **JSON Body**: \`{"access_token": "token", "secret_key": "key"}\`
+3. **Query Parameters**: \`?access_token=token&secret_key=key\`
+
+## API Endpoints
+
+### Token Management
+- \`POST /api/bots/{botId}/tokens\` - Create new token
+- \`GET /api/bots/{botId}/tokens\` - List all tokens
+- \`PUT /api/bots/{botId}/tokens\` - Update token
+- \`DELETE /api/bots/{botId}/tokens\` - Revoke token
+- \`POST /api/bots/{botId}/tokens/validate\` - Validate token
+
+### Token Permissions
+- **read**: Read-only access to bot data
+- **write**: Read and write access to bot data
+- **admin**: Full administrative access
+- **all**: All permissions (equivalent to admin)
+
+## Security Best Practices
+1. **Store Securely**: Keep tokens in secure environment variables
+2. **Rotate Regularly**: Update tokens periodically
+3. **Minimal Permissions**: Use least privilege principle
+4. **Monitor Usage**: Track token usage and revoke unused tokens
+5. **Secure Transmission**: Always use HTTPS
+
+## Rate Limits
+- Token Creation: 10 tokens per bot per hour
+- Token Validation: 100 requests per minute per token
+- Token Management: 50 requests per minute per bot
+
+## Error Handling
+- 400 Bad Request: Invalid token data or missing fields
+- 401 Unauthorized: Invalid or expired token
+- 403 Forbidden: Insufficient permissions
+- 404 Not Found: Token or bot not found
+- 429 Too Many Requests: Rate limit exceeded
+
+## Examples
+See the language-specific examples in the embeddable widget for complete implementation details in cURL, Node.js, PHP, Python, and Golang.`
+
   }
 
   const generateDatabaseIntegrationGuide = () => {
@@ -1239,7 +2061,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
         
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-6 gap-1 p-1 w-full">
+            <TabsList className="grid grid-cols-7 gap-1 p-1 w-full">
               <TabsTrigger value="widget" className="flex gap-2 items-center">
                 <Code className="w-4 h-4" />
                 Widget
@@ -1259,6 +2081,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               <TabsTrigger value="database" className="flex gap-2 items-center">
                 <Database className="w-4 h-4" />
                 Database
+              </TabsTrigger>
+              <TabsTrigger value="tokens" className="flex gap-2 items-center">
+                <Key className="w-4 h-4" />
+                Tokens
               </TabsTrigger>
               <TabsTrigger value="customize" className="flex gap-2 items-center">
                 <Settings className="w-4 h-4" />
@@ -1681,6 +2507,171 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
+            <TabsContent value="tokens" className="space-y-4 w-full">
+              <div className="space-y-4">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                  <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-green-800">
+                    <Key className="w-5 h-5" />
+                    Access Token & Secret Key Management
+                  </h4>
+                  <p className="text-sm text-green-700">
+                    Create, manage, and validate access tokens and secret keys for your bot. These tokens provide secure authentication for API access and database operations.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium">Token Management Examples</label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => copyToClipboard(getCurrentLanguageContent())}
+                          className="flex gap-2 items-center"
+                        >
+                          <Copy className="w-4 h-4" />
+                          Copy {selectedLanguage.toUpperCase()} Examples
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => downloadScript(generateTokenIntegrationGuide(), 'token-management-guide.md')}
+                          className="flex gap-2 items-center"
+                        >
+                          <Download className="w-4 h-4" />
+                          Download Guide
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() => setSelectedLanguage('curl')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'curl' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        cURL
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('nodejs')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'nodejs' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Node.js
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('php')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'php' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        PHP
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('python')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'python' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Python
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('golang')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'golang' 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Golang
+                      </button>
+                    </div>
+                    
+                    <ScrollArea className="p-3 w-full h-80 rounded border">
+                      <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                        {getCurrentLanguageContent()}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Shield className="w-4 h-4" />
+                        Security Features
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Secure Generation:</strong> Cryptographically secure tokens</div>
+                        <div>• <strong>Expiration Control:</strong> Configurable token lifetime</div>
+                        <div>• <strong>Permission System:</strong> Granular access control</div>
+                        <div>• <strong>Token Revocation:</strong> Instant token deactivation</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h5 className="flex gap-2 items-center text-sm font-semibold">
+                        <Zap className="w-4 h-4" />
+                        Token Operations
+                      </h5>
+                      <div className="space-y-2 text-xs text-muted-foreground">
+                        <div>• <strong>Create:</strong> Generate new access tokens</div>
+                        <div>• <strong>List:</strong> View all bot tokens</div>
+                        <div>• <strong>Validate:</strong> Check token validity</div>
+                        <div>• <strong>Update:</strong> Modify token permissions</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <h5 className="text-sm font-semibold">API Endpoints</h5>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Create new token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>GET /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">List tokens</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>POST /api/bots/&#123;botId&#125;/tokens/validate</code></span>
+                        <span className="text-muted-foreground">Validate token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>PUT /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Update token</span>
+                      </div>
+                      <div className="flex justify-between items-center p-2 rounded bg-muted">
+                        <span><code>DELETE /api/bots/&#123;botId&#125;/tokens</code></span>
+                        <span className="text-muted-foreground">Revoke token</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <h5 className="mb-2 text-sm font-medium text-blue-800">🔑 Quick Start</h5>
+                    <div className="space-y-1 text-xs text-blue-700">
+                      <div>1. Create a new access token for your bot</div>
+                      <div>2. Use the token for API authentication</div>
+                      <div>3. Set appropriate permissions (read, write, admin)</div>
+                      <div>4. Monitor token usage and expiration</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
             <TabsContent value="database" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
@@ -1701,11 +2692,11 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(generateDatabaseAPIExample())}
+                          onClick={() => copyToClipboard(getCurrentLanguageContent())}
                           className="flex gap-2 items-center"
                         >
                           <Copy className="w-4 h-4" />
-                          Copy Examples
+                          Copy {selectedLanguage.toUpperCase()} Examples
                         </Button>
                         <Button
                           variant="outline"
@@ -1718,9 +2709,63 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                         </Button>
                       </div>
                     </div>
-                    <ScrollArea className="p-3 w-full h-64 rounded border">
+                    
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        onClick={() => setSelectedLanguage('curl')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'curl' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        cURL
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('nodejs')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'nodejs' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Node.js
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('php')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'php' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        PHP
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('python')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'python' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Python
+                      </button>
+                      <button
+                        onClick={() => setSelectedLanguage('golang')}
+                        className={`px-3 py-1 text-xs rounded border transition-colors ${
+                          selectedLanguage === 'golang' 
+                            ? 'bg-blue-100 border-blue-300 text-blue-800' 
+                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        Golang
+                      </button>
+                    </div>
+                    
+                    <ScrollArea className="p-3 w-full h-80 rounded border">
                       <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
-                        {generateDatabaseAPIExample()}
+                        {getCurrentLanguageContent()}
                       </pre>
                     </ScrollArea>
                   </div>

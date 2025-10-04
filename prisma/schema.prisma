@@ -43,6 +43,7 @@ model Bot {
   bot_avatar_type     String?
   analytics           BotAnalytics[]
   settings            BotSettings[]
+  tokens              BotToken[]
   user                User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
   conversations       Conversation[]
   knowledge_documents KnowledgeDocument[]
@@ -126,4 +127,25 @@ model BotSettings {
 
   @@unique([bot_id, setting_key])
   @@map("bot_settings")
+}
+
+model BotToken {
+  id            Int       @id @default(autoincrement())
+  bot_id        Int
+  token_name    String
+  access_token  String    @unique
+  secret_key    String    @unique
+  permissions   String[]  @default([])
+  expires_at    DateTime
+  description   String?
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  last_used_at  DateTime?
+  bot           Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
+
+  @@index([bot_id])
+  @@index([access_token])
+  @@index([is_active])
+  @@map("bot_tokens")
 }
