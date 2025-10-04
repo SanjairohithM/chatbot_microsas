@@ -23,6 +23,8 @@ import { useVoiceChat } from "@/hooks/use-voice-chat"
 import { useStreamingChat, StreamingMessage } from "@/hooks/use-streaming-chat"
 import { useWordStreamingChat } from "@/hooks/use-word-streaming-chat"
 import { useSimpleStreamingChat } from "@/hooks/use-simple-streaming-chat"
+import { usePrefetchChat } from "@/hooks/use-prefetch-chat"
+import { PrefetchChatInput } from "./prefetch-chat-input"
 import { cn } from "@/lib/utils"
 
 interface Message {
@@ -68,15 +70,18 @@ export function StreamingChatInterface({
     voiceError
   } = useVoiceChat()
 
-  // Simple streaming chat hook
+  // Prefetch streaming chat hook
   const {
     sendMessage: sendStreamingMessage,
     stopStreaming,
     isStreaming,
     currentMessage,
     error: streamingError,
-    clearError
-  } = useSimpleStreamingChat()
+    clearError,
+    prefetchForQuery,
+    isPrefetching,
+    prefetchData
+  } = usePrefetchChat()
 
   // Load bot data to get response mode
   useEffect(() => {
@@ -147,20 +152,18 @@ export function StreamingChatInterface({
     }
   }, [streamingError])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!message.trim() || isLoading || isStreaming) return
+  const handleSubmit = async (messageText: string, imageUrl?: string) => {
+    if (!messageText.trim() || isLoading || isStreaming) return
 
     const userMessage: Message = {
       id: `user_${Date.now()}`,
       role: 'user',
-      content: message.trim(),
+      content: messageText.trim(),
       timestamp: new Date()
     }
 
     // Add user message immediately
     setMessages(prev => [...prev, userMessage])
-    setMessage("")
     setIsLoading(true)
     setError(null)
     clearError()
@@ -185,7 +188,8 @@ export function StreamingChatInterface({
         })),
         {
           role: 'user' as const,
-          content: message.trim()
+          content: messageText.trim(),
+          ...(imageUrl && { image_url: imageUrl })
         }
       ]
 
@@ -460,40 +464,16 @@ export function StreamingChatInterface({
 
       {/* Input */}
       {responseModel === 'chat' ? (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
-            className="flex-1 min-h-[60px] max-h-[120px] resize-none"
-            disabled={isLoading || isStreaming}
-          />
-          <div className="flex flex-col gap-2">
-            <Button
-              type="submit"
-              disabled={!message.trim() || isLoading || isStreaming}
-              className="h-12 px-4"
-            >
-              {isStreaming ? (
-                <Square className="h-4 w-4" onClick={handleStopStreaming} />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-            {isStreaming && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleStopStreaming}
-                className="text-xs"
-              >
-                Stop
-              </Button>
-            )}
-          </div>
-        </form>
+        <PrefetchChatInput
+          onSendMessage={handleSubmit}
+          isProcessing={isLoading || isStreaming}
+          disabled={isLoading || isStreaming}
+          placeholder="Type your message..."
+          botId={botId}
+          userId={userId}
+          conversationId={conversationId}
+          className="w-full"
+        />
       ) : (
         <VoiceChatInput
           onTranscript={handleVoiceSubmit}

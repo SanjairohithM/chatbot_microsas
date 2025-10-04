@@ -15,7 +15,7 @@ import type { OpenAIMessage } from '@/lib/openai-api'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    let { messages, message, botConfig, conversationId, botId, userId } = body
+    let { messages, message, botConfig, conversationId, botId, userId, prefetchData } = body
 
     // Convert botId to number if it's a string (from widget)
     if (typeof botId === 'string') {
@@ -140,43 +140,55 @@ export async function POST(request: NextRequest) {
       
       // Enhanced document search using Pinecone vector search
       try {
-        console.log(`[Stream Chat API] 🔍 Searching documents in Pinecone for bot ${botId} with message: "${messageText}"`)
-        
-        // Search documents using Pinecone vector search
-        const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3)
-        
-        if (pineconeResults.length > 0) {
-          console.log(`[Stream Chat API] ✅ Found ${pineconeResults.length} relevant document chunks in Pinecone`)
-          
-          // Build document context from Pinecone results
-          documentContext = `Relevant document information:\n`
-          pineconeResults.forEach((result, index) => {
-            documentContext += `${index + 1}. From "${result.title}" (chunk ${result.chunkIndex + 1}/${result.totalChunks}, relevance: ${(result.score * 100).toFixed(1)}%):\n`
-            documentContext += `${result.content}\n\n`
-          })
-          
-          // Create search results object for compatibility
-          searchResults = {
+        // Check if we have prefetched data to use
+        if (prefetchData && prefetchData.usePrefetch && prefetchData.documentContext) {
+          console.log(`[Stream Chat API] 🚀 Using prefetched document context (${prefetchData.documentContext.length} chars)`)
+          documentContext = prefetchData.documentContext
+          searchResults = prefetchData.searchResults || {
             query: messageText,
-            results: pineconeResults.map(result => ({
-              document: { title: result.title, id: result.documentId },
-              matchedContent: result.content,
-              score: result.score,
-              matchType: 'vector_similarity'
-            })),
-            summary: {
-              exactMatches: 0,
-              partialMatches: 0,
-              semanticMatches: pineconeResults.length,
-              averageScore: pineconeResults.reduce((sum, r) => sum + r.score, 0) / pineconeResults.length
-            }
+            results: [],
+            summary: { exactMatches: 0, partialMatches: 0, semanticMatches: 0, averageScore: 0 },
+            has_context: true
           }
-          
-          console.log(`[Stream Chat API] 📄 Document context length: ${documentContext.length} characters`)
         } else {
-          console.log(`[Stream Chat API] ⚠️ No relevant documents found in Pinecone for query: "${messageText}"`)
-          documentContext = ''
-          searchResults = null
+          console.log(`[Stream Chat API] 🔍 Searching documents in Pinecone for bot ${botId} with message: "${messageText}"`)
+          
+          // Search documents using Pinecone vector search
+          const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3)
+        
+          if (pineconeResults.length > 0) {
+            console.log(`[Stream Chat API] ✅ Found ${pineconeResults.length} relevant document chunks in Pinecone`)
+            
+            // Build document context from Pinecone results
+            documentContext = `Relevant document information:\n`
+            pineconeResults.forEach((result, index) => {
+              documentContext += `${index + 1}. From "${result.title}" (chunk ${result.chunkIndex + 1}/${result.totalChunks}, relevance: ${(result.score * 100).toFixed(1)}%):\n`
+              documentContext += `${result.content}\n\n`
+            })
+            
+            // Create search results object for compatibility
+            searchResults = {
+              query: messageText,
+              results: pineconeResults.map(result => ({
+                document: { title: result.title, id: result.documentId },
+                matchedContent: result.content,
+                score: result.score,
+                matchType: 'vector_similarity'
+              })),
+              summary: {
+                exactMatches: 0,
+                partialMatches: 0,
+                semanticMatches: pineconeResults.length,
+                averageScore: pineconeResults.reduce((sum, r) => sum + r.score, 0) / pineconeResults.length
+              }
+            }
+            
+            console.log(`[Stream Chat API] 📄 Document context length: ${documentContext.length} characters`)
+          } else {
+            console.log(`[Stream Chat API] ⚠️ No relevant documents found in Pinecone for query: "${messageText}"`)
+            documentContext = ''
+            searchResults = null
+          }
         }
       } catch (error) {
         console.error('[Stream Chat API] ❌ Pinecone document search failed, falling back to traditional search:', error)
