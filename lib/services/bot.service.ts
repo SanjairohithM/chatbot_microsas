@@ -253,11 +253,29 @@ export class BotService {
         return false
       }
 
-      // Delete bot (cascade will handle related records)
+      // Clean up Pinecone data for this bot
+      try {
+        const { PineconeService } = await import('./pinecone.service')
+        const { PineconeDocumentService } = await import('./pinecone-document.service')
+        
+        // Delete conversation data from Pinecone
+        await PineconeService.deleteBotData(id)
+        
+        // Delete document data from Pinecone
+        await PineconeDocumentService.deleteBotDocuments(id)
+        
+        console.log(`[BotService] Cleaned up Pinecone data for bot ${id}`)
+      } catch (pineconeError) {
+        console.warn(`[BotService] Failed to clean up Pinecone data for bot ${id}:`, pineconeError)
+        // Don't fail the deletion if Pinecone cleanup fails
+      }
+
+      // Delete bot (cascade will handle related records in database)
       await db.bot.delete({
         where: { id }
       })
 
+      console.log(`[BotService] Successfully deleted bot ${id}`)
       return true
     } catch (error) {
       console.error('BotService.deleteBot error:', error)

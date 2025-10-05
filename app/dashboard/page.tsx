@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { BotCard } from "@/components/dashboard/bot-card"
 import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
+import { DeleteBotDialog } from "@/components/dashboard/delete-bot-dialog"
 import { useAuth } from "@/hooks/use-auth"
 import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 import { mockBots } from "@/lib/mock-data"
@@ -17,6 +18,8 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [editingBot, setEditingBot] = useState<BotType | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [botToDelete, setBotToDelete] = useState<BotType | null>(null)
   const { user, isLoading } = useAuth()
   const router = useRouter()
 
@@ -245,7 +248,34 @@ export default function DashboardPage() {
   }
 
   const handleDeleteBot = (botId: number) => {
-    setBots(bots.filter((bot) => bot.id !== botId))
+    const bot = bots.find(b => b.id === botId)
+    if (bot) {
+      setBotToDelete(bot)
+      setIsDeleteDialogOpen(true)
+    }
+  }
+
+  const handleConfirmDelete = async (botId: number) => {
+    try {
+      const response = await fetch(`/api/bots/${botId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        // Remove bot from local state
+        setBots(bots.filter((bot) => bot.id !== botId))
+        console.log('Bot deleted successfully')
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to delete bot')
+      }
+    } catch (error) {
+      console.error('Error deleting bot:', error)
+      throw error // Re-throw to be handled by the dialog
+    }
   }
 
   const handleToggleStatus = async (botId: number, status: "active" | "inactive") => {
@@ -405,6 +435,16 @@ export default function DashboardPage() {
         }}
         onSave={editingBot ? handleUpdateBot : handleCreateBot}
         editingBot={editingBot}
+      />
+
+      <DeleteBotDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open)
+          if (!open) setBotToDelete(null)
+        }}
+        bot={botToDelete}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   )

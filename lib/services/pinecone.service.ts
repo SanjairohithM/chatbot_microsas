@@ -471,4 +471,26 @@ export class PineconeService {
       return []
     }
   }
+
+  /**
+   * Delete all data for a specific bot
+   */
+  static async deleteBotData(botId: number): Promise<void> {
+    try {
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
+      
+      console.log(`[Pinecone] Deleting all data for bot ${botId} in namespace ${namespace}`)
+      
+      // Delete all vectors in the bot's namespace
+      await index.deleteAll({
+        namespace: namespace
+      })
+      
+      console.log(`[Pinecone] Successfully deleted all data for bot ${botId}`)
+    } catch (error) {
+      console.error(`[Pinecone] Failed to delete data for bot ${botId}:`, error)
+      throw error
+    }
+  }
 }

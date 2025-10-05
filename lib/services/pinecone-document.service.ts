@@ -595,4 +595,26 @@ export class PineconeDocumentService {
       return null
     }
   }
+
+  /**
+   * Delete all documents for a specific bot
+   */
+  static async deleteBotDocuments(botId: number): Promise<void> {
+    try {
+      const index = await this.getIndexWithNamespace(botId)
+      const namespace = `bot_${botId}`
+      
+      console.log(`[Pinecone Documents] Deleting all documents for bot ${botId} in namespace ${namespace}`)
+      
+      // Delete all document vectors in the bot's namespace
+      await index.deleteAll({
+        namespace: namespace
+      })
+      
+      console.log(`[Pinecone Documents] Successfully deleted all documents for bot ${botId}`)
+    } catch (error) {
+      console.error(`[Pinecone Documents] Failed to delete documents for bot ${botId}:`, error)
+      throw error
+    }
+  }
 }

@@ -18,6 +18,7 @@ interface BotCardProps {
 
 export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCardProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -58,22 +59,37 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             </div>
           </div>
 
-          {/* <div className="flex items-center gap-2">
-            <DropdownMenu>
+          <div className="flex items-center gap-2">
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 hover:bg-gray-100 focus:bg-gray-100"
+                  aria-label="Bot options"
+                >
+                  <MoreHorizontal className="h-4 w-4 text-gray-600" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => onEdit(bot)}>
+              <DropdownMenuContent align="end" className="w-48 z-50">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    console.log('Edit bot clicked:', bot.id)
+                    onEdit(bot)
+                    setIsDropdownOpen(false)
+                  }}
+                  className="cursor-pointer"
+                >
                   <Settings className="h-4 w-4 mr-2" />
-                  Edit
+                  Edit Bot
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  const newStatus = bot.status === "active" ? "inactive" : "active"
-                  onToggleStatus(bot.id, newStatus)
-                }}>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    const newStatus = bot.status === "active" ? "inactive" : "active"
+                    onToggleStatus(bot.id, newStatus)
+                  }}
+                  className="cursor-pointer"
+                >
                   {bot.status === "active" ? (
                     <>
                       <Pause className="h-4 w-4 mr-2" />
@@ -87,18 +103,28 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
                   )}
                 </DropdownMenuItem>
                 {bot.status === "active" && (
-                  <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+                  <DropdownMenuItem 
+                    onClick={() => setIsExportDialogOpen(true)}
+                    className="cursor-pointer"
+                  >
                     <Code className="h-4 w-4 mr-2" />
                     Export Widget
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => onDelete(bot.id)} className="text-red-600">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    console.log('Delete bot clicked from dropdown:', bot.id)
+                    onDelete(bot.id)
+                    setIsDropdownOpen(false)
+                  }} 
+                  className="text-red-600 cursor-pointer hover:bg-red-50"
+                >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  Delete Bot
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div> */}
+          </div>
         </div>
       </CardHeader>
 
@@ -150,50 +176,64 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
           </div>
           
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            {/* Draft Activation Button */}
+          <div className="space-y-2 pt-2">
+            {/* Primary Action Button */}
             {bot.status === "draft" && (
               <Button 
                 onClick={() => onToggleStatus(bot.id, "active")}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-sm py-2"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Activate Bot
               </Button>
             )}
             
-            {/* Inactive Bot Activation Button */}
             {bot.status === "inactive" && (
               <Button 
                 onClick={() => onToggleStatus(bot.id, "active")}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-sm py-2"
               >
                 <Play className="h-4 w-4 mr-2" />
                 Activate
               </Button>
             )}
             
-            {/* Chat with Bot Button - only show for non-draft bots */}
             {onChat && bot.status !== "draft" && (
               <Button 
                 onClick={() => onChat(bot)} 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
               >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Chat with Bot
               </Button>
             )}
             
-            {bot.status === "active" && (
+            {/* Secondary Action Buttons */}
+            <div className="flex gap-2">
+              {bot.status === "active" && (
+                <Button 
+                  onClick={() => setIsExportDialogOpen(true)} 
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
+                  variant="outline"
+                >
+                  <Code className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              )}
+              
+              {/* Delete Button - always visible */}
               <Button 
-                onClick={() => setIsExportDialogOpen(true)} 
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
+                onClick={() => {
+                  console.log('Delete bot clicked from button:', bot.id)
+                  onDelete(bot.id)
+                }} 
+                className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 text-sm py-2"
                 variant="outline"
               >
-                <Code className="h-4 w-4 mr-2" />
-                Export
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
               </Button>
-            )}
+            </div>
           </div>
         </div>
       </CardContent>
