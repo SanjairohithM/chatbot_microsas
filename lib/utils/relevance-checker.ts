@@ -43,11 +43,43 @@ export class RelevanceChecker {
     const relevanceScore = commonKeywords.length / Math.max(queryKeywords.length, 1)
     
     // If relevance score is high enough, consider it relevant
-    if (relevanceScore > 0.3) {
+    if (relevanceScore > 0.2) { // Lowered threshold for better sensitivity
       return {
         isRelevant: true,
         confidence: relevanceScore,
         reason: 'Query shows good keyword overlap with available content'
+      }
+    }
+    
+    // If we have document context, be more lenient with queries
+    if (documentContext && documentContext.trim().length > 0) {
+      // Check for common document query patterns
+      const documentQueryPatterns = [
+        /^(what|tell|show|give|can|could|will|would)\s+(me\s+)?(about|information|details|content|data)/i,
+        /^(what|how|do|does|can|could|will|would)\s+(is|are|was|were)\s+(in|on|about|regarding|mentioned)/i,
+        /^(summarize|summarise|explain|describe|list|show|give)\s+(me\s+)?(the\s+)?(content|information|details)/i,
+        /^(what|which|how\s+many|how\s+much)\s+(is|are|was|were|do|does|can|could|will|would)\s+(in|on|about|regarding)/i,
+        /^(tell\s+me\s+about|what\s+about|information\s+about)/i,
+        /^(brand|company|business|service|product|team|mission|vision|contact|address|phone|email)/i
+      ]
+      
+      const hasDocumentQueryPattern = documentQueryPatterns.some(pattern => pattern.test(queryLower))
+      
+      if (hasDocumentQueryPattern) {
+        return {
+          isRelevant: true,
+          confidence: 0.7,
+          reason: 'Query appears to be asking about document content'
+        }
+      }
+      
+      // If query has any meaningful keywords and we have document context, be lenient
+      if (queryKeywords.length > 0 && queryKeywords.some(keyword => keyword.length > 3)) {
+        return {
+          isRelevant: true,
+          confidence: 0.6,
+          reason: 'Query has meaningful keywords and document context is available'
+        }
       }
     }
     
@@ -113,11 +145,25 @@ export class RelevanceChecker {
     }
     
     // If we have document context and the query is asking about content, be more lenient
-    if (documentContext && queryLower.includes('document') || queryLower.includes('content')) {
+    if (documentContext && (queryLower.includes('document') || queryLower.includes('content'))) {
       return {
         isRelevant: true,
         confidence: 0.6,
         reason: 'Query is asking about document content'
+      }
+    }
+    
+    // If we have document context, be much more lenient with any meaningful query
+    if (documentContext && documentContext.trim().length > 0) {
+      // Check if query has any meaningful content (not just stop words)
+      const meaningfulWords = queryKeywords.filter(keyword => keyword.length > 3)
+      
+      if (meaningfulWords.length > 0) {
+        return {
+          isRelevant: true,
+          confidence: 0.5,
+          reason: 'Query has meaningful content and document context is available'
+        }
       }
     }
     
@@ -139,6 +185,18 @@ export class RelevanceChecker {
       .split(/\s+/)
       .filter(word => word.length > 2) // Filter out short words
       .filter(word => !this.isStopWord(word)) // Remove stop words
+      .map(word => {
+        // Normalize common business/document terms
+        if (word === 'strategy' || word === 'strategic') return 'strategy'
+        if (word === 'company' || word === 'business' || word === 'organization') return 'company'
+        if (word === 'service' || word === 'services') return 'service'
+        if (word === 'product' || word === 'products') return 'product'
+        if (word === 'brand' || word === 'branding') return 'brand'
+        if (word === 'information' || word === 'info') return 'information'
+        if (word === 'details' || word === 'detail') return 'details'
+        if (word === 'content' || word === 'contents') return 'content'
+        return word
+      })
   }
   
   /**

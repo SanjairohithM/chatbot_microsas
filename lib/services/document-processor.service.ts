@@ -105,31 +105,31 @@ export class DocumentProcessorService {
       // Try multiple PDF parsing approaches
       let pdfText = ''
       
-      // Method 1: Try pdfjs-dist first (most reliable for modern PDFs)
+      // Method 1: Try pdf-parse first (more reliable in Node.js environments)
       try {
-        console.log(`[DocumentProcessor] Attempting pdfjs-dist extraction...`)
-        pdfText = await this.extractTextWithPdfJs(dataBuffer)
+        console.log(`[DocumentProcessor] Attempting pdf-parse extraction...`)
+        pdfText = await this.extractTextWithPdfParse(dataBuffer)
         
         if (pdfText && pdfText.trim().length > 0) {
-          console.log(`[DocumentProcessor] PDF parsed successfully with pdfjs-dist, text length: ${pdfText.length}`)
+          console.log(`[DocumentProcessor] PDF parsed successfully with pdf-parse, text length: ${pdfText.length}`)
         } else {
-          console.warn(`[DocumentProcessor] pdfjs-dist returned empty text`)
+          console.warn(`[DocumentProcessor] pdf-parse returned empty text`)
         }
-      } catch (pdfJsError) {
-        console.warn(`[DocumentProcessor] pdfjs-dist failed:`, pdfJsError.message)
+      } catch (pdfParseError) {
+        console.warn(`[DocumentProcessor] pdf-parse failed:`, pdfParseError.message)
         
-        // Method 2: Try pdf-parse as fallback
+        // Method 2: Try pdfjs-dist as fallback
         try {
-          console.log(`[DocumentProcessor] Attempting pdf-parse fallback...`)
-          pdfText = await this.extractTextWithPdfParse(dataBuffer)
+          console.log(`[DocumentProcessor] Attempting pdfjs-dist fallback...`)
+          pdfText = await this.extractTextWithPdfJs(dataBuffer)
           
           if (pdfText && pdfText.trim().length > 0) {
-            console.log(`[DocumentProcessor] PDF parsed with pdf-parse fallback, text length: ${pdfText.length}`)
+            console.log(`[DocumentProcessor] PDF parsed with pdfjs-dist fallback, text length: ${pdfText.length}`)
           } else {
-            console.warn(`[DocumentProcessor] pdf-parse fallback returned empty text`)
+            console.warn(`[DocumentProcessor] pdfjs-dist fallback returned empty text`)
           }
-        } catch (pdfParseError) {
-          console.warn(`[DocumentProcessor] pdf-parse fallback also failed:`, pdfParseError.message)
+        } catch (pdfJsError) {
+          console.warn(`[DocumentProcessor] pdfjs-dist fallback also failed:`, pdfJsError.message)
           
           // Method 3: Custom fallback text extraction
           console.log(`[DocumentProcessor] Trying custom fallback text extraction...`)
@@ -190,13 +190,13 @@ Content: [PDF file - ${fileName}]`
    */
   private static async extractTextWithPdfJs(buffer: Buffer): Promise<string> {
     try {
-      // Use the correct import path for newer versions of pdfjs-dist
+      // Use the standard build with worker disabled
       const pdfjsLib = await import('pdfjs-dist')
       
       // Convert Buffer to Uint8Array as required by pdfjs-dist
       const uint8Array = new Uint8Array(buffer)
       
-      // Load the PDF document
+      // Load the PDF document with legacy configuration
       const loadingTask = pdfjsLib.getDocument({
         data: uint8Array,
         useSystemFonts: true,
@@ -208,7 +208,10 @@ Content: [PDF file - ${fileName}]`
         isEvalSupported: false,
         useWorkerFetch: false,
         stopAtErrors: false,
-        verbosity: 0
+        verbosity: 0,
+        // Disable worker to avoid module resolution issues
+        useWorkerFetch: false,
+        disableWorker: true
       })
       
       const pdfDocument = await loadingTask.promise
@@ -245,7 +248,7 @@ Content: [PDF file - ${fileName}]`
   }
 
   /**
-   * Extract text using pdf-parse library (fallback method)
+   * Extract text using pdf-parse library (primary method for Node.js)
    */
   private static async extractTextWithPdfParse(buffer: Buffer): Promise<string> {
     try {
@@ -253,13 +256,21 @@ Content: [PDF file - ${fileName}]`
       const pdfParse = eval('require')('pdf-parse')
       
       const data = await pdfParse(buffer, {
-        max: 0,
+        max: 0, // No limit on pages
         normalizeWhitespace: true,
-        disableCombineTextItems: false
+        disableCombineTextItems: false,
+        // Additional options for better text extraction
+        version: 'v1.10.100',
+        disableAutoFetch: false,
+        disableStream: false,
+        disableRange: false,
+        disableFontFace: false
       })
       
       if (data && data.text && data.text.trim().length > 0) {
-        return this.cleanExtractedText(data.text)
+        const cleanedText = this.cleanExtractedText(data.text)
+        console.log(`[DocumentProcessor] pdf-parse extracted ${cleanedText.length} characters`)
+        return cleanedText
       } else {
         throw new Error('pdf-parse returned empty text')
       }
