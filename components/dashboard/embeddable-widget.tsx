@@ -486,10 +486,54 @@ fetch('${baseUrl}/wp-json/omnix-chatbot/v1/chat', {
   const generateCurlExamples = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
     
-    return `# cURL Examples for Database Chatbot API
+    return `# cURL Examples for Smart Database Chatbot API
 
 # ========================================
-# 1. Token Management
+# 1. Smart Database Chat (Auto-Detection)
+# ========================================
+
+# Smart Database Chat - Automatically detects database queries
+curl -X POST "${baseUrl}/api/chatbot/smart-database-chat" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "How many active users do we have?",
+    "bot_id": ${bot.id},
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    }
+  }'
+
+# Smart Chat with Query Type Detection
+curl -X POST "${baseUrl}/api/chatbot/smart-database-chat" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "What are the top selling products this month?",
+    "bot_id": ${bot.id},
+    "database_config": {
+      "type": "mysql",
+      "host": "localhost",
+      "port": 3306,
+      "database": "myapp",
+      "username": "user",
+      "password": "pass"
+    }
+  }'
+
+# Smart Chat without Database Config (Returns Suggestions)
+curl -X POST "${baseUrl}/api/chatbot/smart-database-chat" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": "Show me sales data",
+    "bot_id": ${bot.id}
+  }'
+
+# ========================================
+# 2. Token Management
 # ========================================
 
 # Create Access Token for Bot
@@ -513,30 +557,9 @@ curl -X POST "${baseUrl}/api/bots/${bot.id}/tokens/validate" \\
     "secret_key": "YOUR_SECRET_KEY"
   }'
 
-# Update Token
-curl -X PUT "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "token_name": "Updated Token Name",
-    "permissions": ["read", "write", "admin"],
-    "expires_in_days": 180
-  }'
-
-# Revoke Token
-curl -X DELETE "${baseUrl}/api/bots/${bot.id}/tokens?token_id=1"
-
 # ========================================
-# 2. Database Operations
+# 3. Direct Database Operations
 # ========================================
-
-# Create Database Credentials for Bot
-curl -X POST "${baseUrl}/api/bots/${bot.id}/database-credentials" \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "permissions": ["read", "write"],
-    "expires_in_days": 365
-  }'
 
 # Test Database Connection
 curl -X GET "${baseUrl}/api/database/query?action=test&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
@@ -559,7 +582,7 @@ curl -X POST "${baseUrl}/api/database/query" \\
     "params": [true]
   }'
 
-# AI-Powered Database Chat
+# AI-Powered Database Chat (Traditional)
 curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY" \\
   -H "Content-Type: application/json" \\
@@ -573,21 +596,13 @@ curl -X POST "${baseUrl}/api/chatbot/database-chat" \\
       "username": "user",
       "password": "pass"
     }
-  }'
-
-# Get Database Schema
-curl -X GET "${baseUrl}/api/database/query?action=schema&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"
-
-# Get Table Structure
-curl -X GET "${baseUrl}/api/database/query?action=table&table=users&type=mysql&host=localhost&port=3306&database=myapp&username=user&password=pass" \\
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN:YOUR_SECRET_KEY"`
+  }'`
   }
 
   const generateNodeJSExamples = () => {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com'
     
-    return `// Node.js Examples for Database Chatbot API
+    return `// Node.js Examples for Smart Database Chatbot API
 const axios = require('axios');
 
 const baseUrl = '${baseUrl}';
@@ -596,7 +611,86 @@ const secretKey = 'YOUR_SECRET_KEY';
 const authHeader = \`Bearer \${accessToken}:\${secretKey}\`;
 
 // ========================================
-// 1. Token Management
+// 1. Smart Database Chat (Auto-Detection)
+// ========================================
+
+// Smart Database Chat - Automatically detects database queries
+async function smartDatabaseChat() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/chatbot/smart-database-chat\`, {
+      message: 'How many active users do we have?',
+      bot_id: ${bot.id},
+      database_config: {
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'myapp',
+        username: 'user',
+        password: 'pass'
+      }
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    console.log('Smart Chat Response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Smart chat failed:', error.response?.data || error.message);
+  }
+}
+
+// Smart Chat with Different Query Types
+async function testQueryTypes() {
+  const queries = [
+    'How many users do we have?', // Count query
+    'What are the top selling products?', // Select query
+    'What is the average order value?', // Aggregation query
+    'Show me today\\'s orders', // Time-based query
+    'Compare this month vs last month', // Comparison query
+    'Group sales by category' // Grouping query
+  ];
+
+  for (const query of queries) {
+    try {
+      const response = await axios.post(\`\${baseUrl}/api/chatbot/smart-database-chat\`, {
+        message: query,
+        bot_id: ${bot.id},
+        database_config: {
+          type: 'mysql',
+          host: 'localhost',
+          port: 3306,
+          database: 'myapp',
+          username: 'user',
+          password: 'pass'
+        }
+      });
+      console.log(\`Query: \${query}\`);
+      console.log(\`Type: \${response.data.query_type}\`);
+      console.log(\`Response: \${response.data.message}\`);
+      console.log('---');
+    } catch (error) {
+      console.error(\`Query failed for "\${query}":\`, error.response?.data || error.message);
+    }
+  }
+}
+
+// Smart Chat without Database Config (Gets Suggestions)
+async function getQuerySuggestions() {
+  try {
+    const response = await axios.post(\`\${baseUrl}/api/chatbot/smart-database-chat\`, {
+      message: 'Show me sales data',
+      bot_id: ${bot.id}
+    });
+    console.log('Suggestions:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get suggestions:', error.response?.data || error.message);
+  }
+}
+
+// ========================================
+// 2. Token Management
 // ========================================
 
 // Create Access Token for Bot
@@ -636,82 +730,36 @@ async function listTokens() {
   }
 }
 
-// Validate Token
-async function validateToken() {
-  try {
-    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/tokens/validate\`, {
-      access_token: accessToken,
-      secret_key: secretKey
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log('Token validation:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Token validation failed:', error.response?.data || error.message);
-  }
-}
-
-// Update Token
-async function updateToken(tokenId) {
-  try {
-    const response = await axios.put(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`, {
-      token_name: 'Updated Token Name',
-      permissions: ['read', 'write', 'admin'],
-      expires_in_days: 180
-    }, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log('Token updated:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Failed to update token:', error.response?.data || error.message);
-  }
-}
-
-// Revoke Token
-async function revokeToken(tokenId) {
-  try {
-    const response = await axios.delete(\`\${baseUrl}/api/bots/${bot.id}/tokens?token_id=\${tokenId}\`);
-    console.log('Token revoked:', response.data);
-    return response.data;
-  } catch (error) {
-    console.error('Failed to revoke token:', error.response?.data || error.message);
-  }
-}
-
 // ========================================
-// 2. Database Operations
+// 3. Traditional Database Operations
 // ========================================
 
-// Test Database Connection
-async function testDatabaseConnection() {
+// AI-Powered Database Chat (Traditional)
+async function traditionalDatabaseChat() {
   try {
-    const response = await axios.get(\`\${baseUrl}/api/database/query\`, {
-      params: {
-        action: 'test',
+    const response = await axios.post(\`\${baseUrl}/api/chatbot/database-chat\`, {
+      message: 'How many active users do we have?',
+      database_config: {
         type: 'mysql',
         host: 'localhost',
         port: 3306,
         database: 'myapp',
         username: 'user',
         password: 'pass'
-      },
+      }
+    }, {
       headers: {
-        'Authorization': authHeader
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
       }
     });
-    console.log('Connection test:', response.data);
+    console.log('Traditional Chat Response:', response.data);
   } catch (error) {
-    console.error('Connection test failed:', error.response?.data || error.message);
+    console.error('Traditional chat failed:', error.response?.data || error.message);
   }
 }
 
-// Execute SQL Query
+// Execute Direct SQL Query
 async function executeQuery() {
   try {
     const response = await axios.post(\`\${baseUrl}/api/database/query\`, {
@@ -737,61 +785,20 @@ async function executeQuery() {
   }
 }
 
-// AI-Powered Database Chat
-async function databaseChat() {
-  try {
-    const response = await axios.post(\`\${baseUrl}/api/chatbot/database-chat\`, {
-      message: 'How many active users do we have?',
-      database_config: {
-        type: 'mysql',
-        host: 'localhost',
-        port: 3306,
-        database: 'myapp',
-        username: 'user',
-        password: 'pass'
-      }
-    }, {
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log('AI Response:', response.data);
-  } catch (error) {
-    console.error('Chat failed:', error.response?.data || error.message);
-  }
-}
-
-// Create Database Credentials
-async function createCredentials() {
-  try {
-    const response = await axios.post(\`\${baseUrl}/api/bots/${bot.id}/database-credentials\`, {
-      permissions: ['read', 'write'],
-      expires_in_days: 365
-    }, {
-      headers: {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
-      }
-    });
-    console.log('Credentials created:', response.data);
-  } catch (error) {
-    console.error('Failed to create credentials:', error.response?.data || error.message);
-  }
-}
-
 // Run examples
 async function runExamples() {
-  // Token management
+  console.log('=== Smart Database Chat Examples ===');
+  await smartDatabaseChat();
+  await testQueryTypes();
+  await getQuerySuggestions();
+  
+  console.log('\\n=== Token Management ===');
   await createToken();
   await listTokens();
-  await validateToken();
   
-  // Database operations
-  await testDatabaseConnection();
+  console.log('\\n=== Traditional Database Operations ===');
+  await traditionalDatabaseChat();
   await executeQuery();
-  await databaseChat();
-  await createCredentials();
 }
 
 runExamples();`
@@ -2677,10 +2684,12 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                   <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-blue-800">
                     <Database className="w-5 h-5" />
-                    Database Chatbot API
+                    Smart Database Chatbot API
                   </h4>
                   <p className="text-sm text-blue-700">
-                    Enable your chatbot to connect to external databases (MySQL, PostgreSQL, MariaDB) and generate intelligent responses based on database queries using natural language processing.
+                    <strong>🤖 Auto-Detection:</strong> Automatically understands database-related prompts and routes them to appropriate database APIs. 
+                    <strong>🔍 Query Classification:</strong> Detects query types (count, aggregation, time-based, comparison, grouping) and provides enhanced responses.
+                    <strong>💡 Smart Suggestions:</strong> Offers relevant query examples when database config is not provided.
                   </p>
                 </div>
 

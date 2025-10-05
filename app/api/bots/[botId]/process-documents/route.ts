@@ -5,10 +5,10 @@ import { join } from 'path'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { botId: string } }
 ) {
   try {
-    const botId = parseInt(params.id)
+    const botId = parseInt(params.botId)
     if (isNaN(botId)) {
       return new NextResponse('Invalid bot ID', { status: 400 })
     }

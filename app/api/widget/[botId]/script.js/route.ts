@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getBotById } from '@/lib/services/bot.service'
+import { BotService } from '@/lib/services/bot.service'
 
 export async function GET(
   request: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
     }
 
     // Get bot configuration
-    const bot = await getBotById(botId)
+    const bot = await BotService.getBotById(botId)
     if (!bot) {
       return new NextResponse('Bot not found', { status: 404 })
     }

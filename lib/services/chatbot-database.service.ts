@@ -162,11 +162,51 @@ export class ChatbotDatabaseService {
         max_tokens: 200
       })
 
-      const analysis = JSON.parse(response)
+      // Validate response before parsing
+      if (!response || typeof response !== 'string' || response.trim() === '') {
+        console.warn('Empty or invalid response from OpenAI service')
+        return {
+          needsQuery: false,
+          intent: 'general inquiry',
+          confidence: 0.3
+        }
+      }
+
+      // Try to extract JSON from response (in case there's extra text)
+      let jsonString = response.trim()
+      
+      // Look for JSON object in the response
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        jsonString = jsonMatch[0]
+      }
+
+      // Validate JSON format
+      if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
+        console.warn('Response does not contain valid JSON:', response)
+        return {
+          needsQuery: false,
+          intent: 'general inquiry',
+          confidence: 0.3
+        }
+      }
+
+      const analysis = JSON.parse(jsonString)
+      
+      // Validate required fields
+      if (typeof analysis !== 'object' || analysis === null) {
+        console.warn('Parsed response is not an object:', analysis)
+        return {
+          needsQuery: false,
+          intent: 'general inquiry',
+          confidence: 0.3
+        }
+      }
+
       return {
-        needsQuery: analysis.needsQuery || false,
-        intent: analysis.intent || 'general inquiry',
-        confidence: analysis.confidence || 0.5
+        needsQuery: Boolean(analysis.needsQuery),
+        intent: String(analysis.intent || 'general inquiry'),
+        confidence: Math.max(0, Math.min(1, Number(analysis.confidence) || 0.5))
       }
 
     } catch (error) {
@@ -191,7 +231,7 @@ export class ChatbotDatabaseService {
     try {
       // Get database schema for context
       const schema = await ExternalDatabaseService.getSchemaInfo(databaseConfig)
-      const schemaInfo = schema.map(table => ({
+      const schemaInfo = schema.map((table: any) => ({
         name: table.table_name,
         comment: table.table_comment
       })).slice(0, 10) // Limit to first 10 tables
@@ -203,7 +243,7 @@ export class ChatbotDatabaseService {
         Database: ${databaseConfig.database}
         
         Available Tables:
-        ${schemaInfo.map(table => `- ${table.name}: ${table.comment || 'No description'}`).join('\n')}
+        ${schemaInfo.map((table: any) => `- ${table.name}: ${table.comment || 'No description'}`).join('\n')}
         
         User Intent: ${intent}
         User Message: "${message}"
@@ -232,11 +272,51 @@ export class ChatbotDatabaseService {
         max_tokens: 500
       })
 
-      const result = JSON.parse(response)
+      // Validate response before parsing
+      if (!response || typeof response !== 'string' || response.trim() === '') {
+        console.warn('Empty or invalid response from OpenAI service for SQL generation')
+        return {
+          query: '',
+          parameters: [],
+          confidence: 0.1
+        }
+      }
+
+      // Try to extract JSON from response (in case there's extra text)
+      let jsonString = response.trim()
+      
+      // Look for JSON object in the response
+      const jsonMatch = jsonString.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        jsonString = jsonMatch[0]
+      }
+
+      // Validate JSON format
+      if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
+        console.warn('Response does not contain valid JSON for SQL generation:', response)
+        return {
+          query: '',
+          parameters: [],
+          confidence: 0.1
+        }
+      }
+
+      const result = JSON.parse(jsonString)
+      
+      // Validate required fields
+      if (typeof result !== 'object' || result === null) {
+        console.warn('Parsed SQL response is not an object:', result)
+        return {
+          query: '',
+          parameters: [],
+          confidence: 0.1
+        }
+      }
+
       return {
-        query: result.query || '',
-        parameters: result.parameters || [],
-        confidence: result.confidence || 0.5
+        query: String(result.query || ''),
+        parameters: Array.isArray(result.parameters) ? result.parameters : [],
+        confidence: Math.max(0, Math.min(1, Number(result.confidence) || 0.5))
       }
 
     } catch (error) {

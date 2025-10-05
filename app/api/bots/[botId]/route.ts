@@ -3,23 +3,23 @@ import { BotController } from '@/lib/controllers/bot.controller'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { botId: string } }
 ) {
-  return BotController.getBotById(request, { params })
+  return BotController.getBotById(request, { params: { id: params.botId } })
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { botId: string } }
 ) {
-  return BotController.updateBot(request, { params })
+  return BotController.updateBot(request, { params: { id: params.botId } })
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { botId: string } }
 ) {
-  return BotController.deleteBot(request, { params })
+  return BotController.deleteBot(request, { params: { id: params.botId } })
 }
 
 // Handle OPTIONS request for CORS
