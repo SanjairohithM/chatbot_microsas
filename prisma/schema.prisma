@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -76,8 +76,8 @@ model Conversation {
   is_test    Boolean   @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  bot        Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
   user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  bot        Bot       @relation(fields: [bot_id], references: [id], onDelete: Cascade)
   messages   Message[]
 
   @@map("conversations")
@@ -101,7 +101,7 @@ model Message {
 model BotAnalytics {
   id                      Int      @id @default(autoincrement())
   bot_id                  Int
-  date                    DateTime
+  date                    DateTime @db.Date
   total_conversations     Int      @default(0)
   total_messages          Int      @default(0)
   total_tokens_used       Int      @default(0)
