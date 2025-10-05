@@ -3,10 +3,10 @@ import { KnowledgeDocumentService } from '@/lib/services/knowledge-document.serv
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { botId: string } }
 ) {
   try {
-    const botId = parseInt(params.id)
+    const botId = parseInt(params.botId)
     if (isNaN(botId)) {
       return new NextResponse('Invalid bot ID', { status: 400 })
     }
