@@ -10,6 +10,7 @@ import { SectionResources } from "@/components/section-resources"
 import { SectionCta } from "@/components/section-cta"
 import { SectionFooter } from "@/components/section-footer"
 import { SectionPricing } from "@/components/section-pricing"
+import { WebsiteChatWidget } from "@/components/website-chat-widget"
 
 export default function Page() {
   return (
@@ -28,6 +29,7 @@ export default function Page() {
         <BrandStrip />
         <SectionFooter />
       </main>
+      <WebsiteChatWidget />
     </>
   )
 }
