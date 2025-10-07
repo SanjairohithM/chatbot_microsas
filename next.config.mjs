@@ -9,6 +9,28 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  async headers() {
+    return [
+      {
+        // Apply CORS headers to all API routes
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization, ngrok-skip-browser-warning',
+          },
+        ],
+      },
+    ]
+  },
   webpack: (config, { isServer }) => {
     // Handle server-side rendering issues
     if (!isServer) {

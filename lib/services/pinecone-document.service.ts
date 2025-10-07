@@ -89,6 +89,12 @@ export class PineconeDocumentService {
     return this.pc.index(this.indexName)
   }
 
+  private static async getIndexByName(indexName: string) {
+    await this.initialize()
+    if (!this.pc) throw new Error('Pinecone not initialized')
+    return this.pc.index(indexName)
+  }
+
   private static async getIndexWithNamespace(botId: number) {
     console.log(`[Pinecone Documents] Getting index with namespace for bot ${botId}`)
     const index = await this.getIndex()
@@ -146,6 +152,29 @@ export class PineconeDocumentService {
       console.error('[Pinecone Documents] Error generating embedding with OpenAI:', error)
       console.warn('[Pinecone Documents] Falling back to simple embedding')
       return this.generateFallbackEmbedding(text)
+    }
+  }
+
+  private static async generateWordPressEmbedding(text: string): Promise<number[]> {
+    try {
+      console.log(`[Pinecone Documents] 🔍 Generating WordPress embedding for text: "${text.substring(0, 100)}..."`)
+      const response = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'text-embedding-3-small', // 1536 dimensions
+          input: text.substring(0, 8000),
+        }),
+      });
+
+      const data = await response.json();
+      return data.data[0].embedding;
+    } catch (error) {
+      console.error('[Pinecone Documents] Error generating WordPress embedding:', error);
+      return this.generateFallbackEmbedding(text);
     }
   }
 
@@ -405,10 +434,11 @@ export class PineconeDocumentService {
     limit: number = 5
   ): Promise<DocumentSearchResult[]> {
     try {
+      // Search in chatbot index for scraped content
       const index = await this.getIndexWithNamespace(botId)
       const namespace = `bot_${botId}`
       
-      console.log(`[Pinecone Documents] 🔍 Searching documents for bot ${botId} with query: "${query}" in namespace ${namespace}`)
+      console.log(`[Pinecone Documents] 🔍 Searching scraped documents for bot ${botId} with query: "${query}" in namespace ${namespace}`)
       
       // Enhance query for better company-specific results
       const enhancedQuery = this.enhanceQueryForCompanySearch(query)
@@ -417,32 +447,53 @@ export class PineconeDocumentService {
       // Generate embedding for the enhanced query
       const queryEmbedding = await this.generateEmbedding(enhancedQuery)
       
-      // Search for relevant document chunks (exclude chat messages)
+      // Search for scraped content in bot namespace
       const searchResponse = await index.query({
         vector: queryEmbedding,
         filter: {
-          $and: [
-            { documentId: { $exists: true } }, // Only get document chunks, not chat messages
-            { chunkIndex: { $exists: true } }  // Ensure it's a document chunk
-          ]
+          type: { $eq: 'scraped_content' } // Only get scraped content
         },
         topK: limit * 2, // Get more results to filter later
         includeMetadata: true
       })
 
-      console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks in namespace ${namespace}`)
+      // If no results with strict filter, try without filter to see what's available
+      if (!searchResponse.matches || searchResponse.matches.length === 0) {
+        console.log(`[Pinecone Documents] No results with strict filter, trying without filter to see available data`)
+        const unfilteredResponse = await index.query({
+          vector: queryEmbedding,
+          topK: 10,
+          includeMetadata: true
+        })
+        console.log(`[Pinecone Documents] Unfiltered search found ${unfilteredResponse.matches?.length || 0} results`)
+        if (unfilteredResponse.matches && unfilteredResponse.matches.length > 0) {
+          console.log(`[Pinecone Documents] Sample metadata:`, unfilteredResponse.matches[0].metadata)
+        }
+      }
+
+      console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks`)
 
       // Convert results to DocumentSearchResult format
       const results: DocumentSearchResult[] = searchResponse.matches?.map(match => ({
         id: match.id,
         score: match.score || 0,
-        documentId: match.metadata?.documentId as number,
-        title: match.metadata?.title as string,
-        content: match.metadata?.content as string,
-        chunkIndex: match.metadata?.chunkIndex as number,
-        totalChunks: match.metadata?.totalChunks as number,
+        documentId: match.metadata?.documentId as number || 0,
+        title: match.metadata?.title as string || 'Untitled',
+        content: match.metadata?.content as string || '',
+        chunkIndex: match.metadata?.chunkIndex as number || 0,
+        totalChunks: match.metadata?.totalChunks as number || 1,
         metadata: match.metadata
       })) || []
+
+      console.log(`[Pinecone Documents] Converted ${results.length} results for processing`)
+      if (results.length > 0) {
+        console.log(`[Pinecone Documents] Sample result:`, {
+          id: results[0].id,
+          title: results[0].title,
+          score: results[0].score,
+          type: results[0].metadata?.type
+        })
+      }
 
       // Filter out low-quality results and irrelevant content
       const filteredResults = results.filter(result => {

@@ -41,12 +41,14 @@ model Bot {
   bot_avatar          String?
   bot_avatar_data     Bytes?
   bot_avatar_type     String?
+  wordpress_site_id   String?
   analytics           BotAnalytics[]
   settings            BotSettings[]
   tokens              BotToken[]
   user                User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
   conversations       Conversation[]
   knowledge_documents KnowledgeDocument[]
+  wordpress_site      WordPressSite?      @relation(fields: [wordpress_site_id], references: [id], onDelete: Cascade)
 
   @@map("bots")
 }
@@ -148,4 +150,22 @@ model BotToken {
   @@index([access_token])
   @@index([is_active])
   @@map("bot_tokens")
+}
+
+model WordPressSite {
+  id                String    @id @default(cuid())
+  site_url          String    @unique
+  site_name         String
+  admin_email       String?
+  wordpress_version String?
+  access_token      String    @unique
+  created_at        DateTime  @default(now())
+  last_sync         DateTime?
+  is_active         Boolean   @default(true)
+  bots              Bot[]
+
+  @@index([site_url])
+  @@index([access_token])
+  @@index([is_active])
+  @@map("wordpress_sites")
 }

@@ -1,12 +1,16 @@
 <?php
 /**
  * Plugin Name: OmniX Chatbot Integration
- * Plugin URI: https://your-domain.com
+ * Plugin URI: https://omnix-chatbot.com
  * Description: Integrate AI chatbots with access token authentication for external websites
  * Version: 1.0.0
- * Author: Your Name
+ * Author: OmniX Team
  * License: GPL v2 or later
  * Text Domain: omnix-chatbot
+ * Requires at least: 5.0
+ * Tested up to: 6.4
+ * Requires PHP: 7.4
+ * Network: false
  */
 
 // Prevent direct access
@@ -442,6 +446,49 @@ add_action('rest_api_init', function() {
         'callback' => 'omnix_get_analytics',
         'permission_callback' => 'omnix_verify_token_permission'
     ));
+    
+    // NEW: Data export endpoints for WordPress content
+    register_rest_route('omnix-chatbot/v1', '/export/posts', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_posts',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/pages', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_pages',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/categories', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_categories',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/tags', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_tags',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/media', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_media',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/site-info', array(
+        'methods' => 'GET',
+        'callback' => 'omnix_export_site_info',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
+    
+    register_rest_route('omnix-chatbot/v1', '/export/full', array(
+        'methods' => 'POST',
+        'callback' => 'omnix_export_full_site',
+        'permission_callback' => 'omnix_verify_token_permission'
+    ));
 });
 
 function omnix_verify_token_permission($request) {
@@ -610,5 +657,431 @@ function omnix_get_analytics($request) {
     }
     
     return json_decode(wp_remote_retrieve_body($response), true);
+}
+
+// NEW: Export WordPress posts
+function omnix_export_posts($request) {
+    $token_info = $request->get_param('token_info');
+    
+    // Check permissions
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $params = $request->get_params();
+    $limit = isset($params['limit']) ? intval($params['limit']) : 100;
+    $offset = isset($params['offset']) ? intval($params['offset']) : 0;
+    $post_type = isset($params['post_type']) ? sanitize_text_field($params['post_type']) : 'post';
+    $status = isset($params['status']) ? sanitize_text_field($params['status']) : 'publish';
+    
+    $args = array(
+        'post_type' => $post_type,
+        'post_status' => $status,
+        'posts_per_page' => $limit,
+        'offset' => $offset,
+        'orderby' => 'date',
+        'order' => 'DESC'
+    );
+    
+    $posts = get_posts($args);
+    $exported_posts = array();
+    
+    foreach ($posts as $post) {
+        $exported_posts[] = array(
+            'id' => $post->ID,
+            'title' => $post->post_title,
+            'content' => $post->post_content,
+            'excerpt' => $post->post_excerpt,
+            'slug' => $post->post_name,
+            'status' => $post->post_status,
+            'type' => $post->post_type,
+            'date' => $post->post_date,
+            'modified' => $post->post_modified,
+            'author' => get_the_author_meta('display_name', $post->post_author),
+            'url' => get_permalink($post->ID),
+            'featured_image' => get_the_post_thumbnail_url($post->ID, 'full'),
+            'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
+            'tags' => wp_get_post_tags($post->ID, array('fields' => 'names')),
+            'meta' => get_post_meta($post->ID)
+        );
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $exported_posts,
+        'total' => wp_count_posts($post_type)->$status,
+        'limit' => $limit,
+        'offset' => $offset
+    );
+}
+
+// NEW: Export WordPress pages
+function omnix_export_pages($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $params = $request->get_params();
+    $limit = isset($params['limit']) ? intval($params['limit']) : 100;
+    $offset = isset($params['offset']) ? intval($params['offset']) : 0;
+    
+    $args = array(
+        'post_type' => 'page',
+        'post_status' => 'publish',
+        'posts_per_page' => $limit,
+        'offset' => $offset,
+        'orderby' => 'menu_order',
+        'order' => 'ASC'
+    );
+    
+    $pages = get_posts($args);
+    $exported_pages = array();
+    
+    foreach ($pages as $page) {
+        $exported_pages[] = array(
+            'id' => $page->ID,
+            'title' => $page->post_title,
+            'content' => $page->post_content,
+            'excerpt' => $page->post_excerpt,
+            'slug' => $page->post_name,
+            'status' => $page->post_status,
+            'type' => $page->post_type,
+            'date' => $page->post_date,
+            'modified' => $page->post_modified,
+            'author' => get_the_author_meta('display_name', $page->post_author),
+            'url' => get_permalink($page->ID),
+            'featured_image' => get_the_post_thumbnail_url($page->ID, 'full'),
+            'parent' => $page->post_parent,
+            'menu_order' => $page->menu_order,
+            'meta' => get_post_meta($page->ID)
+        );
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $exported_pages,
+        'total' => wp_count_posts('page')->publish,
+        'limit' => $limit,
+        'offset' => $offset
+    );
+}
+
+// NEW: Export categories
+function omnix_export_categories($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $categories = get_categories(array(
+        'hide_empty' => false,
+        'orderby' => 'name',
+        'order' => 'ASC'
+    ));
+    
+    $exported_categories = array();
+    
+    foreach ($categories as $category) {
+        $exported_categories[] = array(
+            'id' => $category->term_id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'description' => $category->description,
+            'count' => $category->count,
+            'parent' => $category->parent,
+            'url' => get_category_link($category->term_id)
+        );
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $exported_categories,
+        'total' => count($exported_categories)
+    );
+}
+
+// NEW: Export tags
+function omnix_export_tags($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $tags = get_tags(array(
+        'hide_empty' => false,
+        'orderby' => 'name',
+        'order' => 'ASC'
+    ));
+    
+    $exported_tags = array();
+    
+    foreach ($tags as $tag) {
+        $exported_tags[] = array(
+            'id' => $tag->term_id,
+            'name' => $tag->name,
+            'slug' => $tag->slug,
+            'description' => $tag->description,
+            'count' => $tag->count,
+            'url' => get_tag_link($tag->term_id)
+        );
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $exported_tags,
+        'total' => count($exported_tags)
+    );
+}
+
+// NEW: Export media
+function omnix_export_media($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $params = $request->get_params();
+    $limit = isset($params['limit']) ? intval($params['limit']) : 100;
+    $offset = isset($params['offset']) ? intval($params['offset']) : 0;
+    
+    $args = array(
+        'post_type' => 'attachment',
+        'post_status' => 'inherit',
+        'posts_per_page' => $limit,
+        'offset' => $offset,
+        'orderby' => 'date',
+        'order' => 'DESC'
+    );
+    
+    $media = get_posts($args);
+    $exported_media = array();
+    
+    foreach ($media as $item) {
+        $exported_media[] = array(
+            'id' => $item->ID,
+            'title' => $item->post_title,
+            'description' => $item->post_content,
+            'caption' => $item->post_excerpt,
+            'alt_text' => get_post_meta($item->ID, '_wp_attachment_image_alt', true),
+            'url' => wp_get_attachment_url($item->ID),
+            'mime_type' => $item->post_mime_type,
+            'file_size' => filesize(get_attached_file($item->ID)),
+            'date' => $item->post_date,
+            'modified' => $item->post_modified
+        );
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $exported_media,
+        'total' => wp_count_posts('attachment')->inherit,
+        'limit' => $limit,
+        'offset' => $offset
+    );
+}
+
+// NEW: Export site information
+function omnix_export_site_info($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $site_info = array(
+        'name' => get_bloginfo('name'),
+        'description' => get_bloginfo('description'),
+        'url' => get_site_url(),
+        'admin_email' => get_option('admin_email'),
+        'timezone' => get_option('timezone_string'),
+        'language' => get_locale(),
+        'version' => get_bloginfo('version'),
+        'theme' => get_option('stylesheet'),
+        'active_plugins' => get_option('active_plugins'),
+        'total_posts' => wp_count_posts('post')->publish,
+        'total_pages' => wp_count_posts('page')->publish,
+        'total_users' => count_users()['total_users'],
+        'total_categories' => wp_count_terms('category'),
+        'total_tags' => wp_count_terms('post_tag'),
+        'total_media' => wp_count_posts('attachment')->inherit
+    );
+    
+    return array(
+        'success' => true,
+        'data' => $site_info
+    );
+}
+
+// NEW: Export full site data
+function omnix_export_full_site($request) {
+    $token_info = $request->get_param('token_info');
+    
+    $permissions = explode(',', $token_info->permissions);
+    if (!in_array('export', $permissions) && !in_array('all', $permissions)) {
+        return new WP_Error('insufficient_permissions', 'Insufficient permissions for data export', array('status' => 403));
+    }
+    
+    $body = $request->get_json_params();
+    $include_posts = isset($body['include_posts']) ? $body['include_posts'] : true;
+    $include_pages = isset($body['include_pages']) ? $body['include_pages'] : true;
+    $include_categories = isset($body['include_categories']) ? $body['include_categories'] : true;
+    $include_tags = isset($body['include_tags']) ? $body['include_tags'] : true;
+    $include_media = isset($body['include_media']) ? $body['include_media'] : false;
+    $limit = isset($body['limit']) ? intval($body['limit']) : 100;
+    
+    $export_data = array(
+        'site_info' => array(),
+        'posts' => array(),
+        'pages' => array(),
+        'categories' => array(),
+        'tags' => array(),
+        'media' => array(),
+        'exported_at' => current_time('mysql'),
+        'exported_by' => $token_info->token_name
+    );
+    
+    // Get site info
+    $export_data['site_info'] = array(
+        'name' => get_bloginfo('name'),
+        'description' => get_bloginfo('description'),
+        'url' => get_site_url(),
+        'admin_email' => get_option('admin_email'),
+        'timezone' => get_option('timezone_string'),
+        'language' => get_locale(),
+        'version' => get_bloginfo('version'),
+        'theme' => get_option('stylesheet')
+    );
+    
+    // Get posts
+    if ($include_posts) {
+        $posts = get_posts(array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => $limit,
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ));
+        
+        foreach ($posts as $post) {
+            $export_data['posts'][] = array(
+                'id' => $post->ID,
+                'title' => $post->post_title,
+                'content' => $post->post_content,
+                'excerpt' => $post->post_excerpt,
+                'slug' => $post->post_name,
+                'date' => $post->post_date,
+                'modified' => $post->post_modified,
+                'author' => get_the_author_meta('display_name', $post->post_author),
+                'url' => get_permalink($post->ID),
+                'featured_image' => get_the_post_thumbnail_url($post->ID, 'full'),
+                'categories' => wp_get_post_categories($post->ID, array('fields' => 'names')),
+                'tags' => wp_get_post_tags($post->ID, array('fields' => 'names'))
+            );
+        }
+    }
+    
+    // Get pages
+    if ($include_pages) {
+        $pages = get_posts(array(
+            'post_type' => 'page',
+            'post_status' => 'publish',
+            'posts_per_page' => $limit,
+            'orderby' => 'menu_order',
+            'order' => 'ASC'
+        ));
+        
+        foreach ($pages as $page) {
+            $export_data['pages'][] = array(
+                'id' => $page->ID,
+                'title' => $page->post_title,
+                'content' => $page->post_content,
+                'excerpt' => $page->post_excerpt,
+                'slug' => $page->post_name,
+                'date' => $page->post_date,
+                'modified' => $page->post_modified,
+                'author' => get_the_author_meta('display_name', $page->post_author),
+                'url' => get_permalink($page->ID),
+                'featured_image' => get_the_post_thumbnail_url($page->ID, 'full'),
+                'parent' => $page->post_parent,
+                'menu_order' => $page->menu_order
+            );
+        }
+    }
+    
+    // Get categories
+    if ($include_categories) {
+        $categories = get_categories(array('hide_empty' => false));
+        foreach ($categories as $category) {
+            $export_data['categories'][] = array(
+                'id' => $category->term_id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'count' => $category->count,
+                'parent' => $category->parent
+            );
+        }
+    }
+    
+    // Get tags
+    if ($include_tags) {
+        $tags = get_tags(array('hide_empty' => false));
+        foreach ($tags as $tag) {
+            $export_data['tags'][] = array(
+                'id' => $tag->term_id,
+                'name' => $tag->name,
+                'slug' => $tag->slug,
+                'description' => $tag->description,
+                'count' => $tag->count
+            );
+        }
+    }
+    
+    // Get media
+    if ($include_media) {
+        $media = get_posts(array(
+            'post_type' => 'attachment',
+            'post_status' => 'inherit',
+            'posts_per_page' => $limit,
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ));
+        
+        foreach ($media as $item) {
+            $export_data['media'][] = array(
+                'id' => $item->ID,
+                'title' => $item->post_title,
+                'description' => $item->post_content,
+                'caption' => $item->post_excerpt,
+                'alt_text' => get_post_meta($item->ID, '_wp_attachment_image_alt', true),
+                'url' => wp_get_attachment_url($item->ID),
+                'mime_type' => $item->post_mime_type,
+                'date' => $item->post_date
+            );
+        }
+    }
+    
+    return array(
+        'success' => true,
+        'data' => $export_data,
+        'summary' => array(
+            'posts_count' => count($export_data['posts']),
+            'pages_count' => count($export_data['pages']),
+            'categories_count' => count($export_data['categories']),
+            'tags_count' => count($export_data['tags']),
+            'media_count' => count($export_data['media'])
+        )
+    );
 }
 ?>

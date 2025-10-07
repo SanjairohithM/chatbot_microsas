@@ -4,8 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare, Code, Volume2, MessageCircle } from "lucide-react"
+import { Bot, MoreHorizontal, Play, Pause, Settings, Trash2, ExternalLink, MessageSquare, Code, Volume2, MessageCircle, Globe } from "lucide-react"
 import { WidgetExportDialog } from "@/components/dashboard/embeddable-widget"
+import { UrlScraper } from "@/components/dashboard/url-scraper"
 import type { Bot as BotType } from "@/lib/types"
 
 interface BotCardProps {
@@ -18,6 +19,7 @@ interface BotCardProps {
 
 export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCardProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+  const [isUrlScraperOpen, setIsUrlScraperOpen] = useState(false)
   
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -185,14 +187,23 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             )}
             
             {bot.status === "active" && (
-              <Button 
-                onClick={() => setIsExportDialogOpen(true)} 
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
-                variant="outline"
-              >
-                <Code className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              <>
+                <Button 
+                  onClick={() => setIsUrlScraperOpen(true)} 
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm py-2"
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  Scrape URLs
+                </Button>
+                <Button 
+                  onClick={() => setIsExportDialogOpen(true)} 
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
+                  variant="outline"
+                >
+                  <Code className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -204,6 +215,34 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
         open={isExportDialogOpen}
         onOpenChange={setIsExportDialogOpen}
       />
+      
+      {/* URL Scraper Dialog */}
+      {isUrlScraperOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Scrape URLs for {bot.name}</h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsUrlScraperOpen(false)}
+                >
+                  ×
+                </Button>
+              </div>
+              <UrlScraper
+                botId={bot.id}
+                onScrapingComplete={(results) => {
+                  console.log('Scraping completed:', results);
+                  setIsUrlScraperOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      
     </Card>
   )
 }

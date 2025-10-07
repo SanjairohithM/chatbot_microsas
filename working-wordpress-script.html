@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Working WordPress Script</title>
+</head>
+<body>
+    <h1>Test Chatbot Integration</h1>
+    
+    <!-- Working Script Tag for Bot 48 -->
+    <script src="https://mgsbuilders.co.in/wp-content/plugins/omnix-chatbot/assets/chatbot-widget.js" 
+            data-bot-id="48"
+            data-access-token="ox_38fb3bbfe78960c623bd50a4879e267f722d94d126b12357cbc609ed5cda1e1a"
+            data-api-url="https://mgsbuilders.co.in"
+            data-position="bottom-right"
+            data-theme="default"
+            data-auto-open="false">
+    </script>
+    
+    <!-- Alternative: Direct API Call Script -->
+    <script>
+    // Alternative approach - direct API calls
+    window.omnixChatbot = {
+        apiUrl: 'https://mgsbuilders.co.in',
+        botId: '48',
+        accessToken: 'ox_38fb3bbfe78960c623bd50a4879e267f722d94d126b12357cbc609ed5cda1e1a'
+    };
+    </script>
+    
+    <script src="https://mgsbuilders.co.in/wp-content/plugins/omnix-chatbot/assets/chatbot-widget.js"></script>
+</body>
+</html>
+

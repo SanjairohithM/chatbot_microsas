@@ -18,6 +18,12 @@ export function SectionProcess() {
           </p>
         </div>
 
+
+
+
+
+        
+
         {/* Content */}
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {/* Left Gradient Card */}

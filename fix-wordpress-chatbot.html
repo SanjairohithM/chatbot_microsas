@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Working WordPress Chatbot - Bot 48</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .code-block { background: #f4f4f4; padding: 15px; border-radius: 5px; margin: 10px 0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix WordPress Chatbot - Bot 48</h1>
+    
+    <h2>✅ Your OmniX Server Status:</h2>
+    <p class="success">✓ Server: https://3a929207c562.ngrok-free.app - WORKING</p>
+    <p class="success">✓ Bot 48: Responding correctly</p>
+    <p class="success">✓ Content: Synced to Pinecone</p>
+    
+    <h2>❌ Current Problem:</h2>
+    <p class="error">WordPress plugin is calling wrong endpoint and getting 500 errors</p>
+    
+    <h2>🎯 SOLUTION: Use Direct API Approach</h2>
+    
+    <h3>Step 1: Add this to your WordPress page/widget:</h3>
+    <div class="code-block">
+        <pre><code>&lt;script&gt;
+// Configure OmniX Chatbot
+window.omnixChatbot = {
+    apiUrl: "https://3a929207c562.ngrok-free.app",
+    botId: "48",
+    accessToken: "ox_38fb3bbfe78960c623bd50a4879e267f722d94d126b12357cbc609ed5cda1e1a"
+};
+&lt;/script&gt;
+
+&lt;script src="https://mgsbuilders.co.in/wp-content/plugins/omnix-chatbot/assets/chatbot-widget.js"&gt;&lt;/script&gt;</code></pre>
+    </div>
+    
+    <h3>Step 2: Alternative - Single Script Tag:</h3>
+    <div class="code-block">
+        <pre><code>&lt;script src="https://mgsbuilders.co.in/wp-content/plugins/omnix-chatbot/assets/chatbot-widget.js" 
+        data-bot-id="48"
+        data-access-token="ox_38fb3bbfe78960c623bd50a4879e267f722d94d126b12357cbc609ed5cda1e1a"
+        data-api-url="https://3a929207c562.ngrok-free.app"&gt;
+&lt;/script&gt;</code></pre>
+    </div>
+    
+    <h2>🧪 Test Your Chatbot:</h2>
+    <p>Ask questions like:</p>
+    <ul>
+        <li>"What is MGS Builders Co?"</li>
+        <li>"Tell me about your company"</li>
+        <li>"What services do you offer?"</li>
+    </ul>
+    
+    <h2>📝 Why This Works:</h2>
+    <ul>
+        <li>✅ Bypasses WordPress plugin API issues</li>
+        <li>✅ Calls your OmniX server directly</li>
+        <li>✅ Uses your working ngrok URL</li>
+        <li>✅ Bot 48 has your website content</li>
+    </ul>
+    
+    <h2>⚠️ Important Notes:</h2>
+    <ul>
+        <li>Your ngrok URL will change when you restart ngrok</li>
+        <li>For production, deploy to a permanent domain (Vercel/Netlify)</li>
+        <li>Keep your access token secure</li>
+    </ul>
+</body>
+</html>
+
