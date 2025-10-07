@@ -15,12 +15,29 @@ export class RelevanceChecker {
   ): RelevanceResult {
     const queryLower = query.toLowerCase().trim()
     
-    // If no context is provided, be more lenient
+    // If no context is provided, be restrictive - only allow very specific patterns
     if (!documentContext && !websiteContent) {
+      // Only allow very specific business-related queries when no context
+      const businessQueryPatterns = [
+        /^(what|tell|show|give|can|could|will|would)\s+(me\s+)?(about|information|details|content|data)\s+(your|this|the\s+company|the\s+business|the\s+service|the\s+product)/i,
+        /^(what|how|do|does|can|could|will|would)\s+(is|are|was|were)\s+(your|this|the\s+company|the\s+business|the\s+service|the\s+product)/i,
+        /^(company|business|service|product|contact|about|information|help|support)/i
+      ]
+      
+      const hasBusinessPattern = businessQueryPatterns.some(pattern => pattern.test(queryLower))
+      
+      if (hasBusinessPattern) {
+        return {
+          isRelevant: true,
+          confidence: 0.6,
+          reason: 'Query appears to be asking about business/company information'
+        }
+      }
+      
       return {
-        isRelevant: true,
-        confidence: 0.5,
-        reason: 'No context available, allowing query'
+        isRelevant: false,
+        confidence: 0.8,
+        reason: 'No context available and query does not appear to be about business/company information'
       }
     }
     
@@ -43,7 +60,7 @@ export class RelevanceChecker {
     const relevanceScore = commonKeywords.length / Math.max(queryKeywords.length, 1)
     
     // If relevance score is high enough, consider it relevant
-    if (relevanceScore > 0.2) { // Lowered threshold for better sensitivity
+    if (relevanceScore > 0.4) { // Increased threshold for better restriction
       return {
         isRelevant: true,
         confidence: relevanceScore,
@@ -60,7 +77,7 @@ export class RelevanceChecker {
         /^(summarize|summarise|explain|describe|list|show|give)\s+(me\s+)?(the\s+)?(content|information|details)/i,
         /^(what|which|how\s+many|how\s+much)\s+(is|are|was|were|do|does|can|could|will|would)\s+(in|on|about|regarding)/i,
         /^(tell\s+me\s+about|what\s+about|information\s+about)/i,
-        /^(brand|company|business|service|product|team|mission|vision|contact|address|phone|email)/i
+        /^(brand|company|business|service|product|products|team|mission|vision|contact|address|phone|email|offer|offers)/i
       ]
       
       const hasDocumentQueryPattern = documentQueryPatterns.some(pattern => pattern.test(queryLower))
@@ -73,14 +90,6 @@ export class RelevanceChecker {
         }
       }
       
-      // If query has any meaningful keywords and we have document context, be lenient
-      if (queryKeywords.length > 0 && queryKeywords.some(keyword => keyword.length > 3)) {
-        return {
-          isRelevant: true,
-          confidence: 0.6,
-          reason: 'Query has meaningful keywords and document context is available'
-        }
-      }
     }
     
     // Check for specific patterns that indicate relevance to document content
@@ -114,11 +123,18 @@ export class RelevanceChecker {
       // Personal questions
       /^(what\s+is\s+your\s+name|who\s+are\s+you|what\s+are\s+you)/i,
       /^(do\s+you\s+have\s+feelings|are\s+you\s+alive|are\s+you\s+real)/i,
-      // Random topics not related to content
-      /^(tell\s+me\s+a\s+joke|make\s+me\s+laugh|entertain\s+me)/i,
+      // Jokes and entertainment
+      /^(tell\s+me\s+a\s+joke|make\s+me\s+laugh|entertain\s+me|joke|funny|humor)/i,
+      /^(give\s+me\s+a\s+joke|share\s+a\s+joke|any\s+jokes)/i,
+      // Programming and technical help
+      /^(give\s+me\s+a\s+program|write\s+a\s+program|create\s+a\s+program)/i,
+      /^(programming|code|coding|programming\s+help|code\s+help)/i,
+      /^(javascript|python|java|c\+\+|html|css|sql|react|node)/i,
+      /^(how\s+to\s+code|how\s+to\s+program|programming\s+tutorial)/i,
+      /^(debug|fix\s+code|error\s+in\s+code|code\s+review)/i,
+      // General knowledge questions not related to documents
       /^(what\s+is\s+the\s+weather|what\s+time\s+is\s+it)/i,
       /^(help\s+me\s+with\s+my\s+homework|solve\s+this\s+math\s+problem)/i,
-      // General knowledge questions not related to documents
       /^(what\s+is\s+the\s+capital\s+of|what\s+is\s+the\s+population\s+of|what\s+is\s+the\s+area\s+of)/i,
       /^(how\s+do\s+i\s+cook|how\s+to\s+cook|recipe\s+for)/i,
       /^(what\s+movies\s+are\s+playing|what\s+is\s+on\s+tv|what\s+is\s+on\s+netflix)/i,
@@ -153,16 +169,23 @@ export class RelevanceChecker {
       }
     }
     
-    // If we have document context, be much more lenient with any meaningful query
+    // Only allow queries that have strong relevance to document content
     if (documentContext && documentContext.trim().length > 0) {
-      // Check if query has any meaningful content (not just stop words)
-      const meaningfulWords = queryKeywords.filter(keyword => keyword.length > 3)
+      // Check if query specifically asks about document content
+      const documentSpecificPatterns = [
+        /^(what|tell|show|give|can|could|will|would)\s+(me\s+)?(about|information|details|content|data)\s+(in|from|of|regarding|mentioned\s+in)\s+(the\s+)?(document|content|information|text|file)/i,
+        /^(what|how|do|does|can|could|will|would)\s+(is|are|was|were)\s+(in|on|about|regarding|mentioned\s+in)\s+(the\s+)?(document|content|information|text|file)/i,
+        /^(summarize|summarise|explain|describe|list|show|give)\s+(me\s+)?(the\s+)?(content|information|details|document|text)/i,
+        /^(what|which|how\s+many|how\s+much)\s+(is|are|was|were|do|does|can|could|will|would)\s+(in|on|about|regarding|mentioned\s+in)\s+(the\s+)?(document|content|text|file)/i
+      ]
       
-      if (meaningfulWords.length > 0) {
+      const hasDocumentSpecificPattern = documentSpecificPatterns.some(pattern => pattern.test(queryLower))
+      
+      if (hasDocumentSpecificPattern) {
         return {
           isRelevant: true,
-          confidence: 0.5,
-          reason: 'Query has meaningful content and document context is available'
+          confidence: 0.7,
+          reason: 'Query specifically asks about document content'
         }
       }
     }
