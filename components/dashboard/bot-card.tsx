@@ -43,18 +43,18 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
   }
 
   return (
-    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 w-full min-w-0 max-w-full overflow-hidden">
       <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Bot className="h-6 w-6 text-blue-600" />
+        <div className="flex items-start justify-between min-w-0">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+            <div className="p-2 sm:p-3 bg-blue-100 rounded-full flex-shrink-0">
+              <Bot className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
             </div>
-            <div className="flex-1">
-              <CardTitle className="text-lg font-semibold text-gray-900 mb-1">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-sm sm:text-lg font-semibold text-gray-900 mb-1 truncate">
                 {bot.name}
               </CardTitle>
-              <CardDescription className="text-gray-600 text-sm">
+              <CardDescription className="text-gray-600 text-xs sm:text-sm line-clamp-2">
                 {bot.description}
               </CardDescription>
             </div>
@@ -104,8 +104,8 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
         </div>
       </CardHeader>
 
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-3 sm:space-y-4">
           {/* Status and Last Active */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -117,20 +117,20 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
           </div>
 
           {/* Bot Details Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1 min-w-0">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">MODEL</p>
-              <p className="text-sm font-semibold text-gray-900">{bot.model}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">{bot.model}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">RESPONSE MODE</p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0">
                 {bot.interaction_mode === 'voice' ? (
-                  <Volume2 className="h-4 w-4 text-blue-600" />
+                  <Volume2 className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
                 ) : (
-                  <MessageCircle className="h-4 w-4 text-green-600" />
+                  <MessageCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
                 )}
-                <p className="text-sm font-semibold text-gray-900 capitalize">
+                <p className="text-sm font-semibold text-gray-900 capitalize truncate">
                   {bot.interaction_mode}
                 </p>
               </div>
@@ -147,20 +147,20 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
 
           {/* Created Date */}
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-            Created {formatDate(bot.created_at)}
+            <div className="w-2 h-2 bg-gray-400 rounded-full flex-shrink-0"></div>
+            <span className="truncate">Created {formatDate(bot.created_at)}</span>
           </div>
           
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             {/* Draft Activation Button */}
             {bot.status === "draft" && (
               <Button 
                 onClick={() => onToggleStatus(bot.id, "active")}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+                className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-2"
               >
-                <Play className="h-4 w-4 mr-2" />
-                Activate Bot
+                <Play className="h-3 w-3 mr-1" />
+                <span className="truncate">Activate</span>
               </Button>
             )}
             
@@ -168,10 +168,10 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             {bot.status === "inactive" && (
               <Button 
                 onClick={() => onToggleStatus(bot.id, "active")}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm py-2"
+                className="flex-1 min-w-[120px] bg-green-600 hover:bg-green-700 text-white text-xs py-2 px-2"
               >
-                <Play className="h-4 w-4 mr-2" />
-                Activate
+                <Play className="h-3 w-3 mr-1" />
+                <span className="truncate">Activate</span>
               </Button>
             )}
             
@@ -179,10 +179,10 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
             {onChat && bot.status !== "draft" && (
               <Button 
                 onClick={() => onChat(bot)} 
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm py-2"
+                className="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 px-2"
               >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Chat with Bot
+                <MessageSquare className="h-3 w-3 mr-1" />
+                <span className="truncate">Chat</span>
               </Button>
             )}
             
@@ -190,18 +190,18 @@ export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCa
               <>
                 <Button 
                   onClick={() => setIsUrlScraperOpen(true)} 
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm py-2"
+                  className="flex-1 min-w-[120px] bg-purple-600 hover:bg-purple-700 text-white text-xs py-2 px-2"
                 >
-                  <Globe className="h-4 w-4 mr-2" />
-                  Scrape URLs
+                  <Globe className="h-3 w-3 mr-1" />
+                  <span className="truncate">Scrape</span>
                 </Button>
                 <Button 
                   onClick={() => setIsExportDialogOpen(true)} 
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm py-2"
+                  className="flex-1 min-w-[120px] bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs py-2 px-2 border border-gray-300"
                   variant="outline"
                 >
-                  <Code className="h-4 w-4 mr-2" />
-                  Export
+                  <Code className="h-3 w-3 mr-1" />
+                  <span className="truncate">Export</span>
                 </Button>
               </>
             )}
