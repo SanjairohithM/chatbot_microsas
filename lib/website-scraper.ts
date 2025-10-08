@@ -91,19 +91,53 @@ export function extractStructuredContent(html: string, url: string): StructuredC
   // Enhanced contact information extraction
   const emailMatches = html.match(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g)
   if (emailMatches) {
-    content.contactInfo.push(...emailMatches.map(email => `Email: ${email}`))
+    // Filter out common fake/test emails
+    const validEmails = emailMatches.filter(email => {
+      const lowerEmail = email.toLowerCase()
+      // Filter out test emails and common fake patterns
+      return !lowerEmail.includes('test@') && 
+             !lowerEmail.includes('example@') && 
+             !lowerEmail.includes('your@') &&
+             !lowerEmail.includes('admin@') &&
+             lowerEmail.includes('@') &&
+             lowerEmail.split('@')[0].length > 2
+    })
+    
+    if (validEmails.length > 0) {
+      content.contactInfo.push(...validEmails.map(email => `Email: ${email}`))
+    }
   }
 
-  // Phone numbers (various formats)
+  // Phone numbers (more precise patterns to avoid CSS values and fake numbers)
   const phonePatterns = [
-    /(\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g,
-    /(\+\d{1,3}[-.\s]?)?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,9}/g
+    // Standard US phone numbers: (123) 456-7890, 123-456-7890, 123.456.7890
+    /(\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})/g,
+    // International format: +1-123-456-7890, +91 1234567890
+    /(\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9})/g,
+    // Indian format: +91-1234567890, 91-1234567890
+    /(\+?91[-.\s]?\d{10})/g
   ]
   
   phonePatterns.forEach(pattern => {
     const phoneMatches = html.match(pattern)
     if (phoneMatches) {
-      content.contactInfo.push(...phoneMatches.map(phone => `Phone: ${phone}`))
+      // Filter out obvious non-phone numbers (CSS values, dimensions, etc.)
+      const validPhones = phoneMatches.filter(phone => {
+        const cleanPhone = phone.replace(/[-.\s()]/g, '')
+        // Must be between 10-15 digits
+        if (cleanPhone.length < 10 || cleanPhone.length > 15) return false
+        // Must not be all the same digit (like 3333333333)
+        if (/^(\d)\1+$/.test(cleanPhone)) return false
+        // Must not be common CSS values or dimensions
+        if (cleanPhone.match(/^(100|200|300|400|500|600|700|800|900|1000|1024|1200|1500|2000)$/)) return false
+        // Must not be decimal numbers
+        if (phone.includes('.')) return false
+        return true
+      })
+      
+      if (validPhones.length > 0) {
+        content.contactInfo.push(...validPhones.map(phone => `Phone: ${phone}`))
+      }
     }
   })
 
@@ -230,7 +264,10 @@ export function generateContentSummary(content: StructuredContent, url: string):
   }
   
   if (content.contactInfo.length > 0) {
-    summary += `Contact Information:\n${content.contactInfo.join('\n')}\n\n`
+    const cleanedContactInfo = cleanContactInfo(content.contactInfo)
+    if (cleanedContactInfo.length > 0) {
+      summary += `Contact Information:\n${cleanedContactInfo.join('\n')}\n\n`
+    }
   }
   
   if (content.faq.length > 0) {
@@ -250,4 +287,25 @@ export function generateContentSummary(content: StructuredContent, url: string):
   }
   
   return summary.trim()
+}
+
+// Clean and deduplicate contact information
+export function cleanContactInfo(contactInfo: string[]): string[] {
+  const cleaned = contactInfo
+    .filter(info => {
+      // Remove empty or very short entries
+      if (!info || info.trim().length < 5) return false
+      
+      // Remove obvious CSS values or dimensions
+      if (info.match(/^\d+(\.\d+)?(px|em|rem|%|vh|vw)$/i)) return false
+      
+      // Remove entries that are just numbers without context
+      if (info.match(/^\d+$/) && info.length < 10) return false
+      
+      return true
+    })
+    .map(info => info.trim())
+    .filter((info, index, array) => array.indexOf(info) === index) // Remove duplicates
+  
+  return cleaned
 }
