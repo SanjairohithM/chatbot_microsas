@@ -55,8 +55,18 @@ export function SectionTestimonials() {
             <CarouselContent>
               {items.map((t, i) => (
                 <CarouselItem key={i}>
-                  <article className="rounded-2xl border bg-muted/30 p-6 shadow-sm md:p-10">
-                    <div className="text-center space-y-6">
+                  <article className="group relative rounded-2xl border-2 border-primary/20 bg-muted/30 p-6 shadow-sm md:p-10 overflow-hidden hover:border-primary/40 transition-all duration-300">
+                    {/* Semi-round background design on left side */}
+                    <div className="absolute -left-8 -top-8 w-32 h-32 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-xl animate-float"></div>
+                    <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-gradient-to-tr from-accent/8 to-primary/8 rounded-full blur-lg animate-pulse-slow"></div>
+                    <div className="absolute -left-4 top-1/2 w-16 h-16 bg-gradient-to-br from-primary/6 to-transparent rounded-full blur-md animate-float" style={{ animationDelay: '1s' }}></div>
+                    
+                    {/* Semi-round background design on right side */}
+                    <div className="absolute -right-8 -top-8 w-28 h-28 bg-gradient-to-bl from-accent/10 to-primary/10 rounded-full blur-xl animate-float" style={{ animationDelay: '2s' }}></div>
+                    <div className="absolute -right-6 -bottom-6 w-20 h-20 bg-gradient-to-tl from-primary/8 to-accent/8 rounded-full blur-lg animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+                    <div className="absolute -right-4 top-1/3 w-14 h-14 bg-gradient-to-bl from-accent/6 to-transparent rounded-full blur-md animate-float" style={{ animationDelay: '0.5s' }}></div>
+                    
+                    <div className="relative z-10 text-center space-y-6">
                       {/* Centered quote */}
                       <blockquote className="text-pretty text-2xl font-semibold leading-tight md:text-3xl">
                         <span className="align-top text-4xl leading-none text-primary">"</span>
