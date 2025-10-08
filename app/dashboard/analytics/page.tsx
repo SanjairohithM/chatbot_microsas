@@ -191,17 +191,15 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 relative">
+    <div className="relative">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-40" style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f3f4f6' fill-opacity='0.3'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
       }}></div>
       
-      <Sidebar />
-
-      <div className="lg:pl-64 relative z-10">
-        {/* Top Header Bar */}
-        <div className="bg-gradient-to-r from-white via-blue-50/50 to-indigo-50/30 border-b border-gray-200 px-6 py-4 shadow-sm">
+      <div className="relative z-10">
+        {/* Analytics Header */}
+        <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
@@ -253,8 +251,6 @@ export default function AnalyticsPage() {
             </div>
           </div>
         </div>
-
-        <div className="p-6">
 
           {bots.length === 0 ? (
             <div className="text-center py-16">
@@ -548,6 +544,6 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
-    </div>
+ 
   )
 }

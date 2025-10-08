@@ -35,13 +35,13 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-xl border-r border-slate-200/50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-2xl",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          "w-64 bg-black rounded-xl shadow-2xl h-full",
+          isMobileOpen ? "block" : "hidden lg:block",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-2 border-b border-slate-200/50">
+          <div className="flex items-center justify-between p-2 border-b border-gray-700">
             <div className="space-y-1">
               <div className="flex items-center gap-3 w-full h-full">
                 <Image
@@ -51,9 +51,8 @@ export function Sidebar() {
                   height={60}
                   className="object-contain"
                 />
-
               </div>
-              <p className=" px-8 text-sm text-slate-600">Welcome back, {user?.name}</p>
+              <p className="px-8 text-sm text-gray-300">Welcome back, {user?.name}</p>
             </div>
           </div>
 
@@ -70,12 +69,12 @@ export function Sidebar() {
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
                     isActive
                       ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
-                      : "text-slate-700 hover:bg-slate-100 hover:text-blue-600",
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white",
                   )}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 transition-colors duration-200",
-                    isActive ? "text-white" : "text-slate-500 group-hover:text-blue-600"
+                    isActive ? "text-white" : "text-gray-400 group-hover:text-white"
                   )} />
                   {item.name}
                 </Link>
@@ -83,12 +82,26 @@ export function Sidebar() {
             })}
           </nav>
 
+          {/* Pro Plan Card */}
+          <div className="p-4">
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl p-4 text-white">
+              <h3 className="font-semibold text-sm mb-1">Pro Plan</h3>
+              <p className="text-xs text-white/80 mb-3">Strengthen artificial intelligence</p>
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-bold">$10 / mo</span>
+                <Button size="sm" className="bg-white text-orange-500 hover:bg-gray-100 text-xs px-3 py-1">
+                  Get
+                </Button>
+              </div>
+            </div>
+          </div>
+
           {/* Footer */}
-          <div className="p-4 border-t border-slate-200/50">
+          <div className="p-4 border-t border-gray-700">
             <Button
               variant="ghost"
               onClick={signOut}
-              className="w-full justify-start text-slate-700 hover:bg-red-50 hover:text-red-600 transition-all duration-200 rounded-xl"
+              className="w-full justify-start text-gray-300 hover:bg-red-900 hover:text-red-300 transition-all duration-200 rounded-xl"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

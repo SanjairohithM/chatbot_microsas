@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Sidebar } from "@/components/dashboard/sidebar"
+import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { BotCard } from "@/components/dashboard/bot-card"
 import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
 import { useAuth } from "@/hooks/use-auth"
@@ -304,43 +304,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-
-      <div className="lg:pl-64">
-        {/* Top Header Bar */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900"> AI Dashboard</h1>
-              </div>
-   
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search bots..."
-                  className="pl-10 pr-4 py-2 w-64 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Bot
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6 max-w-full overflow-hidden">
+    <>
           {/* Main Content Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bots</h1>
@@ -394,18 +358,6 @@ export default function DashboardPage() {
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      <CreateBotDialog
-        open={isCreateDialogOpen}
-        onOpenChange={(open) => {
-          setIsCreateDialogOpen(open)
-          if (!open) setEditingBot(null)
-        }}
-        onSave={editingBot ? handleUpdateBot : handleCreateBot}
-        editingBot={editingBot}
-      />
-    </div>
+    </>
   )
 }

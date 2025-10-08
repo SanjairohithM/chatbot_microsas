@@ -322,10 +322,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar />
-
-      <div className="lg:pl-64 flex h-screen">
+    <div className="flex h-[calc(100vh-300px)] min-h-[500px]">
         {/* Conversation Sidebar */}
         <ConversationSidebar
           conversations={conversations.filter((conv) => conv.bot_id === Number.parseInt(selectedBotId))}
@@ -432,7 +429,6 @@ export default function ChatPage() {
             />
           )}
         </div>
-      </div>
     </div>
   )
 }
