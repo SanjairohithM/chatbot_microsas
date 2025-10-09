@@ -13,10 +13,12 @@ export class OpenAIService {
    */
   static async generateResponse(
     messages: OpenAIMessage[],
-    options: OpenAIServiceOptions = {}
+    options: OpenAIServiceOptions = {},
+    apiKey?: string
   ): Promise<string> {
     try {
-      const result = await this.client.generateChat(messages, {
+      const client = apiKey ? new OpenAIAPI(apiKey) : this.client
+      const result = await client.generateChat(messages, {
         temperature: options.temperature,
         max_tokens: options.max_tokens
       })
@@ -39,10 +41,12 @@ export class OpenAIService {
    */
   static async generateStreamingResponse(
     messages: OpenAIMessage[],
-    options: OpenAIServiceOptions = {}
+    options: OpenAIServiceOptions = {},
+    apiKey?: string
   ): Promise<AsyncIterable<any> & { usage?: any; model?: string; finish_reason?: string }> {
     try {
-      return await this.client.generateChatStream(messages, {
+      const client = apiKey ? new OpenAIAPI(apiKey) : this.client
+      return await client.generateChatStream(messages, {
         temperature: options.temperature,
         max_tokens: options.max_tokens
       })
@@ -55,9 +59,10 @@ export class OpenAIService {
   /**
    * Create embeddings for text
    */
-  static async createEmbedding(text: string, model: string = 'text-embedding-3-small'): Promise<number[]> {
+  static async createEmbedding(text: string, model: string = 'text-embedding-3-small', apiKey?: string): Promise<number[]> {
     try {
-      return await this.client.createEmbedding(text, model)
+      const client = apiKey ? new OpenAIAPI(apiKey) : this.client
+      return await client.createEmbedding(text, model)
     } catch (error) {
       console.error('OpenAI embedding error:', error)
       throw new Error('Failed to create embedding')
@@ -69,10 +74,12 @@ export class OpenAIService {
    */
   static async synthesizeSpeech(
     text: string,
-    options?: { model?: string; voice?: string; format?: 'mp3' | 'wav' | 'opus' }
+    options?: { model?: string; voice?: string; format?: 'mp3' | 'wav' | 'opus' },
+    apiKey?: string
   ): Promise<Uint8Array> {
     try {
-      return await this.client.synthesizeSpeech(text, options)
+      const client = apiKey ? new OpenAIAPI(apiKey) : this.client
+      return await client.synthesizeSpeech(text, options)
     } catch (error) {
       console.error('OpenAI TTS error:', error)
       throw new Error('Failed to synthesize speech')
@@ -84,10 +91,12 @@ export class OpenAIService {
    */
   static async transcribeAudio(
     file: File | Blob,
-    options?: { model?: string }
+    options?: { model?: string },
+    apiKey?: string
   ): Promise<string> {
     try {
-      return await this.client.transcribeAudio(file, options)
+      const client = apiKey ? new OpenAIAPI(apiKey) : this.client
+      return await client.transcribeAudio(file, options)
     } catch (error) {
       console.error('OpenAI STT error:', error)
       throw new Error('Failed to transcribe audio')

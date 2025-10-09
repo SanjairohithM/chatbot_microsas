@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { Pinecone } from '@pinecone-database/pinecone';
+import { UserApiKeyService } from '@/lib/services/user-api-key.service';
 
 const pc = new Pinecone({
   apiKey: process.env.PINECONE_API_KEY!,
@@ -28,6 +29,15 @@ export async function POST(request: NextRequest) {
 
     console.log(`Scraping ${urls.length} URLs for bot ${botId}`);
 
+    // Get user's API key for this bot
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
+    if (!userApiKey) {
+      return NextResponse.json(
+        { error: 'No OpenAI API key found. Please configure your API key in settings.' },
+        { status: 400 }
+      )
+    }
+
     // Use chatbot index with bot namespace
     const index = pc.index('chatbot');
     const namespace = `bot_${botId}`;
@@ -46,7 +56,7 @@ export async function POST(request: NextRequest) {
         if (content) {
           try {
             // Store in Pinecone
-            await storeScrapedContent(index, namespace, url, content, botId);
+            await storeScrapedContent(index, namespace, url, content, botId, userApiKey);
             scrapedData.push({ url, title: content.title, success: true });
             console.log(`✅ [${i + 1}/${urls.length}] Successfully scraped and stored: ${url}`);
           } catch (storageError) {
@@ -133,7 +143,7 @@ async function scrapeUrl(url: string) {
   }
 }
 
-async function storeScrapedContent(index: any, namespace: string, url: string, content: any, botId: number) {
+async function storeScrapedContent(index: any, namespace: string, url: string, content: any, botId: number, userApiKey: string) {
   try {
     // Create unique document ID based on URL hash and timestamp
     const urlHash = Buffer.from(url).toString('base64').replace(/[^a-zA-Z0-9]/g, '').substring(0, 8);
@@ -152,7 +162,7 @@ async function storeScrapedContent(index: any, namespace: string, url: string, c
       const vectorId = `doc_${documentId}_chunk_${i}`;
       
       // Generate embedding for this chunk
-      const embedding = await generateEmbedding(chunk.text);
+      const embedding = await generateEmbedding(chunk.text, userApiKey);
       
       const vector = {
         id: vectorId,
@@ -246,11 +256,11 @@ function chunkContent(title: string, content: string, chunkSize: number, overlap
   return chunks;
 }
 
-async function generateEmbedding(text: string): Promise<number[]> {
+async function generateEmbedding(text: string, userApiKey: string): Promise<number[]> {
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'Authorization': `Bearer ${userApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({

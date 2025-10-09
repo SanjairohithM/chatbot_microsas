@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +15,17 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Pinecone Search API] 🔍 Searching documents for bot ${botId} with query: "${query}"`)
 
+    // Get user's API key for this bot
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
+    if (!userApiKey) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No OpenAI API key found. Please configure your API key in settings.' 
+      }, { status: 400 })
+    }
+
     // Search documents in Pinecone
-    const results = await PineconeDocumentService.searchDocuments(botId, query, limit)
+    const results = await PineconeDocumentService.searchDocuments(botId, query, limit, userApiKey)
 
     console.log(`[Pinecone Search API] ✅ Found ${results.length} document chunks`)
 
@@ -71,8 +81,17 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Pinecone Search API] 🔍 GET search for bot ${botId} with query: "${query}"`)
 
+    // Get user's API key for this bot
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(parseInt(botId))
+    if (!userApiKey) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No OpenAI API key found. Please configure your API key in settings.' 
+      }, { status: 400 })
+    }
+
     // Search documents in Pinecone
-    const results = await PineconeDocumentService.searchDocuments(parseInt(botId), query, limit)
+    const results = await PineconeDocumentService.searchDocuments(parseInt(botId), query, limit, userApiKey)
 
     console.log(`[Pinecone Search API] ✅ Found ${results.length} document chunks`)
 

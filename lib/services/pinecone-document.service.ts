@@ -1,6 +1,6 @@
 import { Pinecone } from '@pinecone-database/pinecone'
 import { config } from '@/lib/config'
-import { openAIAPI } from '@/lib/openai-api'
+import { OpenAIAPI } from '@/lib/openai-api'
 
 export interface DocumentChunk {
   id: string
@@ -138,10 +138,16 @@ export class PineconeDocumentService {
   /**
    * Generate embedding for text using OpenAI or fallback
    */
-  private static async generateEmbedding(text: string): Promise<number[]> {
+  private static async generateEmbedding(text: string, userApiKey?: string): Promise<number[]> {
     try {
       console.log(`[Pinecone Documents] 🔍 Generating embedding for text: "${text.substring(0, 100)}..."`)
-      const openAIEmbedding = await openAIAPI.createEmbedding(text, config.pinecone.embeddingModel)
+      
+      if (!userApiKey) {
+        throw new Error('User API key is required for generating embeddings')
+      }
+      
+      const openAI = new OpenAIAPI(userApiKey)
+      const openAIEmbedding = await openAI.createEmbedding(text, config.pinecone.embeddingModel)
       if (openAIEmbedding && openAIEmbedding.length > 0) {
         const projected = this.projectEmbedding(openAIEmbedding, config.pinecone.dimension)
         return projected
@@ -155,13 +161,18 @@ export class PineconeDocumentService {
     }
   }
 
-  private static async generateWordPressEmbedding(text: string): Promise<number[]> {
+  private static async generateWordPressEmbedding(text: string, userApiKey?: string): Promise<number[]> {
     try {
       console.log(`[Pinecone Documents] 🔍 Generating WordPress embedding for text: "${text.substring(0, 100)}..."`)
+      
+      if (!userApiKey) {
+        throw new Error('User API key required for WordPress embedding generation')
+      }
+      
       const response = await fetch('https://api.openai.com/v1/embeddings', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${userApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -374,7 +385,8 @@ export class PineconeDocumentService {
     botId: number,
     documentId: number,
     title: string,
-    content: string
+    content: string,
+    userApiKey?: string
   ): Promise<void> {
     try {
       const index = await this.getIndexWithNamespace(botId)
@@ -395,7 +407,7 @@ export class PineconeDocumentService {
         
         console.log(`[Pinecone Documents] Processing chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`)
         
-        const embedding = await this.generateEmbedding(chunk)
+        const embedding = await this.generateEmbedding(chunk, userApiKey)
         
         const metadata = {
           botId,
@@ -431,7 +443,8 @@ export class PineconeDocumentService {
   static async searchDocuments(
     botId: number,
     query: string,
-    limit: number = 5
+    limit: number = 5,
+    userApiKey?: string
   ): Promise<DocumentSearchResult[]> {
     try {
       // Search in chatbot index for scraped content
@@ -445,7 +458,7 @@ export class PineconeDocumentService {
       console.log(`[Pinecone Documents] Enhanced query: "${enhancedQuery}"`)
       
       // Generate embedding for the enhanced query
-      const queryEmbedding = await this.generateEmbedding(enhancedQuery)
+      const queryEmbedding = await this.generateEmbedding(enhancedQuery, userApiKey)
       
       // Search for scraped content in bot namespace
       const searchResponse = await index.query({
@@ -560,7 +573,7 @@ export class PineconeDocumentService {
       try {
         console.log('[Pinecone Documents] Attempting fallback search without filters...')
         const fallbackIndex = await this.getIndexWithNamespace(botId)
-        const fallbackEmbedding = await this.generateEmbedding(query)
+        const fallbackEmbedding = await this.generateEmbedding(query, userApiKey)
         const fallbackResponse = await fallbackIndex.query({
           vector: fallbackEmbedding,
           topK: limit,
@@ -658,9 +671,7 @@ export class PineconeDocumentService {
       console.log(`[Pinecone Documents] Deleting all documents for bot ${botId} in namespace ${namespace}`)
       
       // Delete all document vectors in the bot's namespace
-      await index.deleteAll({
-        namespace: namespace
-      })
+      await index.deleteAll()
       
       console.log(`[Pinecone Documents] Successfully deleted all documents for bot ${botId}`)
     } catch (error) {

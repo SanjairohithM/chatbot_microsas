@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { db } from '@/lib/db'
 
 export type OpenAIChatRole = 'system' | 'user' | 'assistant'
 
@@ -27,7 +28,38 @@ export class OpenAIAPI {
 	private client: OpenAI
 
 	constructor(apiKey?: string) {
-		this.client = new OpenAI({ apiKey: apiKey || process.env.OPENAI_API_KEY })
+		this.client = new OpenAI({ 
+			apiKey: apiKey || process.env.OPENAI_API_KEY || '' 
+		})
+	}
+
+	/**
+	 * Create a new OpenAIAPI instance with user's API key
+	 */
+	static async createForUser(userId: string): Promise<OpenAIAPI> {
+		const user = await db.user.findUnique({
+			where: { id: userId },
+			select: { openai_api_key: true }
+		})
+		
+		return new OpenAIAPI(user?.openai_api_key || undefined)
+	}
+
+	/**
+	 * Create a new OpenAIAPI instance with bot's user API key
+	 */
+	static async createForBot(botId: number): Promise<OpenAIAPI> {
+		const bot = await db.bot.findUnique({
+			where: { id: botId },
+			select: { 
+				user_id: true,
+				user: {
+					select: { openai_api_key: true }
+				}
+			}
+		})
+		
+		return new OpenAIAPI(bot?.user?.openai_api_key || undefined)
 	}
 
 	async generateChat(
@@ -69,8 +101,11 @@ export class OpenAIAPI {
 		return stream as any
 	}
 
-	async createEmbedding(text: string, model: string = 'text-embedding-3-small'): Promise<number[]> {
-		const res = await this.client.embeddings.create({
+	async createEmbedding(text: string, model: string = 'text-embedding-3-small', userApiKey?: string): Promise<number[]> {
+		// Create a new client instance with user API key if provided
+		const client = userApiKey ? new OpenAI({ apiKey: userApiKey }) : this.client
+		
+		const res = await client.embeddings.create({
 			model,
 			input: text
 		})
@@ -105,6 +140,18 @@ export class OpenAIAPI {
 	}
 }
 
+// Default instance using environment variable
 export const openAIAPI = new OpenAIAPI()
+
+// Helper function to get OpenAI instance with fallback
+export async function getOpenAIInstance(userId?: string, botId?: number): Promise<OpenAIAPI> {
+	if (userId) {
+		return await OpenAIAPI.createForUser(userId)
+	}
+	if (botId) {
+		return await OpenAIAPI.createForBot(botId)
+	}
+	return openAIAPI
+}
 
 

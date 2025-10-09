@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { ConversationService } from '@/lib/services/conversation.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,15 @@ export async function POST(request: NextRequest) {
 
     console.log(`[Prefetch API] 🔍 Prefetching for bot ${botId} with query: "${query}"`)
 
+    // Get user's API key for this bot
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
+    if (!userApiKey) {
+      return NextResponse.json(
+        { error: 'No OpenAI API key found. Please configure your API key in settings.' },
+        { status: 400 }
+      )
+    }
+
     // Initialize services
     const pineconeService = new PineconeService()
     const conversationService = new ConversationService()
@@ -27,7 +37,8 @@ export async function POST(request: NextRequest) {
     const documentSearchResult = await PineconeDocumentService.searchDocuments(
       botId,
       query,
-      3 // Limit to 3 most relevant chunks for speed
+      3, // Limit to 3 most relevant chunks for speed
+      userApiKey
     )
 
     let documentContext = ''

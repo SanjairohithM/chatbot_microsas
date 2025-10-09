@@ -1,6 +1,7 @@
 import { ExternalDatabaseService, DatabaseConfig, QueryResult } from './external-database.service'
 import { DatabaseAuthMiddleware } from '@/lib/middleware/database-auth'
 import { OpenAIService } from './openai.service'
+import { UserApiKeyService } from './user-api-key.service'
 
 export interface ChatbotDatabaseConfig {
   botId: number
@@ -37,15 +38,22 @@ export class ChatbotDatabaseService {
     const startTime = Date.now()
 
     try {
+      // Get user's API key for this bot
+      const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(config.botId)
+      if (!userApiKey) {
+        throw new Error('No OpenAI API key found. Please configure your API key in settings.')
+      }
+
       // Step 1: Analyze user message to determine if database query is needed
-      const queryAnalysis = await this.analyzeUserMessage(request.userMessage, config.systemPrompt)
+      const queryAnalysis = await this.analyzeUserMessage(request.userMessage, config.systemPrompt, userApiKey)
       
       if (!queryAnalysis.needsQuery) {
         // Generate response without database query
         const response = await this.generateSimpleResponse(
           request.userMessage, 
           config.systemPrompt,
-          request.temperature
+          request.temperature,
+          userApiKey
         )
         
         return {
@@ -61,7 +69,8 @@ export class ChatbotDatabaseService {
         request.userMessage,
         config.databaseConfig,
         queryAnalysis.intent,
-        request.context
+        request.context,
+        userApiKey
       )
 
       if (!generatedQuery.query) {
@@ -97,7 +106,8 @@ export class ChatbotDatabaseService {
         queryResult,
         config.systemPrompt,
         generatedQuery.query,
-        request.temperature
+        request.temperature,
+        userApiKey
       )
 
       // Log query if enabled
@@ -130,7 +140,8 @@ export class ChatbotDatabaseService {
    */
   private static async analyzeUserMessage(
     message: string, 
-    systemPrompt?: string
+    systemPrompt?: string,
+    apiKey?: string
   ): Promise<{ needsQuery: boolean; intent: string; confidence: number }> {
     try {
       const analysisPrompt = `
@@ -160,7 +171,7 @@ export class ChatbotDatabaseService {
       ], {
         temperature: 0.1,
         max_tokens: 200
-      })
+      }, apiKey)
 
       // Validate response before parsing
       if (!response || typeof response !== 'string' || response.trim() === '') {
@@ -226,7 +237,8 @@ export class ChatbotDatabaseService {
     message: string,
     databaseConfig: DatabaseConfig,
     intent: string,
-    context?: string
+    context?: string,
+    apiKey?: string
   ): Promise<{ query: string; parameters: any[]; confidence: number }> {
     try {
       // Get database schema for context
@@ -270,7 +282,7 @@ export class ChatbotDatabaseService {
       ], {
         temperature: 0.1,
         max_tokens: 500
-      })
+      }, apiKey)
 
       // Validate response before parsing
       if (!response || typeof response !== 'string' || response.trim() === '') {
@@ -337,7 +349,8 @@ export class ChatbotDatabaseService {
     queryResult: QueryResult,
     systemPrompt?: string,
     executedQuery?: string,
-    temperature?: number
+    temperature?: number,
+    apiKey?: string
   ): Promise<string> {
     try {
       const responsePrompt = `
@@ -367,7 +380,7 @@ export class ChatbotDatabaseService {
       ], {
         temperature: temperature || 0.7,
         max_tokens: 1000
-      })
+      }, apiKey)
 
       return response
 
@@ -384,7 +397,8 @@ export class ChatbotDatabaseService {
   private static async generateSimpleResponse(
     message: string,
     systemPrompt?: string,
-    temperature?: number
+    temperature?: number,
+    apiKey?: string
   ): Promise<string> {
     try {
       const prompt = `
@@ -401,7 +415,7 @@ export class ChatbotDatabaseService {
       ], {
         temperature: temperature || 0.7,
         max_tokens: 500
-      })
+      }, apiKey)
 
     } catch (error) {
       console.error('Simple response generation error:', error)

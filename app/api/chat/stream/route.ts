@@ -1,11 +1,12 @@
-import { NextRequest } from 'next/server'
-import { openAIAPI } from '@/lib/openai-api'
+import { NextRequest, NextResponse } from 'next/server'
+import { openAIAPI, OpenAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -104,6 +105,12 @@ export async function POST(request: NextRequest) {
       return ApiResponse.notFound('Bot not found')
     }
 
+    // Get user's API key for this bot
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
+    if (!userApiKey) {
+      return ApiResponse.badRequest('No OpenAI API key found. Please configure your API key in settings.')
+    }
+
     // Use bot configuration or provided config
     let model = botConfig?.model || bot.model
     const temperature = botConfig?.temperature || bot.temperature
@@ -154,7 +161,7 @@ export async function POST(request: NextRequest) {
           console.log(`[Stream Chat API] 🔍 Searching documents in Pinecone for bot ${botId} with message: "${messageText}"`)
           
           // Search documents using Pinecone vector search
-          const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3)
+          const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3, userApiKey)
         
           if (pineconeResults.length > 0) {
             console.log(`[Stream Chat API] ✅ Found ${pineconeResults.length} relevant document chunks in Pinecone`)
@@ -230,7 +237,8 @@ export async function POST(request: NextRequest) {
             botId,
             contextUserId,
             messageText,
-            5
+            5,
+            userApiKey
           )
           
           if (relevantMessages.length > 0) {
@@ -406,8 +414,9 @@ export async function POST(request: NextRequest) {
           }
           controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(metadata)}\n\n`))
 
-          // Generate streaming response from OpenAI
-          const streamResponse = await openAIAPI.generateChatStream(enhancedMessages as any, {
+          // Generate streaming response from OpenAI using user's API key
+          const userOpenAI = new OpenAIAPI(userApiKey)
+          const streamResponse = await userOpenAI.generateChatStream(enhancedMessages as any, {
             model,
             temperature,
             max_tokens: maxTokens
@@ -493,7 +502,7 @@ export async function POST(request: NextRequest) {
                   metadata: {
                     documentContext: documentContext.length > 0
                   }
-                })
+                }, userApiKey)
               }
 
               // Store assistant response in Pinecone
@@ -520,7 +529,7 @@ export async function POST(request: NextRequest) {
                   model: streamResponse.model,
                   documentContext: documentContext.length > 0
                 }
-              })
+              }, userApiKey)
 
               console.log(`[Stream Chat API] Messages stored in Pinecone for conversation ${currentConversationId}`)
             } catch (error) {
@@ -592,6 +601,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
+    console.error('[Stream Chat API] ❌ Error:', error)
     logger.apiError('POST', '/api/chat/stream', error as Error)
     
     const errorResponse = ApiResponse.internalServerError(

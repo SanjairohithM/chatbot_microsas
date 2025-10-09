@@ -1,6 +1,6 @@
 import { Pinecone } from '@pinecone-database/pinecone'
 import { config } from '@/lib/config'
-import { openAIAPI } from '@/lib/openai-api'
+import { OpenAIAPI } from '@/lib/openai-api'
 
 export interface ChatMessage {
   id: string
@@ -113,16 +113,21 @@ export class PineconeService {
   /**
    * Generate embedding for text using OpenAI embeddings (with fallback)
    */
-  private static async generateEmbedding(text: string): Promise<number[]> {
+  private static async generateEmbedding(text: string, userApiKey?: string): Promise<number[]> {
     try {
       console.log(`[Pinecone] 🔍 Generating embedding for text: "${text.substring(0, 100)}..."`)
-      const openAIEmbedding = await openAIAPI.createEmbedding(text, config.pinecone.embeddingModel)
-      if (openAIEmbedding && openAIEmbedding.length > 0) {
-        // Project 1536-dim embedding down to 512 dims expected by index
-        const projected = this.projectEmbedding(openAIEmbedding, 512)
-        return projected
+      
+      if (userApiKey) {
+        const openAI = new OpenAIAPI(userApiKey)
+        const openAIEmbedding = await openAI.createEmbedding(text, config.pinecone.embeddingModel)
+        if (openAIEmbedding && openAIEmbedding.length > 0) {
+          // Project 1536-dim embedding down to 512 dims expected by index
+          const projected = this.projectEmbedding(openAIEmbedding, 512)
+          return projected
+        }
       }
-      console.warn('[Pinecone] OpenAI embedding empty, using fallback')
+      
+      console.warn('[Pinecone] OpenAI embedding empty or no API key, using fallback')
       return this.generateFallbackEmbedding(text)
     } catch (error) {
       console.error('[Pinecone] Error generating embedding with OpenAI:', error)
@@ -219,7 +224,7 @@ export class PineconeService {
   /**
    * Store chat message in Pinecone
    */
-  static async storeChatMessage(message: ChatMessage): Promise<void> {
+  static async storeChatMessage(message: ChatMessage, userApiKey?: string): Promise<void> {
     try {
       const index = await this.getIndexWithNamespace(message.botId)
       const namespace = `bot_${message.botId}`
@@ -228,7 +233,7 @@ export class PineconeService {
       const vectorId = `msg_${message.id}_${Date.now()}`
       
       // Generate embedding for the message content
-      const embedding = await this.generateEmbedding(message.content)
+      const embedding = await this.generateEmbedding(message.content, userApiKey)
       
       // Prepare metadata
       const metadata = {
@@ -262,14 +267,15 @@ export class PineconeService {
     botId: number,
     userId: string | number,
     query: string,
-    limit: number = 5
+    limit: number = 5,
+    userApiKey?: string
   ): Promise<ChatMessage[]> {
     try {
       const index = await this.getIndexWithNamespace(botId)
       const namespace = `bot_${botId}`
       
       // Generate embedding for the query
-      const queryEmbedding = await this.generateEmbedding(query)
+      const queryEmbedding = await this.generateEmbedding(query, userApiKey)
       
       console.log(`[Pinecone] Searching for botId: ${botId}, userId: ${userId}, query: "${query}" in namespace ${namespace}`)
       
@@ -433,14 +439,15 @@ export class PineconeService {
   static async searchBotConversations(
     botId: number,
     query: string,
-    limit: number = 10
+    limit: number = 10,
+    userApiKey?: string
   ): Promise<ChatMessage[]> {
     try {
       const index = await this.getIndexWithNamespace(botId)
       const namespace = `bot_${botId}`
       
       // Generate embedding for the query
-      const queryEmbedding = await this.generateEmbedding(query)
+      const queryEmbedding = await this.generateEmbedding(query, userApiKey)
       
       const searchResponse = await index.query({
         vector: queryEmbedding,
@@ -483,9 +490,7 @@ export class PineconeService {
       console.log(`[Pinecone] Deleting all data for bot ${botId} in namespace ${namespace}`)
       
       // Delete all vectors in the bot's namespace
-      await index.deleteAll({
-        namespace: namespace
-      })
+      await index.deleteAll()
       
       console.log(`[Pinecone] Successfully deleted all data for bot ${botId}`)
     } catch (error) {
