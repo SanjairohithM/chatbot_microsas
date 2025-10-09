@@ -10,10 +10,29 @@
     const position = config.position || 'bottom-right';
     const theme = config.theme || 'modern';
     
+    // Voice configuration
+    const voiceConfig = {
+        enabled: config.enableVoice !== false,
+        language: config.voiceLanguage || 'en-US',
+        rate: config.voiceRate || 1.0,
+        pitch: config.voicePitch || 1.0,
+        volume: config.voiceVolume || 1.0,
+        autoSpeak: config.autoSpeak || false,
+        continuous: config.voiceContinuous || false,
+        interimResults: config.voiceInterimResults || false
+    };
+    
+    // Voice state
+    let recognition = null;
+    let isListening = false;
+    let speechSynthesis = null;
+    let currentUtterance = null;
+    let isVoiceSupported = false;
+    
     if (!accessToken) {
         console.warn('OmniX Chatbot: Access token not provided');
-                return;
-            }
+        return;
+    }
             
     // Create chatbot widget
     const widget = document.createElement('div');
@@ -30,6 +49,14 @@
             <div class="omnix-chatbot-messages" id="omnix-messages"></div>
             <div class="omnix-chatbot-input-container">
                 <input type="text" id="omnix-input" placeholder="Ask me anything..." onkeypress="handleKeyPress(event)">
+                ${voiceConfig.enabled ? `
+                    <button id="omnix-voice-mic" class="omnix-voice-btn" onclick="toggleVoiceInput()" title="Voice Input">
+                        <span class="omnix-voice-icon">🎤</span>
+                    </button>
+                    <button id="omnix-voice-speaker" class="omnix-voice-btn" onclick="toggleVoiceOutput()" title="Voice Output">
+                        <span class="omnix-voice-icon">🔊</span>
+                    </button>
+                ` : ''}
                 <button onclick="sendMessage()" class="omnix-chatbot-send">Send</button>
             </div>
         </div>
@@ -159,6 +186,52 @@
             background: #0056b3;
         }
         
+        .omnix-voice-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 2px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+        }
+        
+        .omnix-voice-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+        
+        .omnix-voice-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .omnix-voice-btn.listening {
+            background: #dc3545;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .omnix-voice-btn.speaking {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .omnix-voice-icon {
+            font-size: 16px;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
         .omnix-chatbot-toggle {
             width: 60px;
             height: 60px;
@@ -225,6 +298,132 @@
     document.head.appendChild(styles);
     document.body.appendChild(widget);
     
+    // Initialize voice functionality
+    initializeVoice();
+    
+    // Voice functionality
+    function initializeVoice() {
+        if (!voiceConfig.enabled) {
+            console.log('🎤 Voice features disabled');
+            return;
+        }
+        
+        // Check for speech recognition support
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = voiceConfig.continuous;
+            recognition.interimResults = voiceConfig.interimResults;
+            recognition.lang = voiceConfig.language;
+            
+            recognition.onstart = function() {
+                isListening = true;
+                updateVoiceButton('mic', true);
+                console.log('🎤 Voice recognition started');
+            };
+            
+            recognition.onend = function() {
+                isListening = false;
+                updateVoiceButton('mic', false);
+                console.log('🎤 Voice recognition ended');
+            };
+            
+            recognition.onresult = function(event) {
+                let finalTranscript = '';
+                let interimTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                if (finalTranscript) {
+                    document.getElementById('omnix-input').value = finalTranscript;
+                    console.log('🎤 Voice input:', finalTranscript);
+                    // Auto-send message after voice input
+                    setTimeout(() => {
+                        sendMessage();
+                    }, 500);
+                } else if (interimTranscript && voiceConfig.interimResults) {
+                    document.getElementById('omnix-input').value = interimTranscript;
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('🎤 Speech recognition error:', event.error);
+                isListening = false;
+                updateVoiceButton('mic', false);
+                
+                // Show error message to user
+                addMessage('Voice input error: ' + event.error, 'bot');
+            };
+            
+            isVoiceSupported = true;
+            console.log('🎤 Voice recognition initialized');
+        } else {
+            console.warn('🎤 Speech recognition not supported in this browser');
+        }
+        
+        // Check for speech synthesis support
+        if ('speechSynthesis' in window) {
+            speechSynthesis = window.speechSynthesis;
+            console.log('🔊 Speech synthesis available');
+        } else {
+            console.warn('🔊 Speech synthesis not supported in this browser');
+        }
+    }
+    
+    function updateVoiceButton(type, active) {
+        const button = document.getElementById(`omnix-voice-${type}`);
+        if (button) {
+            if (active) {
+                button.classList.add(type === 'mic' ? 'listening' : 'speaking');
+            } else {
+                button.classList.remove('listening', 'speaking');
+            }
+        }
+    }
+    
+    function speakText(text) {
+        if (!speechSynthesis || !voiceConfig.enabled) {
+            console.warn('🔊 Speech synthesis not available');
+            return;
+        }
+        
+        // Stop any current speech
+        if (currentUtterance) {
+            speechSynthesis.cancel();
+        }
+        
+        currentUtterance = new SpeechSynthesisUtterance(text);
+        currentUtterance.lang = voiceConfig.language;
+        currentUtterance.rate = voiceConfig.rate;
+        currentUtterance.pitch = voiceConfig.pitch;
+        currentUtterance.volume = voiceConfig.volume;
+        
+        currentUtterance.onstart = function() {
+            updateVoiceButton('speaker', true);
+            console.log('🔊 Speaking:', text);
+        };
+        
+        currentUtterance.onend = function() {
+            updateVoiceButton('speaker', false);
+            currentUtterance = null;
+            console.log('🔊 Speech completed');
+        };
+        
+        currentUtterance.onerror = function(event) {
+            updateVoiceButton('speaker', false);
+            console.error('🔊 Speech synthesis error:', event.error);
+        };
+        
+        speechSynthesis.speak(currentUtterance);
+    }
+    
     // Global functions
     window.toggleChatbot = function() {
         const container = document.querySelector('.omnix-chatbot-container');
@@ -265,13 +464,24 @@
         .then(response => response.json())
         .then(data => {
             hideTyping();
+            let botMessage = '';
             if (data.success && data.message) {
-                addMessage(data.message, 'bot');
+                botMessage = data.message;
+                addMessage(botMessage, 'bot');
             } else if (data.response) {
-                addMessage(data.response, 'bot');
-                } else {
-                addMessage('Sorry, I encountered an error. Please try again.', 'bot');
-                }
+                botMessage = data.response;
+                addMessage(botMessage, 'bot');
+            } else {
+                botMessage = 'Sorry, I encountered an error. Please try again.';
+                addMessage(botMessage, 'bot');
+            }
+            
+            // Auto-speak the response if enabled
+            if (voiceConfig.autoSpeak && voiceConfig.enabled && botMessage) {
+                setTimeout(() => {
+                    speakText(botMessage);
+                }, 500);
+            }
         })
         .catch(error => {
             hideTyping();
@@ -283,6 +493,29 @@
     window.handleKeyPress = function(event) {
         if (event.key === 'Enter') {
             sendMessage();
+        }
+    };
+    
+    // Voice control functions
+    window.toggleVoiceInput = function() {
+        if (!recognition || !isVoiceSupported) {
+            addMessage('Voice input not supported in this browser', 'bot');
+            return;
+        }
+        
+        if (isListening) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    };
+    
+    window.toggleVoiceOutput = function() {
+        const lastMessage = document.querySelector('.omnix-message.bot:last-child');
+        if (lastMessage) {
+            speakText(lastMessage.textContent);
+        } else {
+            addMessage('No message to speak', 'bot');
         }
     };
     
@@ -321,7 +554,24 @@
     
     // Add welcome message
     setTimeout(() => {
-        addMessage('Hello! I\'m your AI assistant. How can I help you today?', 'bot');
+        let welcomeMessage = 'Hello! I\'m your AI assistant. How can I help you today?';
+        if (voiceConfig.enabled && isVoiceSupported) {
+            welcomeMessage += ' You can use the microphone button to speak to me or the speaker button to hear my responses.';
+        }
+        addMessage(welcomeMessage, 'bot');
     }, 500);
+    
+    // Cleanup function for voice resources
+    window.cleanupVoice = function() {
+        if (recognition) {
+            recognition.stop();
+            recognition = null;
+        }
+        if (speechSynthesis && currentUtterance) {
+            speechSynthesis.cancel();
+            currentUtterance = null;
+        }
+        console.log('🎤 Voice resources cleaned up');
+    };
     
 })();

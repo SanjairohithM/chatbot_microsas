@@ -23,7 +23,7 @@ export const config = {
     dimension: parseInt(process.env.PINECONE_DIMENSION || "512"),
     chunkSize: parseInt(process.env.PINECONE_CHUNK_SIZE || "1000"),
     chunkOverlap: parseInt(process.env.PINECONE_CHUNK_OVERLAP || "200"),
-    scoreThreshold: parseFloat(process.env.PINECONE_SCORE_THRESHOLD || "0.02")
+    scoreThreshold: parseFloat(process.env.PINECONE_SCORE_THRESHOLD || "-0.3")
   },
   
   // Application Configuration

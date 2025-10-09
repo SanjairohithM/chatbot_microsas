@@ -461,7 +461,8 @@ export class PineconeDocumentService {
       const queryEmbedding = await this.generateEmbedding(enhancedQuery, userApiKey)
       
       // Search for scraped content in bot namespace
-      const searchResponse = await index.query({
+      // Try multiple search strategies to find relevant content
+      let searchResponse = await index.query({
         vector: queryEmbedding,
         filter: {
           type: { $eq: 'scraped_content' } // Only get scraped content
@@ -473,18 +474,35 @@ export class PineconeDocumentService {
       // If no results with strict filter, try without filter to see what's available
       if (!searchResponse.matches || searchResponse.matches.length === 0) {
         console.log(`[Pinecone Documents] No results with strict filter, trying without filter to see available data`)
-        const unfilteredResponse = await index.query({
+        searchResponse = await index.query({
           vector: queryEmbedding,
-          topK: 10,
+          topK: limit * 2,
           includeMetadata: true
         })
-        console.log(`[Pinecone Documents] Unfiltered search found ${unfilteredResponse.matches?.length || 0} results`)
-        if (unfilteredResponse.matches && unfilteredResponse.matches.length > 0) {
-          console.log(`[Pinecone Documents] Sample metadata:`, unfilteredResponse.matches[0].metadata)
+        console.log(`[Pinecone Documents] Unfiltered search found ${searchResponse.matches?.length || 0} results`)
+        if (searchResponse.matches && searchResponse.matches.length > 0) {
+          console.log(`[Pinecone Documents] Sample metadata:`, searchResponse.matches[0].metadata)
+          // Check if the issue is with the type filter
+          const hasScrapedContent = searchResponse.matches.some(match => match.metadata?.type === 'scraped_content')
+          if (!hasScrapedContent) {
+            console.log(`[Pinecone Documents] ⚠️ No documents found with type 'scraped_content'. Available types:`, 
+              [...new Set(searchResponse.matches.map(m => m.metadata?.type).filter(Boolean))])
+            console.log(`[Pinecone Documents] 🔄 Proceeding with unfiltered results since no scraped_content type found`)
+          }
         }
       }
 
       console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks`)
+      
+      // Log all results before filtering for debugging
+      if (searchResponse.matches && searchResponse.matches.length > 0) {
+        console.log(`[Pinecone Documents] All results before filtering:`)
+        searchResponse.matches.forEach((match, index) => {
+          console.log(`[Pinecone Documents] ${index + 1}. ${match.metadata?.title} (Score: ${match.score?.toFixed(4)}, Chunk: ${match.metadata?.chunkIndex + 1}/${match.metadata?.totalChunks}, Type: ${match.metadata?.type || 'unknown'})`)
+        })
+      } else {
+        console.log(`[Pinecone Documents] No search results found for query: "${query}"`)
+      }
 
       // Convert results to DocumentSearchResult format
       const results: DocumentSearchResult[] = searchResponse.matches?.map(match => ({
@@ -510,8 +528,11 @@ export class PineconeDocumentService {
 
       // Filter out low-quality results and irrelevant content
       const filteredResults = results.filter(result => {
-        // Filter out results with very low scores (be more lenient)
-        if (result.score < config.pinecone.scoreThreshold) {
+        // For cosine similarity, scores range from -1 to 1, with higher being more similar
+        // Use a more appropriate threshold for cosine similarity
+        const minScore = -0.3 // Allow negative scores but filter out very dissimilar results
+        console.log(`[Pinecone Documents] Checking score: ${result.title} (${result.score.toFixed(4)}) vs threshold (${minScore.toFixed(4)})`)
+        if (result.score < minScore) {
           console.log(`[Pinecone Documents] Filtered out low score: ${result.title} (${result.score.toFixed(4)})`)
           return false
         }
@@ -548,24 +569,34 @@ export class PineconeDocumentService {
         
         // Filter out content that doesn't contain meaningful words (be more lenient)
         const meaningfulWords = result.content.toLowerCase().match(/\b[a-z]{2,}\b/g) || []
-        if (meaningfulWords.length < 2) {
+        if (meaningfulWords.length < 1) {
           console.log(`[Pinecone Documents] Filtered out meaningless content: ${result.title} (${meaningfulWords.length} words)`)
           return false
         }
         
         console.log(`[Pinecone Documents] Keeping result: ${result.title} (Score: ${result.score.toFixed(4)}, Words: ${meaningfulWords.length})`)
         return true
+      })
+      
+      // Sort by score (highest first) and then by chunk index (lowest first) for better chunk selection
+      const sortedResults = filteredResults.sort((a, b) => {
+        // First sort by score (descending)
+        if (Math.abs(a.score - b.score) > 0.01) { // Only consider score difference if it's significant
+          return b.score - a.score
+        }
+        // If scores are similar, prefer lower chunk index (chunk_1 over chunk_3)
+        return a.chunkIndex - b.chunkIndex
       }).slice(0, limit) // Limit to requested number of results
 
       // Log results
-      filteredResults.forEach((result, index) => {
+      sortedResults.forEach((result, index) => {
         console.log(`[Pinecone Documents] ${index + 1}. Document: ${result.title} (Score: ${result.score.toFixed(4)})`)
         console.log(`[Pinecone Documents]    Chunk ${result.chunkIndex + 1}/${result.totalChunks}: "${result.content.substring(0, 100)}..."`)
       })
 
-      console.log(`[Pinecone Documents] Filtered ${results.length} results down to ${filteredResults.length} relevant chunks`)
+      console.log(`[Pinecone Documents] Filtered ${results.length} results down to ${sortedResults.length} relevant chunks`)
 
-      return filteredResults
+      return sortedResults
     } catch (error) {
       console.error('[Pinecone Documents] Error searching documents:', error)
       
@@ -591,11 +622,11 @@ export class PineconeDocumentService {
           metadata: match.metadata
         })) || []
         
-        // Apply basic filtering to fallback results
+        // Apply basic filtering to fallback results (more lenient)
         const filteredFallback = fallbackResults.filter((result: any) => 
-          result.score > 0.1 && 
+          result.score > -0.5 && // More lenient score threshold
           result.content && 
-          result.content.length > 20 &&
+          result.content.length > 10 && // Shorter minimum content length
           !result.title.toLowerCase().includes('wikipedia')
         )
         

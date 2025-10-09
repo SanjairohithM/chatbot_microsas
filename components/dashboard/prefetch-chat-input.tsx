@@ -11,9 +11,12 @@ import {
   X, 
   Loader2,
   Zap,
-  Search
+  Search,
+  Volume2,
+  VolumeX
 } from "lucide-react"
 import { usePrefetchChat } from "@/hooks/use-prefetch-chat"
+import { useVoiceChat } from "@/hooks/use-voice-chat"
 
 interface PrefetchChatInputProps {
   onSendMessage: (message: string, imageUrl?: string) => void
@@ -24,7 +27,7 @@ interface PrefetchChatInputProps {
   placeholder?: string
   className?: string
   botId: number
-  userId: string
+  userId: string | number
   conversationId?: number
 }
 
@@ -43,6 +46,7 @@ export function PrefetchChatInput({
   const [message, setMessage] = useState("")
   const [imageUrl, setImageUrl] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [isVoiceSupported, setIsVoiceSupported] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -51,6 +55,58 @@ export function PrefetchChatInput({
     isPrefetching,
     prefetchData
   } = usePrefetchChat()
+
+  // Voice chat functionality
+  const {
+    startRecording,
+    stopRecording,
+    playBotResponse,
+    isRecording: voiceRecording,
+    isProcessing: voiceProcessing,
+    voiceError,
+    lastTranscription
+  } = useVoiceChat({
+    onTranscription: (transcript: string) => {
+      console.log('🎤 Voice transcript received:', transcript)
+      console.log('🎤 onSendMessage function:', onSendMessage)
+      console.log('🎤 Current message state:', message)
+      console.log('🎤 Current imageUrl state:', imageUrl)
+      
+      if (transcript.trim()) {
+        console.log('📤 Auto-sending voice message:', transcript.trim())
+        console.log('📤 Calling onSendMessage with:', { message: transcript.trim(), imageUrl: imageUrl || undefined })
+        // Auto-send the transcribed text
+        onSendMessage(transcript.trim(), imageUrl || undefined)
+        setMessage("")
+        setImageUrl("")
+        console.log('📤 onSendMessage called successfully')
+      } else {
+        console.log('⚠️ Empty transcript received')
+      }
+    },
+    onError: (error: string) => {
+      console.error('❌ Voice error:', error)
+    },
+    onStartRecording: () => {
+      console.log('🎤 Voice recording started')
+    },
+    onStopRecording: () => {
+      console.log('🛑 Voice recording stopped')
+    }
+  })
+
+  // Check for voice support
+  useEffect(() => {
+    const checkVoiceSupport = () => {
+      const hasSpeechRecognition = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window
+      const hasSpeechSynthesis = 'speechSynthesis' in window
+      const isSupported = hasSpeechRecognition && hasSpeechSynthesis
+      console.log('🎤 Voice support check:', { hasSpeechRecognition, hasSpeechSynthesis, isSupported })
+      setIsVoiceSupported(isSupported)
+    }
+    
+    checkVoiceSupport()
+  }, [])
 
   // Handle typing with prefetch
   const handleInputChange = (value: string) => {
@@ -94,6 +150,22 @@ export function PrefetchChatInput({
     }
   }
 
+  // Voice recording handlers
+  const handleVoiceStart = () => {
+    console.log('🎤 handleVoiceStart called, isVoiceSupported:', isVoiceSupported)
+    if (!isVoiceSupported) {
+      console.warn('Voice not supported in this browser')
+      return
+    }
+    console.log('🎤 Starting voice recording...')
+    startRecording()
+  }
+
+  const handleVoiceStop = () => {
+    console.log('🛑 handleVoiceStop called')
+    stopRecording()
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
@@ -128,10 +200,20 @@ export function PrefetchChatInput({
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* Prefetch Status Indicator */}
-      {(isPrefetching || prefetchData) && (
+      {/* Status Indicators */}
+      {(isPrefetching || prefetchData || voiceRecording || voiceProcessing) && (
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          {isPrefetching ? (
+          {voiceRecording ? (
+            <>
+              <Mic className="h-4 w-4 text-red-500 animate-pulse" />
+              <span>Listening...</span>
+            </>
+          ) : voiceProcessing ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Processing voice...</span>
+            </>
+          ) : isPrefetching ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Preparing response...</span>
@@ -145,6 +227,34 @@ export function PrefetchChatInput({
               </Badge>
             </>
           ) : null}
+        </div>
+      )}
+
+      {/* Voice Error Display */}
+      {voiceError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{voiceError}</p>
+        </div>
+      )}
+
+      {/* Debug: Test Voice Transcript (only in development) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+          <p className="text-yellow-800 mb-2">Debug: Test voice transcript callback</p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              console.log('🧪 Testing voice transcript callback')
+              // Simulate voice transcript
+              const testTranscript = "Hello, this is a test message"
+              console.log('🧪 Simulating transcript:', testTranscript)
+              onSendMessage(testTranscript, undefined)
+            }}
+            className="text-xs"
+          >
+            Test Voice Transcript
+          </Button>
         </div>
       )}
 
@@ -224,23 +334,25 @@ export function PrefetchChatInput({
           />
 
           {/* Voice Recording */}
-          {onVoiceMessage && (
+          {isVoiceSupported && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => {
-                if (isRecording) {
-                  // Stop recording logic would go here
+                console.log('🎤 Voice button clicked, voiceRecording:', voiceRecording)
+                if (voiceRecording) {
+                  handleVoiceStop()
                 } else {
-                  // Start recording logic would go here
+                  handleVoiceStart()
                 }
               }}
               className={`text-gray-500 hover:text-red-500 ${
-                isRecording ? "text-red-500" : ""
+                voiceRecording ? "text-red-500" : ""
               }`}
-              disabled={disabled || isProcessing}
+              disabled={disabled || isProcessing || voiceProcessing}
+              title={voiceRecording ? "Stop recording" : "Start voice input"}
             >
-              {isRecording ? (
+              {voiceRecording ? (
                 <MicOff className="h-4 w-4" />
               ) : (
                 <Mic className="h-4 w-4" />

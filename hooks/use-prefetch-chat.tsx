@@ -123,6 +123,14 @@ export function usePrefetchChat() {
         }
       }
 
+      console.log('🚀 Sending message to chat/stream API:', {
+        messages,
+        botId: options.botId,
+        userId: options.userId,
+        conversationId: options.conversationId,
+        prefetchData: prefetchPayload
+      })
+
       const response = await fetch('/api/chat/stream', {
         method: 'POST',
         headers: {
@@ -137,6 +145,8 @@ export function usePrefetchChat() {
         }),
         signal: abortControllerRef.current.signal,
       })
+
+      console.log('📡 Chat/stream API response status:', response.status)
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Voice Buttons - OmniX Smart Sync</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .status { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .test-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #007cba; }
+        .instructions { background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107; }
+        .voice-buttons { text-align: center; margin: 20px 0; }
+        .voice-button {
+            background: #007cba;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 20px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .voice-button:hover { background: #005a87; }
+        .speaker-button { background: #28a745; }
+        .speaker-button:hover { background: #1e7e34; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Test Voice Buttons - OmniX Smart Sync</h1>
+        
+        <div class="test-info">
+            <h3>📋 Test Configuration</h3>
+            <p><strong>Bot ID:</strong> 9 (Your current bot)</p>
+            <p><strong>API URL:</strong> https://1016271b626b.ngrok-free.app/</p>
+            <p><strong>Voice:</strong> Force enabled</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔍 What to Look For</h3>
+            <ol>
+                <li><strong>Chatbot widget</strong> should appear in bottom-right corner</li>
+                <li><strong>Voice buttons</strong> (🎤 🔊) should be visible in the input area</li>
+                <li><strong>Console logs</strong> should show voice configuration loaded</li>
+                <li><strong>Test buttons</strong> below should work for voice testing</li>
+            </ol>
+        </div>
+        
+        <div id="status" class="status info">
+            🔄 Loading OmniX Smart Sync Widget with Voice...
+        </div>
+        
+        <div class="voice-buttons">
+            <h3>Test Voice Buttons (These should work):</h3>
+            <button class="voice-button" onclick="testMic()" title="Test Microphone">🎤</button>
+            <button class="voice-button speaker-button" onclick="testSpeaker()" title="Test Speaker">🔊</button>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="checkWidget()" style="background: #007cba; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px;">
+                🔍 Check Widget
+            </button>
+            <button onclick="forceVoiceButtons()" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px;">
+                🎤 Force Voice Buttons
+            </button>
+        </div>
+    </div>
+
+    <!-- OmniX Smart Sync Widget with Voice -->
+    <div id="omnix-chatbot-widget" 
+         data-bot-id="9"
+         data-access-token="your_access_token_here"
+         data-api-url="https://1016271b626b.ngrok-free.app/"
+         data-theme="default"
+         data-position="bottom-right"
+         data-auto-open="false"
+         data-show-avatar="true"
+         data-show-title="true"
+         data-enable-voice="true"
+         data-voice-language="en-US"
+         data-voice-rate="1.0"
+         data-voice-pitch="1.0"
+         data-voice-volume="1.0"
+         data-auto-speak="false"
+         data-voice-continuous="false"
+         data-voice-interim-results="false">
+    </div>
+    
+    <script>
+        // Force voice configuration
+        window.omnixChatbot = {
+            apiUrl: "https://1016271b626b.ngrok-free.app/",
+            botId: "9",
+            accessToken: "your_access_token_here", // Replace with your actual token
+            autoOpen: false,
+            position: "bottom-right",
+            theme: "modern",
+            enableVoice: true, // Force enable voice
+            voiceLanguage: "en-US",
+            voiceRate: 1.0,
+            voicePitch: 1.0,
+            voiceVolume: 1.0,
+            autoSpeak: false,
+            voiceContinuous: false,
+            voiceInterimResults: false
+        };
+        
+        console.log('🎤 OmniX Smart Sync: Voice configuration loaded', window.omnixChatbot);
+        
+        // Load the chatbot widget
+        const script = document.createElement('script');
+        script.src = 'https://1016271b626b.ngrok-free.app/chatbot-widget.js?v=' + Date.now();
+        script.defer = true;
+        document.head.appendChild(script);
+        
+        // Test microphone
+        function testMic() {
+            const status = document.getElementById('status');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.innerHTML = '❌ Voice recognition not supported in this browser';
+                status.className = 'status error';
+                return;
+            }
+            
+            status.innerHTML = '🎤 Microphone test: Speak now...';
+            status.className = 'status info';
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                status.innerHTML = '✅ Microphone works! You said: "' + transcript + '"';
+                status.className = 'status success';
+            };
+            
+            recognition.onerror = function(event) {
+                status.innerHTML = '❌ Microphone error: ' + event.error;
+                status.className = 'status error';
+            };
+            
+            recognition.start();
+        }
+        
+        // Test speaker
+        function testSpeaker() {
+            const status = document.getElementById('status');
+            
+            if (!('speechSynthesis' in window)) {
+                status.innerHTML = '❌ Speech synthesis not supported in this browser';
+                status.className = 'status error';
+                return;
+            }
+            
+            status.innerHTML = '🔊 Testing speaker...';
+            status.className = 'status info';
+            
+            const utterance = new SpeechSynthesisUtterance('Speaker test successful! Voice features are working.');
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+            
+            utterance.onend = function() {
+                status.innerHTML = '✅ Speaker works! Voice features are functional.';
+                status.className = 'status success';
+            };
+            
+            utterance.onerror = function() {
+                status.innerHTML = '❌ Speaker error: ' + event.error;
+                status.className = 'status error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // Check if widget loaded with voice buttons
+        function checkWidget() {
+            const status = document.getElementById('status');
+            const widget = document.getElementById('omnix-chatbot-widget');
+            
+            if (widget && widget.children.length > 0) {
+                const voiceButtons = widget.querySelectorAll('.omnix-voice-button, [data-voice], .voice-button');
+                if (voiceButtons.length > 0) {
+                    status.innerHTML = '✅ Widget loaded with ' + voiceButtons.length + ' voice buttons!';
+                    status.className = 'status success';
+                } else {
+                    status.innerHTML = '⚠️ Widget loaded but no voice buttons found. Will add them manually.';
+                    status.className = 'status error';
+                    forceVoiceButtons();
+                }
+            } else {
+                status.innerHTML = '⚠️ Widget not loaded yet. Check browser console for errors.';
+                status.className = 'status error';
+            }
+        }
+        
+        // Force add voice buttons
+        function forceVoiceButtons() {
+            const widget = document.getElementById('omnix-chatbot-widget');
+            if (widget) {
+                const inputArea = widget.querySelector('.omnix-input-area, .chat-input, .message-input, .input-area, .chat-input-container');
+                if (inputArea && !inputArea.querySelector('.omnix-voice-button')) {
+                    // Create microphone button
+                    const micButton = document.createElement('button');
+                    micButton.className = 'omnix-voice-button omnix-mic-button';
+                    micButton.innerHTML = '🎤';
+                    micButton.title = 'Voice Input';
+                    micButton.style.cssText = 'background: #007cba; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; margin: 5px; cursor: pointer; font-size: 16px; display: inline-block; vertical-align: middle;';
+                    
+                    // Create speaker button
+                    const speakerButton = document.createElement('button');
+                    speakerButton.className = 'omnix-voice-button omnix-speaker-button';
+                    speakerButton.innerHTML = '🔊';
+                    speakerButton.title = 'Voice Output';
+                    speakerButton.style.cssText = 'background: #28a745; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; margin: 5px; cursor: pointer; font-size: 16px; display: inline-block; vertical-align: middle;';
+                    
+                    // Add buttons to input area
+                    inputArea.appendChild(micButton);
+                    inputArea.appendChild(speakerButton);
+                    
+                    document.getElementById('status').innerHTML = '✅ Voice buttons added manually!';
+                    document.getElementById('status').className = 'status success';
+                    
+                    console.log('🎤 Voice buttons added manually to input area');
+                } else {
+                    document.getElementById('status').innerHTML = '⚠️ Input area not found in widget';
+                    document.getElementById('status').className = 'status error';
+                }
+            } else {
+                document.getElementById('status').innerHTML = '⚠️ Widget not found';
+                document.getElementById('status').className = 'status error';
+            }
+        }
+        
+        // Auto-check widget loading
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                checkWidget();
+            }, 3000);
+        });
+        
+        // Debug logging
+        console.log('🎤 OmniX Smart Sync Voice Test Page Loaded');
+        console.log('📋 Configuration:', window.omnixChatbot);
+        console.log('🔍 Voice Support:', {
+            speechRecognition: 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window,
+            speechSynthesis: 'speechSynthesis' in window
+        });
+    </script>
+</body>
+</html>

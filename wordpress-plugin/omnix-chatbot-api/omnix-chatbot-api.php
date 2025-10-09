@@ -34,6 +34,13 @@ class OmniX_Chatbot_API {
         add_action('save_post', array($this, 'auto_sync_on_save'), 10, 3);
         add_action('wp_ajax_omnix_manual_sync', array($this, 'handle_manual_sync'));
         add_action('wp_ajax_nopriv_omnix_manual_sync', array($this, 'handle_manual_sync'));
+        
+        // Chatbot widget hooks
+        add_shortcode('omnix_chatbot', array($this, 'chatbot_shortcode'));
+        add_shortcode('omnix_chatbot_debug', array($this, 'chatbot_debug_shortcode'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_chatbot_assets'));
+        add_action('wp_ajax_omnix_chat', array($this, 'handle_chat_request'));
+        add_action('wp_ajax_nopriv_omnix_chat', array($this, 'handle_chat_request'));
     }
 
     public function init(){
@@ -751,6 +758,16 @@ class OmniX_Chatbot_API {
             update_option(self::OPTION_BOT_ID, sanitize_text_field($_POST['bot_id']));
             update_option('omnix_chatbot_auto_sync', isset($_POST['auto_sync']));
             update_option('omnix_chatbot_sync_enabled', isset($_POST['sync_enabled']));
+            
+            // Voice settings
+            update_option('omnix_chatbot_voice_language', sanitize_text_field($_POST['voice_language']));
+            update_option('omnix_chatbot_voice_rate', floatval($_POST['voice_rate']));
+            update_option('omnix_chatbot_voice_pitch', floatval($_POST['voice_pitch']));
+            update_option('omnix_chatbot_voice_volume', floatval($_POST['voice_volume']));
+            update_option('omnix_chatbot_auto_speak', isset($_POST['auto_speak']));
+            update_option('omnix_chatbot_voice_continuous', isset($_POST['voice_continuous']));
+            update_option('omnix_chatbot_voice_interim_results', isset($_POST['voice_interim_results']));
+            
             echo '<div class="updated"><p>Settings saved.</p></div>';
         }
 
@@ -807,6 +824,90 @@ class OmniX_Chatbot_API {
                     </table>
                     <p class="submit">
                         <input type="submit" name="save_settings" class="button button-primary" value="Save Settings">
+                    </p>
+                </form>
+            </div>
+
+            <div class="card" style="max-width: 800px;">
+                <h2>Voice Settings</h2>
+                <form method="post">
+                    <?php wp_nonce_field('omnix_chatbot_api_save'); ?>
+                    <table class="form-table">
+                        <tr>
+                            <th scope="row">Voice Language</th>
+                            <td>
+                                <select name="voice_language">
+                                    <option value="en-US" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'en-US'); ?>>English (US)</option>
+                                    <option value="en-GB" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'en-GB'); ?>>English (UK)</option>
+                                    <option value="es-ES" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'es-ES'); ?>>Spanish</option>
+                                    <option value="fr-FR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'fr-FR'); ?>>French</option>
+                                    <option value="de-DE" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'de-DE'); ?>>German</option>
+                                    <option value="it-IT" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'it-IT'); ?>>Italian</option>
+                                    <option value="pt-BR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'pt-BR'); ?>>Portuguese (Brazil)</option>
+                                    <option value="ru-RU" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'ru-RU'); ?>>Russian</option>
+                                    <option value="ja-JP" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'ja-JP'); ?>>Japanese</option>
+                                    <option value="ko-KR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'ko-KR'); ?>>Korean</option>
+                                    <option value="zh-CN" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'zh-CN'); ?>>Chinese (Simplified)</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Voice Rate</th>
+                            <td>
+                                <input type="range" name="voice_rate" min="0.1" max="2.0" step="0.1" 
+                                       value="<?php echo esc_attr(get_option('omnix_chatbot_voice_rate', '1.0')); ?>" 
+                                       oninput="document.getElementById('voice_rate_value').textContent = this.value">
+                                <span id="voice_rate_value"><?php echo esc_html(get_option('omnix_chatbot_voice_rate', '1.0')); ?></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Voice Pitch</th>
+                            <td>
+                                <input type="range" name="voice_pitch" min="0.1" max="2.0" step="0.1" 
+                                       value="<?php echo esc_attr(get_option('omnix_chatbot_voice_pitch', '1.0')); ?>" 
+                                       oninput="document.getElementById('voice_pitch_value').textContent = this.value">
+                                <span id="voice_pitch_value"><?php echo esc_html(get_option('omnix_chatbot_voice_pitch', '1.0')); ?></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Voice Volume</th>
+                            <td>
+                                <input type="range" name="voice_volume" min="0.1" max="1.0" step="0.1" 
+                                       value="<?php echo esc_attr(get_option('omnix_chatbot_voice_volume', '1.0')); ?>" 
+                                       oninput="document.getElementById('voice_volume_value').textContent = this.value">
+                                <span id="voice_volume_value"><?php echo esc_html(get_option('omnix_chatbot_voice_volume', '1.0')); ?></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Auto Speak</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="auto_speak" <?php checked(get_option('omnix_chatbot_auto_speak', false)); ?>>
+                                    Automatically speak bot responses
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Continuous Recognition</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="voice_continuous" <?php checked(get_option('omnix_chatbot_voice_continuous', false)); ?>>
+                                    Enable continuous speech recognition
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Interim Results</th>
+                            <td>
+                                <label>
+                                    <input type="checkbox" name="voice_interim_results" <?php checked(get_option('omnix_chatbot_voice_interim_results', false)); ?>>
+                                    Show interim speech recognition results
+                                </label>
+                            </td>
+                        </tr>
+                    </table>
+                    <p class="submit">
+                        <input type="submit" name="save_settings" class="button button-primary" value="Save Voice Settings">
                     </p>
                 </form>
             </div>
@@ -883,6 +984,268 @@ class OmniX_Chatbot_API {
         });
         </script>
         <?php
+    }
+
+    // Chatbot shortcode handler
+    public function chatbot_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'bot_id' => get_option(self::OPTION_BOT_ID, ''),
+            'access_token' => get_option(self::OPTION_TOKEN_KEY, ''),
+            'theme' => 'default',
+            'position' => 'bottom-right',
+            'auto_open' => 'false',
+            'show_avatar' => 'true',
+            'show_title' => 'true',
+            'enable_voice' => 'true',
+            'voice_language' => get_option('omnix_chatbot_voice_language', 'en-US'),
+            'auto_speak' => get_option('omnix_chatbot_auto_speak', 'false'),
+            'voice_rate' => get_option('omnix_chatbot_voice_rate', '1.0'),
+            'voice_pitch' => get_option('omnix_chatbot_voice_pitch', '1.0'),
+            'voice_volume' => get_option('omnix_chatbot_voice_volume', '1.0'),
+            'voice_continuous' => get_option('omnix_chatbot_voice_continuous', 'false'),
+            'voice_interim_results' => get_option('omnix_chatbot_voice_interim_results', 'false')
+        ), $atts);
+
+        // Debug logging
+        error_log('OmniX Chatbot Shortcode - Bot ID: ' . $atts['bot_id']);
+        error_log('OmniX Chatbot Shortcode - Enable Voice: ' . $atts['enable_voice']);
+        error_log('OmniX Chatbot Shortcode - Voice Language: ' . $atts['voice_language']);
+
+        if (empty($atts['bot_id']) || empty($atts['access_token'])) {
+            return '<p>OmniX Chatbot: Please configure bot_id and access_token.</p>';
+        }
+
+        $api_url = get_option(self::OPTION_API_URL, '');
+        if (empty($api_url)) {
+            return '<p>OmniX Chatbot: Please configure API URL in settings.</p>';
+        }
+
+        $widget_id = 'omnix-chatbot-' . uniqid();
+        
+        $widget_html = '
+        <div id="' . esc_attr($widget_id) . '" class="omnix-chatbot-widget" 
+             data-bot-id="' . esc_attr($atts['bot_id']) . '"
+             data-access-token="' . esc_attr($atts['access_token']) . '"
+             data-api-url="' . esc_attr($api_url) . '"
+             data-theme="' . esc_attr($atts['theme']) . '"
+             data-position="' . esc_attr($atts['position']) . '"
+             data-auto-open="' . esc_attr($atts['auto_open']) . '"
+             data-show-avatar="' . esc_attr($atts['show_avatar']) . '"
+             data-show-title="' . esc_attr($atts['show_title']) . '"
+             data-enable-voice="' . esc_attr($atts['enable_voice']) . '"
+             data-voice-language="' . esc_attr($atts['voice_language']) . '"
+             data-auto-speak="' . esc_attr($atts['auto_speak']) . '"
+             data-voice-rate="' . esc_attr($atts['voice_rate']) . '"
+             data-voice-pitch="' . esc_attr($atts['voice_pitch']) . '"
+             data-voice-volume="' . esc_attr($atts['voice_volume']) . '"
+             data-voice-continuous="' . esc_attr($atts['voice_continuous']) . '"
+             data-voice-interim-results="' . esc_attr($atts['voice_interim_results']) . '">
+        </div>';
+
+        // Debug logging
+        error_log('OmniX Chatbot Widget HTML: ' . $widget_html);
+        
+        return $widget_html;
+    }
+
+    // Debug shortcode handler - forces voice to be enabled
+    public function chatbot_debug_shortcode($atts) {
+        $atts = shortcode_atts(array(
+            'bot_id' => '7',
+            'access_token' => 'debug_token',
+            'theme' => 'default',
+            'position' => 'bottom-right',
+            'auto_open' => 'false',
+            'show_avatar' => 'true',
+            'show_title' => 'true',
+            'enable_voice' => 'true',
+            'voice_language' => 'en-US',
+            'auto_speak' => 'false',
+            'voice_rate' => '1.0',
+            'voice_pitch' => '1.0',
+            'voice_volume' => '1.0',
+            'voice_continuous' => 'false',
+            'voice_interim_results' => 'false'
+        ), $atts);
+
+        $api_url = get_option(self::OPTION_API_URL, 'https://your-api-url.com');
+        $widget_id = 'omnix-chatbot-debug-' . uniqid();
+        
+        $widget_html = '
+        <div id="' . esc_attr($widget_id) . '" class="omnix-chatbot-widget" 
+             data-bot-id="' . esc_attr($atts['bot_id']) . '"
+             data-access-token="' . esc_attr($atts['access_token']) . '"
+             data-api-url="' . esc_attr($api_url) . '"
+             data-theme="' . esc_attr($atts['theme']) . '"
+             data-position="' . esc_attr($atts['position']) . '"
+             data-auto-open="' . esc_attr($atts['auto_open']) . '"
+             data-show-avatar="' . esc_attr($atts['show_avatar']) . '"
+             data-show-title="' . esc_attr($atts['show_title']) . '"
+             data-enable-voice="' . esc_attr($atts['enable_voice']) . '"
+             data-voice-language="' . esc_attr($atts['voice_language']) . '"
+             data-auto-speak="' . esc_attr($atts['auto_speak']) . '"
+             data-voice-rate="' . esc_attr($atts['voice_rate']) . '"
+             data-voice-pitch="' . esc_attr($atts['voice_pitch']) . '"
+             data-voice-volume="' . esc_attr($atts['voice_volume']) . '"
+             data-voice-continuous="' . esc_attr($atts['voice_continuous']) . '"
+             data-voice-interim-results="' . esc_attr($atts['voice_interim_results']) . '">
+        </div>';
+
+        return $widget_html;
+    }
+
+    // Enqueue chatbot assets
+    public function enqueue_chatbot_assets() {
+        if (is_admin()) return;
+        
+        // Enqueue chatbot widget script
+        wp_enqueue_script(
+            'omnix-chatbot-widget',
+            plugin_dir_url(__FILE__) . 'assets/chatbot-widget.js',
+            array('jquery'),
+            '1.0.0',
+            true
+        );
+        
+        // Enqueue chatbot styles
+        wp_enqueue_style(
+            'omnix-chatbot-styles',
+            plugin_dir_url(__FILE__) . 'assets/chatbot-styles.css',
+            array(),
+            '1.0.0'
+        );
+        
+        // Localize script with API URL
+        wp_localize_script('omnix-chatbot-widget', 'omnixChatbot', array(
+            'apiUrl' => get_option(self::OPTION_API_URL, ''),
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('omnix_chatbot_nonce')
+        ));
+    }
+
+    // Handle chat requests with conversation context
+    public function handle_chat_request() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'omnix_chatbot_nonce')) {
+            wp_die('Security check failed');
+        }
+
+        $message = sanitize_text_field($_POST['message']);
+        $conversation_id = intval($_POST['conversation_id']);
+        $bot_id = sanitize_text_field($_POST['bot_id']);
+        $access_token = sanitize_text_field($_POST['access_token']);
+
+        if (empty($message) || empty($bot_id) || empty($access_token)) {
+            wp_send_json_error('Missing required parameters');
+        }
+
+        // Get conversation history for context
+        $conversation_history = $this->get_conversation_history($conversation_id);
+        
+        // Prepare request to your chatbot API
+        $api_url = get_option(self::OPTION_API_URL, '');
+        $request_data = array(
+            'message' => $message,
+            'bot_id' => $bot_id,
+            'conversation_id' => $conversation_id,
+            'conversation_history' => $conversation_history,
+            'access_token' => $access_token
+        );
+
+        $response = wp_remote_post($api_url . '/api/chat', array(
+            'headers' => array(
+                'Content-Type' => 'application/json',
+                'Authorization' => 'Bearer ' . $access_token
+            ),
+            'body' => json_encode($request_data),
+            'timeout' => 30
+        ));
+
+        if (is_wp_error($response)) {
+            wp_send_json_error('Failed to connect to chatbot API');
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (!$data || isset($data['error'])) {
+            wp_send_json_error('Chatbot API error: ' . ($data['error'] ?? 'Unknown error'));
+        }
+
+        // Store the conversation
+        $this->store_conversation($conversation_id, $message, $data['response'] ?? 'No response');
+
+        wp_send_json_success($data);
+    }
+
+    // Get conversation history for context
+    private function get_conversation_history($conversation_id) {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'omnix_chatbot_conversations';
+        
+        // Create table if it doesn't exist
+        $this->create_conversations_table();
+        
+        $results = $wpdb->get_results($wpdb->prepare(
+            "SELECT user_message, bot_response, created_at 
+             FROM $table_name 
+             WHERE conversation_id = %d 
+             ORDER BY created_at DESC 
+             LIMIT 10",
+            $conversation_id
+        ));
+
+        $history = array();
+        foreach ($results as $row) {
+            $history[] = array(
+                'user' => $row->user_message,
+                'bot' => $row->bot_response,
+                'timestamp' => $row->created_at
+            );
+        }
+
+        return array_reverse($history); // Return in chronological order
+    }
+
+    // Store conversation in database
+    private function store_conversation($conversation_id, $user_message, $bot_response) {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'omnix_chatbot_conversations';
+        
+        $wpdb->insert(
+            $table_name,
+            array(
+                'conversation_id' => $conversation_id,
+                'user_message' => $user_message,
+                'bot_response' => $bot_response,
+                'created_at' => current_time('mysql')
+            ),
+            array('%d', '%s', '%s', '%s')
+        );
+    }
+
+    // Create conversations table
+    private function create_conversations_table() {
+        global $wpdb;
+        
+        $table_name = $wpdb->prefix . 'omnix_chatbot_conversations';
+        
+        $charset_collate = $wpdb->get_charset_collate();
+        
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            conversation_id bigint(20) NOT NULL,
+            user_message text NOT NULL,
+            bot_response text NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (id),
+            KEY conversation_id (conversation_id)
+        ) $charset_collate;";
+        
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
     }
 }
 
