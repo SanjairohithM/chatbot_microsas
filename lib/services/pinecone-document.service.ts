@@ -472,6 +472,14 @@ export class PineconeDocumentService {
       }
 
       console.log(`[Pinecone Documents] Found ${searchResponse.matches?.length || 0} relevant document chunks`)
+      
+      // Log all results before filtering for debugging
+      if (searchResponse.matches && searchResponse.matches.length > 0) {
+        console.log(`[Pinecone Documents] All results before filtering:`)
+        searchResponse.matches.forEach((match, index) => {
+          console.log(`[Pinecone Documents] ${index + 1}. ${match.metadata?.title} (Score: ${match.score?.toFixed(4)}, Chunk: ${match.metadata?.chunkIndex + 1}/${match.metadata?.totalChunks})`)
+        })
+      }
 
       // Convert results to DocumentSearchResult format
       const results: DocumentSearchResult[] = searchResponse.matches?.map(match => ({
@@ -497,8 +505,11 @@ export class PineconeDocumentService {
 
       // Filter out low-quality results and irrelevant content
       const filteredResults = results.filter(result => {
-        // Filter out results with very low scores (be more lenient)
-        if (result.score < config.pinecone.scoreThreshold) {
+        // Filter out results with very low scores (be more lenient for negative scores)
+        // For cosine similarity, scores can be negative, so we need to handle this properly
+        const minScore = Math.min(config.pinecone.scoreThreshold, -0.1) // Allow some negative scores
+        console.log(`[Pinecone Documents] Checking score: ${result.title} (${result.score.toFixed(4)}) vs threshold (${minScore.toFixed(4)})`)
+        if (result.score < minScore) {
           console.log(`[Pinecone Documents] Filtered out low score: ${result.title} (${result.score.toFixed(4)})`)
           return false
         }
@@ -542,17 +553,27 @@ export class PineconeDocumentService {
         
         console.log(`[Pinecone Documents] Keeping result: ${result.title} (Score: ${result.score.toFixed(4)}, Words: ${meaningfulWords.length})`)
         return true
+      })
+      
+      // Sort by score (highest first) and then by chunk index (lowest first) for better chunk selection
+      const sortedResults = filteredResults.sort((a, b) => {
+        // First sort by score (descending)
+        if (Math.abs(a.score - b.score) > 0.01) { // Only consider score difference if it's significant
+          return b.score - a.score
+        }
+        // If scores are similar, prefer lower chunk index (chunk_1 over chunk_3)
+        return a.chunkIndex - b.chunkIndex
       }).slice(0, limit) // Limit to requested number of results
 
       // Log results
-      filteredResults.forEach((result, index) => {
+      sortedResults.forEach((result, index) => {
         console.log(`[Pinecone Documents] ${index + 1}. Document: ${result.title} (Score: ${result.score.toFixed(4)})`)
         console.log(`[Pinecone Documents]    Chunk ${result.chunkIndex + 1}/${result.totalChunks}: "${result.content.substring(0, 100)}..."`)
       })
 
-      console.log(`[Pinecone Documents] Filtered ${results.length} results down to ${filteredResults.length} relevant chunks`)
+      console.log(`[Pinecone Documents] Filtered ${results.length} results down to ${sortedResults.length} relevant chunks`)
 
-      return filteredResults
+      return sortedResults
     } catch (error) {
       console.error('[Pinecone Documents] Error searching documents:', error)
       

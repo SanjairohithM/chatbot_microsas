@@ -14,6 +14,13 @@ if (isset($_POST['submit'])) {
     update_option('omnix_chatbot_enable_logging', isset($_POST['omnix_chatbot_enable_logging']));
     update_option('omnix_chatbot_max_requests_per_hour', intval($_POST['omnix_chatbot_max_requests_per_hour']));
     
+    // Voice settings
+    update_option('omnix_chatbot_voice_language', sanitize_text_field($_POST['omnix_chatbot_voice_language']));
+    update_option('omnix_chatbot_voice_rate', floatval($_POST['omnix_chatbot_voice_rate']));
+    update_option('omnix_chatbot_voice_pitch', floatval($_POST['omnix_chatbot_voice_pitch']));
+    update_option('omnix_chatbot_voice_volume', floatval($_POST['omnix_chatbot_voice_volume']));
+    update_option('omnix_chatbot_auto_speak', isset($_POST['omnix_chatbot_auto_speak']));
+    
     echo '<div class="notice notice-success"><p>Settings saved successfully!</p></div>';
 }
 
@@ -135,6 +142,73 @@ $max_requests_per_hour = get_option('omnix_chatbot_max_requests_per_hour', 1000)
                         <p><?php _e('The plugin automatically handles CORS headers for API requests. If you need to restrict access to specific domains, modify the CORS headers in the plugin code.', 'omnix-chatbot'); ?></p>
                         <code>Access-Control-Allow-Origin: *</code>
                     </div>
+                </td>
+            </tr>
+        </table>
+        
+        <h2><?php _e('Voice Settings', 'omnix-chatbot'); ?></h2>
+        <table class="form-table">
+            <tr>
+                <th scope="row"><?php _e('Default Voice Language', 'omnix-chatbot'); ?></th>
+                <td>
+                    <select id="omnix_chatbot_voice_language" name="omnix_chatbot_voice_language">
+                        <option value="en-US" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'en-US'); ?>>English (US)</option>
+                        <option value="en-GB" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'en-GB'); ?>>English (UK)</option>
+                        <option value="es-ES" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'es-ES'); ?>>Spanish</option>
+                        <option value="fr-FR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'fr-FR'); ?>>French</option>
+                        <option value="de-DE" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'de-DE'); ?>>German</option>
+                        <option value="it-IT" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'it-IT'); ?>>Italian</option>
+                        <option value="pt-BR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'pt-BR'); ?>>Portuguese (Brazil)</option>
+                        <option value="ja-JP" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'ja-JP'); ?>>Japanese</option>
+                        <option value="ko-KR" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'ko-KR'); ?>>Korean</option>
+                        <option value="zh-CN" <?php selected(get_option('omnix_chatbot_voice_language', 'en-US'), 'zh-CN'); ?>>Chinese (Simplified)</option>
+                    </select>
+                    <p class="description"><?php _e('Default language for voice recognition and speech synthesis', 'omnix-chatbot'); ?></p>
+                </td>
+            </tr>
+            
+            <tr>
+                <th scope="row"><?php _e('Default Voice Rate', 'omnix-chatbot'); ?></th>
+                <td>
+                    <input type="range" id="omnix_chatbot_voice_rate" name="omnix_chatbot_voice_rate" 
+                           value="<?php echo esc_attr(get_option('omnix_chatbot_voice_rate', 1.0)); ?>" 
+                           min="0.1" max="2.0" step="0.1" class="regular-text">
+                    <span id="voice_rate_value"><?php echo esc_attr(get_option('omnix_chatbot_voice_rate', 1.0)); ?></span>
+                    <p class="description"><?php _e('Speech rate for text-to-speech (0.1 = very slow, 2.0 = very fast)', 'omnix-chatbot'); ?></p>
+                </td>
+            </tr>
+            
+            <tr>
+                <th scope="row"><?php _e('Default Voice Pitch', 'omnix-chatbot'); ?></th>
+                <td>
+                    <input type="range" id="omnix_chatbot_voice_pitch" name="omnix_chatbot_voice_pitch" 
+                           value="<?php echo esc_attr(get_option('omnix_chatbot_voice_pitch', 1.0)); ?>" 
+                           min="0.1" max="2.0" step="0.1" class="regular-text">
+                    <span id="voice_pitch_value"><?php echo esc_attr(get_option('omnix_chatbot_voice_pitch', 1.0)); ?></span>
+                    <p class="description"><?php _e('Voice pitch for text-to-speech (0.1 = very low, 2.0 = very high)', 'omnix-chatbot'); ?></p>
+                </td>
+            </tr>
+            
+            <tr>
+                <th scope="row"><?php _e('Default Voice Volume', 'omnix-chatbot'); ?></th>
+                <td>
+                    <input type="range" id="omnix_chatbot_voice_volume" name="omnix_chatbot_voice_volume" 
+                           value="<?php echo esc_attr(get_option('omnix_chatbot_voice_volume', 1.0)); ?>" 
+                           min="0.1" max="1.0" step="0.1" class="regular-text">
+                    <span id="voice_volume_value"><?php echo esc_attr(get_option('omnix_chatbot_voice_volume', 1.0)); ?></span>
+                    <p class="description"><?php _e('Voice volume for text-to-speech (0.1 = very quiet, 1.0 = maximum)', 'omnix-chatbot'); ?></p>
+                </td>
+            </tr>
+            
+            <tr>
+                <th scope="row"><?php _e('Enable Auto-Speak', 'omnix-chatbot'); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" id="omnix_chatbot_auto_speak" name="omnix_chatbot_auto_speak" 
+                               value="1" <?php checked(get_option('omnix_chatbot_auto_speak', false)); ?>>
+                        <?php _e('Automatically speak assistant responses', 'omnix-chatbot'); ?>
+                    </label>
+                    <p class="description"><?php _e('When enabled, the chatbot will automatically speak its responses', 'omnix-chatbot'); ?></p>
                 </td>
             </tr>
         </table>
@@ -268,4 +342,29 @@ function testConnection() {
         button.disabled = false;
     });
 }
+
+// Handle range slider updates
+document.addEventListener('DOMContentLoaded', function() {
+    const voiceRateSlider = document.getElementById('omnix_chatbot_voice_rate');
+    const voicePitchSlider = document.getElementById('omnix_chatbot_voice_pitch');
+    const voiceVolumeSlider = document.getElementById('omnix_chatbot_voice_volume');
+    
+    if (voiceRateSlider) {
+        voiceRateSlider.addEventListener('input', function() {
+            document.getElementById('voice_rate_value').textContent = this.value;
+        });
+    }
+    
+    if (voicePitchSlider) {
+        voicePitchSlider.addEventListener('input', function() {
+            document.getElementById('voice_pitch_value').textContent = this.value;
+        });
+    }
+    
+    if (voiceVolumeSlider) {
+        voiceVolumeSlider.addEventListener('input', function() {
+            document.getElementById('voice_volume_value').textContent = this.value;
+        });
+    }
+});
 </script>

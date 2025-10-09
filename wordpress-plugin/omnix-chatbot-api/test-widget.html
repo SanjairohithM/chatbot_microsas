@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniX Chatbot Widget Test</title>
+    <link rel="stylesheet" href="assets/chatbot-styles.css">
+</head>
+<body>
+    <h1>OmniX Chatbot Widget Test</h1>
+    <p>This is a test page to debug the chatbot widget with voice features.</p>
+    
+    <!-- Test Widget 1: Basic with voice -->
+    <div class="omnix-chatbot-widget" 
+         data-bot-id="7" 
+         data-access-token="test_token"
+         data-api-url="https://test.com"
+         data-theme="default"
+         data-position="bottom-right"
+         data-auto-open="false"
+         data-show-avatar="true"
+         data-show-title="true"
+         data-enable-voice="true"
+         data-voice-language="en-US"
+         data-auto-speak="false"
+         data-voice-rate="1.0"
+         data-voice-pitch="1.0"
+         data-voice-volume="1.0"
+         data-voice-continuous="false"
+         data-voice-interim-results="false">
+    </div>
+
+    <script>
+        // Mock the omnixChatbot object
+        window.omnixChatbot = {
+            apiUrl: 'https://test.com',
+            ajaxUrl: '/wp-admin/admin-ajax.php',
+            nonce: 'test_nonce'
+        };
+    </script>
+    <script src="assets/chatbot-widget.js"></script>
+    
+    <script>
+        // Additional debugging
+        setTimeout(() => {
+            console.log('Checking for voice buttons...');
+            const voiceBtn = document.getElementById('voice-btn');
+            const speakBtns = document.querySelectorAll('.speak-btn');
+            console.log('Voice button found:', voiceBtn);
+            console.log('Speak buttons found:', speakBtns.length);
+            
+            if (voiceBtn) {
+                console.log('Voice button HTML:', voiceBtn.outerHTML);
+            }
+            
+            if (speakBtns.length > 0) {
+                console.log('Speak buttons HTML:', Array.from(speakBtns).map(btn => btn.outerHTML));
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

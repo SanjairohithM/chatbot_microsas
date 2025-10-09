@@ -21,6 +21,9 @@
         autoSpeak: false,
         voiceRate: 1.0,
         voicePitch: 1.0,
+        voiceVolume: 1.0,
+        voiceContinuous: false,
+        voiceInterimResults: false,
         primaryColor: '#3b82f6',
         secondaryColor: '#1e40af'
     };
@@ -320,8 +323,8 @@
             if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 this.recognition = new SpeechRecognition();
-                this.recognition.continuous = false;
-                this.recognition.interimResults = false;
+                this.recognition.continuous = this.config.voiceContinuous;
+                this.recognition.interimResults = this.config.voiceInterimResults;
                 this.recognition.lang = this.config.voiceLanguage;
                 
                 this.recognition.onstart = () => {
@@ -533,6 +536,7 @@
             utterance.lang = this.config.voiceLanguage;
             utterance.rate = this.config.voiceRate;
             utterance.pitch = this.config.voicePitch;
+            utterance.volume = this.config.voiceVolume;
             
             this.speechSynthesis.speak(utterance);
         }
@@ -640,6 +644,9 @@
                 autoSpeak: script.getAttribute('data-auto-speak') === 'true',
                 voiceRate: parseFloat(script.getAttribute('data-voice-rate')) || 1.0,
                 voicePitch: parseFloat(script.getAttribute('data-voice-pitch')) || 1.0,
+                voiceVolume: parseFloat(script.getAttribute('data-voice-volume')) || 1.0,
+                voiceContinuous: script.getAttribute('data-voice-continuous') === 'true',
+                voiceInterimResults: script.getAttribute('data-voice-interim-results') === 'true',
                 primaryColor: script.getAttribute('data-primary-color') || '#3b82f6',
                 secondaryColor: script.getAttribute('data-secondary-color') || '#1e40af'
             };

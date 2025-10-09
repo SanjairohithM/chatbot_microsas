@@ -180,6 +180,12 @@ export async function POST(request: NextRequest) {
           if (documentContext) {
             console.log(`[Chat API] 📝 Document context preview: ${documentContext.substring(0, 200)}...`)
           }
+          
+          // Log each document chunk for debugging
+          pineconeResults.forEach((result, index) => {
+            console.log(`[Chat API] 📄 Document ${index + 1}: "${result.title}" (Score: ${(result.score * 100).toFixed(1)}%, Words: ${result.content.split(' ').length})`)
+            console.log(`[Chat API] 📄 Content preview: ${result.content.substring(0, 100)}...`)
+          })
         } else {
           console.log(`[Chat API] ⚠️ No relevant documents found in Pinecone for query: "${messageText}"`)
           console.log(`[Chat API] 🔍 Will search conversation context as fallback`)
@@ -208,8 +214,8 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Get conversation context from Pinecone if enabled and no document context found
-      if (config.chat.useVectorSearch && (!documentContext || documentContext.trim().length === 0)) {
+      // Get conversation context from Pinecone if enabled (always search for conversation context)
+      if (config.chat.useVectorSearch) {
         try {
           // Get the effective user ID for conversation context search
           let contextUserId = userId
@@ -220,7 +226,7 @@ export async function POST(request: NextRequest) {
             contextUserId = defaultUser?.id || 'widget-user'
           }
           
-          console.log(`[Chat API] 🔍 Searching conversation context for bot ${botId}, user ${contextUserId} (no document context found)`)
+          console.log(`[Chat API] 🔍 Searching conversation context for bot ${botId}, user ${contextUserId}`)
           
           // Search for relevant conversation history
           const relevantMessages = await PineconeService.searchConversationContext(
@@ -237,7 +243,23 @@ export async function POST(request: NextRequest) {
             })
             console.log(`[Chat API] Found ${relevantMessages.length} relevant conversation messages`)
           } else {
-            console.log(`[Chat API] No relevant conversation context found`)
+            console.log(`[Chat API] No relevant conversation context found from vector search`)
+            
+            // Fallback: Get recent conversation history from database if conversationId is provided
+            if (conversationId) {
+              try {
+                const recentMessages = await ConversationService.getRecentMessages(conversationId, 5)
+                if (recentMessages.length > 0) {
+                  conversationContext = `Recent conversation history:\n`
+                  recentMessages.forEach((msg, index) => {
+                    conversationContext += `${index + 1}. ${msg.role}: ${msg.content.substring(0, 150)}${msg.content.length > 150 ? '...' : ''}\n`
+                  })
+                  console.log(`[Chat API] Found ${recentMessages.length} recent messages from database`)
+                }
+              } catch (dbError) {
+                console.error('[Chat API] Failed to get recent messages from database:', dbError)
+              }
+            }
           }
         } catch (error) {
           console.error('Pinecone conversation search failed, continuing without context:', error)
@@ -266,7 +288,7 @@ export async function POST(request: NextRequest) {
       const relevanceResult = RelevanceChecker.checkRelevance(
         messageText,
         documentContext,
-        '' // No website content for now
+        conversationContext || '' // Include conversation context in relevance check
       )
       
       console.log(`[Chat API] 🔍 Relevance check: ${relevanceResult.isRelevant ? 'RELEVANT' : 'NOT RELEVANT'} (confidence: ${relevanceResult.confidence.toFixed(2)})`)
@@ -320,11 +342,15 @@ export async function POST(request: NextRequest) {
         
         // Add instructions for using the knowledge base
         enhancedPrompt += `\n\nInstructions for using the knowledge base:
-- Use the information above to provide accurate, detailed answers
-- If the information is from the knowledge base, mention the source document
+- Use the information above to provide accurate, detailed answers based on the available documents
+- If the information is from the knowledge base, mention the source document and relevance score
 - If you cannot find relevant information in the knowledge base, say so clearly
 - Prioritize exact matches over partial matches when available
-- Always cite specific information from the documents when possible`
+- Always cite specific information from the documents when possible
+- Even if the relevance scores seem low, use the available information to provide the best possible answer
+- Extract key facts, details, and insights from the document content to answer the user's question
+- If multiple documents contain relevant information, synthesize the information from all sources
+- Be specific and detailed in your responses based on the document content`
       }
 
       // Add conversation context if available
@@ -336,7 +362,11 @@ export async function POST(request: NextRequest) {
 - Reference previous conversations when relevant to provide continuity
 - Build upon previous topics and questions when appropriate
 - Maintain context across the conversation
-- If the user is asking follow-up questions, use the conversation history to provide better answers`
+- If the user is asking follow-up questions, use the conversation history to provide better answers
+- When users ask "what about...", "tell me more about...", "how about...", etc., refer to previous context
+- If a user asks a question that relates to something discussed earlier, connect it to the previous conversation
+- Use pronouns and references (like "it", "that", "this") based on the conversation context
+- If the user asks a follow-up question without full context, infer what they're referring to from the conversation history`
       }
       
       // Add image analysis if present
@@ -365,6 +395,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Log the enhanced messages for debugging
+    console.log(`[Chat API] 🤖 Generating response with ${enhancedMessages.length} messages`)
+    console.log(`[Chat API] 📝 System prompt length: ${enhancedMessages[0]?.content?.length || 0} characters`)
+    console.log(`[Chat API] 📄 Document context length: ${documentContext?.length || 0} characters`)
+    console.log(`[Chat API] 💬 Conversation context length: ${conversationContext?.length || 0} characters`)
+    console.log(`[Chat API] 🔍 Search results: ${searchResults?.results?.length || 0} matches`)
+    
+    // Log conversation context details
+    if (conversationContext) {
+      console.log(`[Chat API] 💬 Conversation context preview: ${conversationContext.substring(0, 200)}...`)
+    }
+    
     // Generate response from OpenAI
     const response = await openAIAPI.generateChat(enhancedMessages as any, {
       model,
@@ -376,6 +418,10 @@ export async function POST(request: NextRequest) {
 
     // Extract the assistant's message
     const assistantMessage = response.message || 'Sorry, I could not generate a response.'
+    
+    // Log the response for debugging
+    console.log(`[Chat API] ✅ Generated response: ${assistantMessage.substring(0, 200)}${assistantMessage.length > 200 ? '...' : ''}`)
+    console.log(`[Chat API] ⏱️ Response time: ${responseTime}ms`)
 
     // Save messages to database
     let currentConversationId = conversationId

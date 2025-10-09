@@ -259,6 +259,25 @@ export class ConversationService {
   }
 
   /**
+   * Get recent messages for a conversation (for follow-up context)
+   */
+  static async getRecentMessages(conversationId: number, limit: number = 5): Promise<Message[]> {
+    try {
+      const messages = await db.message.findMany({
+        where: { conversation_id: conversationId },
+        orderBy: { created_at: 'desc' },
+        take: limit
+      })
+
+      // Return in chronological order (oldest first)
+      return messages.reverse().map(msg => this.mapMessageToResponse(msg))
+    } catch (error) {
+      console.error('ConversationService.getRecentMessages error:', error)
+      throw error
+    }
+  }
+
+  /**
    * Map database conversation to response format
    */
   private static mapConversationToResponse(conversation: any): Conversation {

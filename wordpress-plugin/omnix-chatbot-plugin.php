@@ -328,7 +328,12 @@ class OmniXChatbotPlugin {
             'show_title' => 'true',
             'enable_voice' => 'true',
             'voice_language' => 'en-US',
-            'auto_speak' => 'false'
+            'auto_speak' => 'false',
+            'voice_rate' => '1.0',
+            'voice_pitch' => '1.0',
+            'voice_volume' => '1.0',
+            'voice_continuous' => 'false',
+            'voice_interim_results' => 'false'
         ), $atts);
         
         if (empty($atts['bot_id']) || empty($atts['access_token'])) {
@@ -350,7 +355,12 @@ class OmniXChatbotPlugin {
              data-show-title="<?php echo esc_attr($atts['show_title']); ?>"
              data-enable-voice="<?php echo esc_attr($atts['enable_voice']); ?>"
              data-voice-language="<?php echo esc_attr($atts['voice_language']); ?>"
-             data-auto-speak="<?php echo esc_attr($atts['auto_speak']); ?>">
+             data-auto-speak="<?php echo esc_attr($atts['auto_speak']); ?>"
+             data-voice-rate="<?php echo esc_attr($atts['voice_rate']); ?>"
+             data-voice-pitch="<?php echo esc_attr($atts['voice_pitch']); ?>"
+             data-voice-volume="<?php echo esc_attr($atts['voice_volume']); ?>"
+             data-voice-continuous="<?php echo esc_attr($atts['voice_continuous']); ?>"
+             data-voice-interim-results="<?php echo esc_attr($atts['voice_interim_results']); ?>">
         </div>
         <?php
         return ob_get_clean();

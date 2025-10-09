@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniX Smart Sync - Voice Test (Bot ID 9)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; text-align: center; margin-bottom: 30px; }
+        .status { text-align: center; margin: 20px 0; padding: 15px; border-radius: 8px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .test-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #007cba; }
+        .instructions { background: #fff3cd; padding: 20px; border-radius: 10px; border-left: 4px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 OmniX Smart Sync - Voice Test</h1>
+        
+        <div class="test-info">
+            <h3>📋 Your Configuration</h3>
+            <p><strong>Bot ID:</strong> 9 (Your current bot)</p>
+            <p><strong>API URL:</strong> https://1016271b626b.ngrok-free.app/</p>
+            <p><strong>Status:</strong> Connected ✅</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>🔍 How to Test Voice</h3>
+            <ol>
+                <li><strong>Look for chatbot widget</strong> in bottom-right corner</li>
+                <li><strong>Click microphone icon</strong> (🎤) to speak</li>
+                <li><strong>Click speaker icon</strong> (🔊) to hear responses</li>
+                <li><strong>Check browser console</strong> (F12) for debug info</li>
+            </ol>
+        </div>
+        
+        <div id="status" class="status info">
+            🔄 Loading OmniX Smart Sync Widget...
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="testVoice()" style="background: #007cba; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px;">
+                🎤 Test Voice
+            </button>
+            <button onclick="checkWidget()" style="background: #28a745; color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 10px;">
+                🔍 Check Widget
+            </button>
+        </div>
+    </div>
+
+    <!-- OmniX Smart Sync Widget with Voice -->
+    <div id="omnix-chatbot-widget" 
+         data-bot-id="9"
+         data-access-token="your_access_token_here"
+         data-api-url="https://1016271b626b.ngrok-free.app/"
+         data-theme="default"
+         data-position="bottom-right"
+         data-auto-open="false"
+         data-show-avatar="true"
+         data-show-title="true"
+         data-enable-voice="true"
+         data-voice-language="en-US"
+         data-voice-rate="1.0"
+         data-voice-pitch="1.0"
+         data-voice-volume="1.0"
+         data-auto-speak="false"
+         data-voice-continuous="false"
+         data-voice-interim-results="false">
+    </div>
+    
+    <script>
+        // Configuration for your Bot ID 9
+        window.omnixChatbot = {
+            apiUrl: "https://1016271b626b.ngrok-free.app/",
+            botId: "9",
+            accessToken: "your_access_token_here", // Replace with your actual token
+            autoOpen: false,
+            position: "bottom-right",
+            theme: "modern",
+            enableVoice: true,
+            voiceLanguage: "en-US",
+            voiceRate: 1.0,
+            voicePitch: 1.0,
+            voiceVolume: 1.0,
+            autoSpeak: false,
+            voiceContinuous: false,
+            voiceInterimResults: false
+        };
+        
+        // Load the chatbot widget
+        const script = document.createElement('script');
+        script.src = 'https://1016271b626b.ngrok-free.app/chatbot-widget.js?v=' + Date.now();
+        script.defer = true;
+        document.head.appendChild(script);
+        
+        // Test voice functionality
+        function testVoice() {
+            const status = document.getElementById('status');
+            
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                status.innerHTML = '❌ Voice recognition not supported in this browser';
+                status.className = 'status error';
+                return;
+            }
+            
+            if (!('speechSynthesis' in window)) {
+                status.innerHTML = '❌ Speech synthesis not supported in this browser';
+                status.className = 'status error';
+                return;
+            }
+            
+            // Test speech synthesis
+            const utterance = new SpeechSynthesisUtterance('Voice test successful! You can now use the microphone and speaker buttons in the chatbot widget.');
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'en-US';
+            
+            utterance.onend = function() {
+                status.innerHTML = '✅ Voice test successful! Check the chatbot widget for voice buttons.';
+                status.className = 'status success';
+            };
+            
+            utterance.onerror = function() {
+                status.innerHTML = '❌ Voice test failed. Please check your browser settings.';
+                status.className = 'status error';
+            };
+            
+            speechSynthesis.speak(utterance);
+        }
+        
+        // Check if widget loaded
+        function checkWidget() {
+            const status = document.getElementById('status');
+            const widget = document.getElementById('omnix-chatbot-widget');
+            
+            if (widget && widget.children.length > 0) {
+                status.innerHTML = '✅ Widget loaded! Look for voice buttons (🎤 🔊) in the chatbot.';
+                status.className = 'status success';
+            } else {
+                status.innerHTML = '⚠️ Widget not loaded yet. Check browser console for errors.';
+                status.className = 'status error';
+            }
+        }
+        
+        // Auto-check widget loading
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                checkWidget();
+            }, 3000);
+        });
+        
+        // Debug logging
+        console.log('🎤 OmniX Smart Sync Voice Test Page Loaded');
+        console.log('📋 Configuration:', window.omnixChatbot);
+        console.log('🔍 Voice Support:', {
+            speechRecognition: 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window,
+            speechSynthesis: 'speechSynthesis' in window
+        });
+    </script>
+</body>
+</html>

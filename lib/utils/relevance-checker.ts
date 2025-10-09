@@ -60,7 +60,7 @@ export class RelevanceChecker {
     const relevanceScore = commonKeywords.length / Math.max(queryKeywords.length, 1)
     
     // If relevance score is high enough, consider it relevant
-    if (relevanceScore > 0.4) { // Increased threshold for better restriction
+    if (relevanceScore > 0.2) { // Lowered threshold to be more lenient when context is available
       return {
         isRelevant: true,
         confidence: relevanceScore,
@@ -90,6 +90,14 @@ export class RelevanceChecker {
         }
       }
       
+      // If we have document context and any relevance score, be more lenient
+      if (relevanceScore > 0.1) {
+        return {
+          isRelevant: true,
+          confidence: Math.max(0.5, relevanceScore),
+          reason: 'Query shows some keyword overlap with available content'
+        }
+      }
     }
     
     // Check for specific patterns that indicate relevance to document content

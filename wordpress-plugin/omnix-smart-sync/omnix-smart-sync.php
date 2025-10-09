@@ -67,6 +67,16 @@ class OmniX_Smart_Sync {
         add_option('omnix_smart_sync_auto_sync', true);
         add_option('omnix_smart_sync_last_sync', '');
         
+        // Voice settings defaults
+        add_option('omnix_smart_sync_voice_enabled', true);
+        add_option('omnix_smart_sync_voice_language', 'en-US');
+        add_option('omnix_smart_sync_voice_rate', '1.0');
+        add_option('omnix_smart_sync_voice_pitch', '1.0');
+        add_option('omnix_smart_sync_voice_volume', '1.0');
+        add_option('omnix_smart_sync_auto_speak', false);
+        add_option('omnix_smart_sync_voice_continuous', false);
+        add_option('omnix_smart_sync_voice_interim_results', false);
+        
         // Try to register site automatically
         $this->register_site();
     }
@@ -101,6 +111,16 @@ class OmniX_Smart_Sync {
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_bot_id');
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_enabled');
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_auto_sync');
+        
+        // Voice settings
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_enabled');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_language');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_rate');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_pitch');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_volume');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_auto_speak');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_continuous');
+        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_interim_results');
     }
     
     public function admin_page() {
@@ -281,6 +301,17 @@ class OmniX_Smart_Sync {
             update_option('omnix_smart_sync_bot_id', sanitize_text_field($_POST['bot_id']));
             update_option('omnix_smart_sync_enabled', isset($_POST['enabled']));
             update_option('omnix_smart_sync_auto_sync', isset($_POST['auto_sync']));
+            
+            // Voice settings
+            update_option('omnix_smart_sync_voice_enabled', isset($_POST['voice_enabled']));
+            update_option('omnix_smart_sync_voice_language', sanitize_text_field($_POST['voice_language']));
+            update_option('omnix_smart_sync_voice_rate', floatval($_POST['voice_rate']));
+            update_option('omnix_smart_sync_voice_pitch', floatval($_POST['voice_pitch']));
+            update_option('omnix_smart_sync_voice_volume', floatval($_POST['voice_volume']));
+            update_option('omnix_smart_sync_auto_speak', isset($_POST['auto_speak']));
+            update_option('omnix_smart_sync_voice_continuous', isset($_POST['voice_continuous']));
+            update_option('omnix_smart_sync_voice_interim_results', isset($_POST['voice_interim_results']));
+            
             echo '<div class="updated"><p>Settings saved successfully!</p></div>';
         }
         
@@ -288,6 +319,16 @@ class OmniX_Smart_Sync {
         $bot_id = get_option('omnix_smart_sync_bot_id', '');
         $enabled = get_option('omnix_smart_sync_enabled', false);
         $auto_sync = get_option('omnix_smart_sync_auto_sync', true);
+        
+        // Voice settings
+        $voice_enabled = get_option('omnix_smart_sync_voice_enabled', true);
+        $voice_language = get_option('omnix_smart_sync_voice_language', 'en-US');
+        $voice_rate = get_option('omnix_smart_sync_voice_rate', '1.0');
+        $voice_pitch = get_option('omnix_smart_sync_voice_pitch', '1.0');
+        $voice_volume = get_option('omnix_smart_sync_voice_volume', '1.0');
+        $auto_speak = get_option('omnix_smart_sync_auto_speak', false);
+        $voice_continuous = get_option('omnix_smart_sync_voice_continuous', false);
+        $voice_interim_results = get_option('omnix_smart_sync_voice_interim_results', false);
         
         ?>
         <div class="wrap">
@@ -325,6 +366,91 @@ class OmniX_Smart_Sync {
                             <label>
                                 <input type="checkbox" name="auto_sync" <?php checked($auto_sync); ?>>
                                 Automatically sync content when posts are published
+                            </label>
+                        </td>
+                    </tr>
+                </table>
+                
+                <h2>🎤 Voice Settings</h2>
+                <table class="form-table">
+                    <tr>
+                        <th scope="row">Enable Voice</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="voice_enabled" <?php checked($voice_enabled); ?>>
+                                Enable voice input and output features
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Voice Language</th>
+                        <td>
+                            <select name="voice_language">
+                                <option value="en-US" <?php selected($voice_language, 'en-US'); ?>>English (US)</option>
+                                <option value="en-GB" <?php selected($voice_language, 'en-GB'); ?>>English (UK)</option>
+                                <option value="es-ES" <?php selected($voice_language, 'es-ES'); ?>>Spanish</option>
+                                <option value="fr-FR" <?php selected($voice_language, 'fr-FR'); ?>>French</option>
+                                <option value="de-DE" <?php selected($voice_language, 'de-DE'); ?>>German</option>
+                                <option value="it-IT" <?php selected($voice_language, 'it-IT'); ?>>Italian</option>
+                                <option value="pt-BR" <?php selected($voice_language, 'pt-BR'); ?>>Portuguese (Brazil)</option>
+                                <option value="ru-RU" <?php selected($voice_language, 'ru-RU'); ?>>Russian</option>
+                                <option value="ja-JP" <?php selected($voice_language, 'ja-JP'); ?>>Japanese</option>
+                                <option value="ko-KR" <?php selected($voice_language, 'ko-KR'); ?>>Korean</option>
+                                <option value="zh-CN" <?php selected($voice_language, 'zh-CN'); ?>>Chinese (Simplified)</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Voice Rate</th>
+                        <td>
+                            <input type="range" name="voice_rate" min="0.1" max="2.0" step="0.1" 
+                                   value="<?php echo esc_attr($voice_rate); ?>" 
+                                   oninput="document.getElementById('voice_rate_value').textContent = this.value">
+                            <span id="voice_rate_value"><?php echo esc_html($voice_rate); ?></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Voice Pitch</th>
+                        <td>
+                            <input type="range" name="voice_pitch" min="0.1" max="2.0" step="0.1" 
+                                   value="<?php echo esc_attr($voice_pitch); ?>" 
+                                   oninput="document.getElementById('voice_pitch_value').textContent = this.value">
+                            <span id="voice_pitch_value"><?php echo esc_html($voice_pitch); ?></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Voice Volume</th>
+                        <td>
+                            <input type="range" name="voice_volume" min="0.1" max="1.0" step="0.1" 
+                                   value="<?php echo esc_attr($voice_volume); ?>" 
+                                   oninput="document.getElementById('voice_volume_value').textContent = this.value">
+                            <span id="voice_volume_value"><?php echo esc_html($voice_volume); ?></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Auto Speak</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="auto_speak" <?php checked($auto_speak); ?>>
+                                Automatically speak bot responses
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Continuous Recognition</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="voice_continuous" <?php checked($voice_continuous); ?>>
+                                Enable continuous speech recognition
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Interim Results</th>
+                        <td>
+                            <label>
+                                <input type="checkbox" name="voice_interim_results" <?php checked($voice_interim_results); ?>>
+                                Show interim speech recognition results
                             </label>
                         </td>
                     </tr>
@@ -633,18 +759,110 @@ class OmniX_Smart_Sync {
         
         $bot_id = $this->bot_id ?: 'auto';
         
+        // Force voice settings to be enabled
+        $voice_enabled = true; // Force enable voice
+        $voice_language = get_option('omnix_smart_sync_voice_language', 'en-US');
+        $voice_rate = get_option('omnix_smart_sync_voice_rate', '1.0');
+        $voice_pitch = get_option('omnix_smart_sync_voice_pitch', '1.0');
+        $voice_volume = get_option('omnix_smart_sync_voice_volume', '1.0');
+        $auto_speak = get_option('omnix_smart_sync_auto_speak', false);
+        $voice_continuous = get_option('omnix_smart_sync_voice_continuous', false);
+        $voice_interim_results = get_option('omnix_smart_sync_voice_interim_results', false);
+        
         ?>
+        <div id="omnix-chatbot-widget" 
+             data-bot-id="<?php echo esc_attr($bot_id); ?>"
+             data-access-token="<?php echo esc_attr($this->access_token); ?>"
+             data-api-url="<?php echo esc_attr($this->api_base_url); ?>"
+             data-theme="default"
+             data-position="bottom-right"
+             data-auto-open="false"
+             data-show-avatar="true"
+             data-show-title="true"
+             data-enable-voice="true"
+             data-voice-language="<?php echo esc_attr($voice_language); ?>"
+             data-voice-rate="<?php echo esc_attr($voice_rate); ?>"
+             data-voice-pitch="<?php echo esc_attr($voice_pitch); ?>"
+             data-voice-volume="<?php echo esc_attr($voice_volume); ?>"
+             data-auto-speak="<?php echo $auto_speak ? 'true' : 'false'; ?>"
+             data-voice-continuous="<?php echo $voice_continuous ? 'true' : 'false'; ?>"
+             data-voice-interim-results="<?php echo $voice_interim_results ? 'true' : 'false'; ?>">
+        </div>
+        
         <script>
+        // Force voice configuration
         window.omnixChatbot = {
             apiUrl: "<?php echo esc_js($this->api_base_url); ?>",
             botId: "<?php echo esc_js($bot_id); ?>",
             accessToken: "<?php echo esc_js($this->access_token); ?>",
             autoOpen: false,
             position: "bottom-right",
-            theme: "modern"
+            theme: "modern",
+            enableVoice: true, // Force enable voice
+            voiceLanguage: "<?php echo esc_js($voice_language); ?>",
+            voiceRate: <?php echo esc_js($voice_rate); ?>,
+            voicePitch: <?php echo esc_js($voice_pitch); ?>,
+            voiceVolume: <?php echo esc_js($voice_volume); ?>,
+            autoSpeak: <?php echo $auto_speak ? 'true' : 'false'; ?>,
+            voiceContinuous: <?php echo $voice_continuous ? 'true' : 'false'; ?>,
+            voiceInterimResults: <?php echo $voice_interim_results ? 'true' : 'false'; ?>
         };
+        
+        console.log('🎤 OmniX Smart Sync: Voice configuration loaded', window.omnixChatbot);
         </script>
+        
+        <!-- Load chatbot widget with voice support -->
         <script src="<?php echo esc_url($this->api_base_url); ?>/public/chatbot-widget.js" defer></script>
+        
+        <!-- Force voice buttons to appear -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for widget to load
+            setTimeout(function() {
+                const widget = document.getElementById('omnix-chatbot-widget');
+                if (widget) {
+                    console.log('🎤 OmniX Smart Sync: Widget found, forcing voice buttons');
+                    
+                    // Force voice buttons to be visible
+                    const voiceButtons = widget.querySelectorAll('.omnix-voice-button, [data-voice], .voice-button');
+                    voiceButtons.forEach(button => {
+                        button.style.display = 'block !important';
+                        button.style.visibility = 'visible !important';
+                        button.style.opacity = '1 !important';
+                        console.log('🎤 Voice button made visible:', button);
+                    });
+                    
+                    // Add voice buttons if they don't exist
+                    const inputArea = widget.querySelector('.omnix-input-area, .chat-input, .message-input, .input-area, .chat-input-container');
+                    if (inputArea && !inputArea.querySelector('.omnix-voice-button')) {
+                        console.log('🎤 Adding voice buttons manually');
+                        
+                        // Create microphone button
+                        const micButton = document.createElement('button');
+                        micButton.className = 'omnix-voice-button omnix-mic-button';
+                        micButton.innerHTML = '🎤';
+                        micButton.title = 'Voice Input';
+                        micButton.style.cssText = 'background: #007cba; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; margin: 5px; cursor: pointer; font-size: 16px; display: inline-block; vertical-align: middle;';
+                        
+                        // Create speaker button
+                        const speakerButton = document.createElement('button');
+                        speakerButton.className = 'omnix-voice-button omnix-speaker-button';
+                        speakerButton.innerHTML = '🔊';
+                        speakerButton.title = 'Voice Output';
+                        speakerButton.style.cssText = 'background: #28a745; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; margin: 5px; cursor: pointer; font-size: 16px; display: inline-block; vertical-align: middle;';
+                        
+                        // Add buttons to input area
+                        inputArea.appendChild(micButton);
+                        inputArea.appendChild(speakerButton);
+                        
+                        console.log('🎤 Voice buttons added manually to input area');
+                    }
+                } else {
+                    console.log('⚠️ OmniX Smart Sync: Widget not found');
+                }
+            }, 2000);
+        });
+        </script>
         <?php
     }
 }
