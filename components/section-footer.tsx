@@ -14,7 +14,7 @@ function SocialLink({
     <a
       href={href}
       aria-label={label}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary transition hover:bg-primary hover:text-primary-foreground"
+      className="inline-flex h-10 w-10 items-center justify-center rounded-full glass-effect border border-border/50 text-muted-foreground transition-all duration-300 hover:border-primary/50 hover:text-primary hover:scale-110 hover:shadow-lg"
     >
       {children}
     </a>
@@ -56,117 +56,144 @@ function IconTwitter(props: React.SVGProps<SVGSVGElement>) {
 export function SectionFooter() {
   const year = new Date().getFullYear()
   return (
-    <footer className="border-t border-border bg-background">
-      <div className="mx-auto max-w-7xl px-6 py-12 md:py-16">
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="relative border-t border-border/50 bg-background">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/95 to-background"></div>
+      <div className="absolute inset-0 hero-grid opacity-5"></div>
+      
+      <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-semibold tracking-tight">omnixchat</span>
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl font-bold tracking-tight gradient-text">Convox</span>
             </div>
-            <p className="text-sm leading-6 text-muted-foreground">
-              Yet bed any for travelling assistance indulgence unpleasing. Not thoughts all exercise blessing.
-              Indulgence way everything.
+            <p className="text-muted-foreground leading-relaxed">
+              The future of AI-powered customer support. Build intelligent chatbots that understand, engage, and delight your customers.
             </p>
+            <div className="flex items-center gap-3">
+              <SocialLink href="#" label="Instagram">
+                <IconInstagram className="h-5 w-5" />
+              </SocialLink>
+              <SocialLink href="#" label="LinkedIn">
+                <IconLinkedIn className="h-5 w-5" />
+              </SocialLink>
+              <SocialLink href="#" label="Facebook">
+                <IconFacebook className="h-5 w-5" />
+              </SocialLink>
+              <SocialLink href="#" label="Twitter">
+                <IconTwitter className="h-5 w-5" />
+              </SocialLink>
+            </div>
           </div>
 
-          {/* About */}
-          <nav aria-label="About" className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">About</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+          {/* Product */}
+          <nav aria-label="Product" className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Product</h3>
+            <ul className="space-y-3 text-muted-foreground">
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-foreground">
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
                   Features
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  FAQs
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Pricing
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Reviews
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Integrations
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Stories
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  API Documentation
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Changelog
                 </Link>
               </li>
             </ul>
           </nav>
 
-          {/* Privacy */}
-          <nav aria-label="Privacy" className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Privacy</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+          {/* Company */}
+          <nav aria-label="Company" className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Company</h3>
+            <ul className="space-y-3 text-muted-foreground">
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Privacy
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  About Us
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Policy
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Careers
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Payment
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Blog
                 </Link>
               </li>
               <li>
-                <Link href="#" className="hover:text-foreground">
-                  Terms
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Press Kit
+                </Link>
+              </li>
+              <li>
+                <Link href="#" className="hover:text-primary transition-colors duration-300">
+                  Contact
                 </Link>
               </li>
             </ul>
           </nav>
 
-          {/* Contact */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">Contact Us</h3>
-            <div className="text-sm text-muted-foreground">
-              <p className="mb-2">+01 234 567 8910</p>
-              <a className="hover:text-foreground" href="mailto:hello@omnixchat.ai">
-                hello@omnixchat.ai
+          {/* Support */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Support</h3>
+            <div className="space-y-3 text-muted-foreground">
+              <p className="mb-4">
+                <span className="text-primary font-semibold">+1 (555) 123-4567</span>
+              </p>
+              <a 
+                className="block hover:text-primary transition-colors duration-300" 
+                href="mailto:hello@convox.ai"
+              >
+                hello@convox.ai
               </a>
-            </div>
-            <div className="flex items-center gap-2 pt-2">
-              <SocialLink href="#" label="Instagram">
-                <IconInstagram className="h-4 w-4" />
-              </SocialLink>
-              <SocialLink href="#" label="LinkedIn">
-                <IconLinkedIn className="h-4 w-4" />
-              </SocialLink>
-              <SocialLink href="#" label="Facebook">
-                <IconFacebook className="h-4 w-4" />
-              </SocialLink>
-              <SocialLink href="#" label="Twitter">
-                <IconTwitter className="h-4 w-4" />
-              </SocialLink>
+              <div className="space-y-2">
+                <Link href="#" className="block hover:text-primary transition-colors duration-300">
+                  Help Center
+                </Link>
+                <Link href="#" className="block hover:text-primary transition-colors duration-300">
+                  Community
+                </Link>
+                <Link href="#" className="block hover:text-primary transition-colors duration-300">
+                  Status Page
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        <hr className="my-10 border-border" />
+        <hr className="my-12 border-border/30" />
 
-        <div className="flex flex-col items-start justify-between gap-4 text-sm text-muted-foreground md:flex-row">
-          <p>
-            © Copyright {year} <span className="font-medium text-foreground">omnixchat.io</span> All rights reserved.
+        <div className="flex flex-col items-start justify-between gap-6 text-muted-foreground md:flex-row md:items-center">
+          <p className="text-sm">
+            © Copyright {year} <span className="font-semibold text-foreground">Convox.ai</span> All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-            <Link href="#" className="hover:text-foreground">
-              Contact Us
+          <div className="flex items-center gap-8 text-sm">
+            <Link href="#" className="hover:text-primary transition-colors duration-300">
+              Privacy Policy
             </Link>
-            <Link href="#" className="hover:text-foreground">
-              Terms
+            <Link href="#" className="hover:text-primary transition-colors duration-300">
+              Terms of Service
+            </Link>
+            <Link href="#" className="hover:text-primary transition-colors duration-300">
+              Cookie Policy
             </Link>
           </div>
         </div>

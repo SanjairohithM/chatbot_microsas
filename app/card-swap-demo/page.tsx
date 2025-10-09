@@ -1,67 +1,26 @@
-import { ArrowRight } from "lucide-react"
-import CardSwap, { Card } from "./why-choose-us-cards"
+'use client';
 
-type Resource = {
-  id: number
-  category: string
-  read: string
-  title: string
-  excerpt: string
-  href: string
-  imgAlt: string
-  img: string
-}
+import CardSwap, { Card } from '../../components/why-choose-us-cards';
 
-const resources: Resource[] = [
-  {
-    id: 1,
-    category: "24/7 Support",
-    read: "Always Available",
-    title: "Never Miss a Lead Again",
-    excerpt: "AI bots work around the clock, engaging visitors even after business hours. Every inquiry is answered instantly, turning missed opportunities into qualified leads.",
-    href: "#",
-    imgAlt: "AI chatbot working 24/7 on laptop screen",
-    img: "/laptop-dashboard-on-desk.jpg",
-  },
-  {
-    id: 2,
-    category: "Cost Savings",
-    read: "Automated Support",
-    title: "Cut Support Costs, Not Quality",
-    excerpt: "Handle FAQs, order updates automatically. Free up your team for complex, high-value tasks without sacrificing response speed or accuracy.",
-    href: "#",
-    imgAlt: "Team collaborating with AI chatbot interface",
-    img: "/team-collaboration-ui-screens.jpg",
-  },
-  {
-    id: 3,
-    category: "Scalability",
-    read: "Growth Ready",
-    title: "Scale Engagement As You Grow",
-    excerpt: "Transform your website into a dynamic, conversational experience with multilingual, emotion-aware support that scales effortlessly as your business expands.",
-    href: "#",
-    imgAlt: "Planning board with AI chatbot growth strategy",
-    img: "/sticky-notes-planning-board.jpg",
-  },
-]
-
-export function SectionResources() {
+export default function CardSwapDemo() {
   return (
-    <section aria-labelledby="useful-resources" className="py-16 md:py-24">
-      <div className="container mx-auto max-w-6xl px-4">
+    <div className="min-h-screen bg-background p-8">
+      <div className="container mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8">Why Choose Our AI Chatbot - Card Swap Demo</h1>
+        
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left side - Text content */}
           <div className="flex flex-col justify-center px-4 lg:px-0">
-            <h2 id="useful-resources" className="text-pretty text-3xl font-semibold tracking-tight md:text-4xl animate-slide-in-left" style={{ fontFamily: 'var(--font-heading)' }}>
-              Why Choose Our <br/> AI Chatbot
+            <h2 className="text-pretty text-3xl font-semibold tracking-tight md:text-4xl">
+              Why Choose Our 
+              <br/>AI Chatbot
             </h2>
-            <p className="mt-4 text-sm text-muted-foreground md:text-base max-w-lg animate-fade-in" style={{ animationDelay: '0.2s', fontFamily: 'var(--font-body)' }}>
+            <p className="mt-4 text-sm text-muted-foreground md:text-base max-w-lg">
               Discover the key benefits that make our AI chatbot<br/> the perfect solution for your business
             </p>
             <a
               href="#"
-              className="mt-6 inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-fit animate-bounce-in hover:animate-wiggle"
-              style={{ animationDelay: '0.4s', fontFamily: 'var(--font-accent)' }}
+              className="mt-6 inline-flex items-center rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring w-fit"
             >
               Learn more..
             </a>
@@ -121,8 +80,6 @@ export function SectionResources() {
           </div>
         </div>
       </div>
-    </section>
-  )
+    </div>
+  );
 }
-
-export default SectionResources

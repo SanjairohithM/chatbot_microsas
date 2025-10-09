@@ -16,36 +16,41 @@ export function SiteHeader() {
     { href: "/support", label: "Support" },
   ];
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <div className="max-w-12xl px-4 py-5">
+    <header className="sticky top-0 z-50 glass-effect border-b border-border/50">
+      <div className="max-w-7xl mx-auto px-4 py-4">
         <nav aria-label="Main" className="flex items-center">
           {/* Left: Brand */}
-          <Link href="/" className="font-semibold tracking-tight text-foreground">
+          <Link href="/" className="font-semibold tracking-tight text-foreground hover:opacity-80 transition-all duration-300 hover:scale-105">
             <Image
-                src="/logo.png"   // path inside public folder
+                src="/logo.png"
                 alt="DUKO Logo"
-                width={120}       // adjust size
+                width={120}
                 height={60}
-                priority          // ensures fast load
+                priority
+                className="animate-fade-in"
             />
             <span className="sr-only">Go to homepage</span>
           </Link>
 
           {/* Center: Nav */}
-          <ul className="hidden md:flex justify-center mx-auto gap-12 text-sm">
+          <ul className="hidden md:flex justify-center mx-auto gap-8 text-sm">
             {links.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className={`transition-colors ${
+                    className={`relative transition-all duration-300 hover:scale-105 ${
                       isActive
-                        ? "text-primary font-semibold pb-1"
-                        : "text-gray-500 hover:text-primary"
+                        ? "text-primary font-semibold"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
+                    style={{ fontFamily: 'var(--font-accent)' }}
                   >
                     {link.label}
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-accent rounded-full"></span>
+                    )}
                   </Link>
                 </li>
               );
@@ -53,11 +58,11 @@ export function SiteHeader() {
           </ul>
 
           {/* Right: Actions */}
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" asChild>
-              <Link href="/auth ">Sign in</Link>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" asChild className="hover:bg-secondary/50 transition-all duration-300 hover:scale-105" style={{ fontFamily: 'var(--font-accent)' }}>
+              <Link href="/auth">Sign in</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 animate-pulse-slow" style={{ fontFamily: 'var(--font-accent)' }}>
               <Link href="#">Start free</Link>
             </Button>
           </div>

@@ -278,6 +278,7 @@ export class KnowledgeDocumentService {
       bot_id: document.bot_id,
       title: document.title,
       content: document.content,
+      file_url: document.file_url,
       file_type: document.file_type,
       file_size: document.file_size,
       status: document.status,

@@ -10,6 +10,7 @@ import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
 import { db } from '@/lib/db'
+import { RelevanceChecker } from '@/lib/utils/relevance-checker'
 import type { OpenAIMessage } from '@/lib/openai-api'
 
 export async function POST(request: NextRequest) {
@@ -247,6 +248,55 @@ export async function POST(request: NextRequest) {
       // For OpenAI, we can send images directly in messages (no special analysis needed)
       if (imageUrl) {
         console.log(`[Chat API] Image detected for multimodal message: ${imageUrl}`)
+      }
+    }
+
+    // Check if the query is relevant to the available content (after document search)
+    if (lastUserMessage) {
+      // Extract text content from the message for relevance check
+      let messageText = ''
+      if (typeof lastUserMessage.content === 'string') {
+        messageText = lastUserMessage.content
+      } else if (Array.isArray(lastUserMessage.content)) {
+        const contentArray = lastUserMessage.content as any[]
+        const textPart = contentArray.find((part: any) => part.type === 'text')
+        messageText = textPart?.text || ''
+      }
+      
+      const relevanceResult = RelevanceChecker.checkRelevance(
+        messageText,
+        documentContext,
+        '' // No website content for now
+      )
+      
+      console.log(`[Chat API] 🔍 Relevance check: ${relevanceResult.isRelevant ? 'RELEVANT' : 'NOT RELEVANT'} (confidence: ${relevanceResult.confidence.toFixed(2)})`)
+      console.log(`[Chat API] 📝 Reason: ${relevanceResult.reason}`)
+      
+      if (!relevanceResult.isRelevant) {
+        // Return a polite response for irrelevant queries
+        const response = `I'm sorry, but I can only help with questions related to the content available in my knowledge base. ${relevanceResult.reason}. Please ask me something about the documents or information I have access to, and I'll be happy to help!`
+        
+        return NextResponse.json({
+          success: true,
+          message: response,
+          conversationId: conversationId,
+          document_search: {
+            query: messageText,
+            matches_found: 0,
+            has_context: false,
+            summary: {
+              exactMatches: 0,
+              partialMatches: 0,
+              semanticMatches: 0,
+              averageScore: 0
+            }
+          },
+          relevance_check: {
+            is_relevant: false,
+            confidence: relevanceResult.confidence,
+            reason: relevanceResult.reason
+          }
+        })
       }
     }
 
@@ -497,6 +547,31 @@ export async function POST(request: NextRequest) {
 
     logger.apiResponse('POST', '/api/chat', 200, responseTime)
 
+    // Get relevance check result for the response
+    let relevanceCheckResult = null
+    if (lastUserMessage) {
+      // Extract text content from the message for relevance check
+      let messageText = ''
+      if (typeof lastUserMessage.content === 'string') {
+        messageText = lastUserMessage.content
+      } else if (Array.isArray(lastUserMessage.content)) {
+        const contentArray = lastUserMessage.content as any[]
+        const textPart = contentArray.find((part: any) => part.type === 'text')
+        messageText = textPart?.text || ''
+      }
+      
+      const relevanceResult = RelevanceChecker.checkRelevance(
+        messageText,
+        documentContext,
+        '' // No website content for now
+      )
+      relevanceCheckResult = {
+        is_relevant: relevanceResult.isRelevant,
+        confidence: relevanceResult.confidence,
+        reason: relevanceResult.reason
+      }
+    }
+
     // Return response in format expected by both dashboard and widget
     const responseData = {
       success: true,
@@ -525,7 +600,9 @@ export async function POST(request: NextRequest) {
         has_context: false,
         context_length: 0,
         vector_search_enabled: false
-      }
+      },
+      // Relevance check information
+      relevance_check: relevanceCheckResult
     }
 
     // Create response with CORS headers
