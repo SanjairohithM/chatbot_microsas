@@ -54,6 +54,7 @@ export function WebsiteChatWidget({
   const [isTyping, setIsTyping] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isAutoNavigating, setIsAutoNavigating] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const recognitionRef = useRef<any>(null)
@@ -179,9 +180,45 @@ export function WebsiteChatWidget({
       // Auto-navigate if specified
       if (result.autoNavigate) {
         console.log('Auto-navigating to:', result.autoNavigate)
+        setIsAutoNavigating(true)
+        
+        // Add a message to inform user about auto-navigation
+        const navigationMessage: Message = {
+          id: `navigation_${Date.now()}`,
+          role: 'assistant',
+          content: `🚀 Auto-navigating you to ${result.autoNavigate.path || result.autoNavigate.section} in a moment...`,
+          timestamp: new Date()
+        }
+        setMessages(prev => [...prev, navigationMessage])
+        
         setTimeout(() => {
           handleNavigation(result.autoNavigate)
+          setIsAutoNavigating(false)
         }, 2000) // Slightly longer delay to allow speech to complete
+      }
+
+      // Also check for navigation actions and auto-navigate to the first one
+      if (result.navigationActions && result.navigationActions.length > 0 && !result.autoNavigate) {
+        const firstAction = result.navigationActions[0]
+        // Auto-navigate to the first navigation action after a short delay
+        if (firstAction.action === 'navigate') {
+          console.log('Auto-navigating to first action:', firstAction)
+          setIsAutoNavigating(true)
+          
+          // Add a message to inform user about auto-navigation
+          const navigationMessage: Message = {
+            id: `navigation_${Date.now()}`,
+            role: 'assistant',
+            content: `🚀 Auto-navigating you to ${firstAction.path} in a moment...`,
+            timestamp: new Date()
+          }
+          setMessages(prev => [...prev, navigationMessage])
+          
+          setTimeout(() => {
+            handleNavigation(firstAction)
+            setIsAutoNavigating(false)
+          }, 3000) // 3 second delay to allow user to see the response
+        }
       }
 
     } catch (error) {
@@ -274,9 +311,9 @@ export function WebsiteChatWidget({
         <Button
           onClick={toggleChat}
           size="lg"
-          className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
+          className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
         >
-          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+          <MessageCircle className="h-7 w-7 sm:h-8 sm:w-8" />
           <span className="sr-only">Open chat</span>
         </Button>
       )}
@@ -284,13 +321,13 @@ export function WebsiteChatWidget({
       {/* Chat Window */}
       {isOpen && (
         <Card className={cn(
-          "w-[calc(100vw-2rem)] h-[calc(100vh-4rem)] sm:w-80 sm:h-96 sm:max-w-[calc(100vw-2rem)] sm:max-h-[calc(100vh-2rem)] shadow-2xl border-0 bg-white",
-          isMinimized && "h-12"
+          "w-[calc(100vw-2rem)] h-[calc(100vh-4rem)] sm:w-96 sm:h-[28rem] md:w-[32rem] md:h-[32rem] lg:w-[36rem] lg:h-[36rem] shadow-2xl border-0 bg-white",
+          isMinimized && "h-14 w-96"
         )}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 bg-blue-600 text-white rounded-t-lg">
-            <div className="flex items-center space-x-2">
-              <Bot className="h-5 w-5" />
-              <CardTitle className="text-sm font-medium">Website Assistant</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 sm:p-5 bg-blue-600 text-white rounded-t-lg">
+            <div className="flex items-center space-x-3">
+              <Bot className="h-6 w-6" />
+              <CardTitle className="text-base font-medium">Website Assistant</CardTitle>
               {isTyping && (
                 <Badge variant="secondary" className="text-xs">
                   Typing...
@@ -302,30 +339,36 @@ export function WebsiteChatWidget({
                   Speaking...
                 </Badge>
               )}
+              {isAutoNavigating && (
+                <Badge variant="secondary" className="text-xs">
+                  <ArrowRight className="h-3 w-3 mr-1" />
+                  Navigating...
+                </Badge>
+              )}
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleMinimize}
-                className="h-6 w-6 p-0 text-white hover:bg-blue-700"
+                className="h-8 w-8 p-0 text-white hover:bg-blue-700"
               >
-                {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
+                {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleChat}
-                className="h-6 w-6 p-0 text-white hover:bg-blue-700"
+                className="h-8 w-8 p-0 text-white hover:bg-blue-700"
               >
-                <X className="h-3 w-3" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
 
           {!isMinimized && (
             <>
-              <CardContent className="p-0 flex flex-col h-80">
+              <CardContent className="p-0 flex flex-col h-[calc(100%-4rem)]">
                 {/* Messages Area */}
                 <ScrollArea className="flex-1 p-3 sm:p-4 overflow-y-auto">
                   <div className="space-y-3 sm:space-y-4 min-h-full">
@@ -338,13 +381,13 @@ export function WebsiteChatWidget({
                         )}
                       >
                         {msg.role === 'assistant' && (
-                          <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Bot className="h-3 w-3 text-blue-600" />
+                          <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <Bot className="h-4 w-4 text-blue-600" />
                           </div>
                         )}
                         <div
                           className={cn(
-                            "max-w-[80%] rounded-lg px-3 py-2 text-sm break-words",
+                            "max-w-[80%] rounded-lg px-4 py-3 text-sm sm:text-base break-words",
                             msg.role === 'user'
                               ? 'bg-blue-600 text-white'
                               : 'bg-gray-100 text-gray-900'
@@ -362,7 +405,7 @@ export function WebsiteChatWidget({
                                   size="sm"
                                   variant="outline"
                                   className={cn(
-                                    "w-full justify-start text-xs h-8",
+                                    "w-full justify-start text-sm h-10",
                                     msg.role === 'assistant' 
                                       ? 'bg-white border-blue-200 text-blue-700 hover:bg-blue-50' 
                                       : 'bg-blue-500 border-blue-300 text-white hover:bg-blue-600'
@@ -378,22 +421,22 @@ export function WebsiteChatWidget({
                           )}
                         </div>
                         {msg.role === 'user' && (
-                          <div className="flex-shrink-0 w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center">
-                            <User className="h-3 w-3 text-gray-600" />
+                          <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                            <User className="h-4 w-4 text-gray-600" />
                           </div>
                         )}
                       </div>
                     ))}
                     {isLoading && (
-                      <div className="flex items-start space-x-2">
-                        <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Bot className="h-3 w-3 text-blue-600" />
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Bot className="h-4 w-4 text-blue-600" />
                         </div>
-                        <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="bg-gray-100 rounded-lg px-4 py-3 text-sm">
+                          <div className="flex space-x-2">
+                            <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce"></div>
+                            <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           </div>
                         </div>
                       </div>
@@ -403,8 +446,8 @@ export function WebsiteChatWidget({
                 </ScrollArea>
 
                 {/* Input Area */}
-                <div className="border-t p-3 sm:p-4 flex-shrink-0">
-                  <div className="flex space-x-2">
+                <div className="border-t p-4 sm:p-5 flex-shrink-0">
+                  <div className="flex space-x-3">
                     <Input
                       ref={inputRef}
                       value={message}
@@ -412,30 +455,30 @@ export function WebsiteChatWidget({
                       onKeyPress={handleKeyPress}
                       placeholder={isListening ? "Listening..." : "Type or speak your message..."}
                       disabled={isLoading}
-                      className="flex-1 min-w-0 text-sm"
+                      className="flex-1 min-w-0 text-sm sm:text-base h-11"
                     />
                     <Button
                       onClick={toggleVoiceInput}
                       disabled={isLoading}
                       size="sm"
                       variant={isListening ? "destructive" : "outline"}
-                      className="px-2 sm:px-3 flex-shrink-0"
+                      className="px-3 sm:px-4 flex-shrink-0 h-11"
                     >
-                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                     </Button>
                     <Button
                       onClick={handleSendMessage}
                       disabled={!message.trim() || isLoading}
                       size="sm"
-                      className="px-2 sm:px-3 flex-shrink-0"
+                      className="px-3 sm:px-4 flex-shrink-0 h-11"
                     >
-                      <Send className="h-4 w-4" />
+                      <Send className="h-5 w-5" />
                     </Button>
                   </div>
                   {isListening && (
-                    <div className="mt-2 text-xs text-blue-600 flex items-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                      Listening... Speak now
+                    <div className="mt-3 text-sm text-blue-600 flex items-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse mr-3"></div>
+                      <span className="font-medium">Listening... Speak now</span>
                     </div>
                   )}
                 </div>
