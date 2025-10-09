@@ -64,7 +64,7 @@ export function StreamingChatInterface({
   const {
     startRecording,
     stopRecording,
-    playBotResponse,
+    speak,
     isRecording,
     isProcessing,
     voiceError
@@ -93,6 +93,7 @@ export function StreamingChatInterface({
           setBot(result.data)
           // Set response model based on bot's interaction_mode
           if (result.data?.interaction_mode) {
+            console.log('🤖 Bot interaction mode:', result.data.interaction_mode)
             setResponseModel(result.data.interaction_mode as ResponseModel)
           }
         }
@@ -153,7 +154,14 @@ export function StreamingChatInterface({
   }, [streamingError])
 
   const handleSubmit = async (messageText: string, imageUrl?: string) => {
-    if (!messageText.trim() || isLoading || isStreaming) return
+    console.log('📝 handleSubmit called with:', { messageText, imageUrl, isLoading, isStreaming })
+    
+    if (!messageText.trim() || isLoading || isStreaming) {
+      console.log('⚠️ handleSubmit early return:', { messageText: messageText.trim(), isLoading, isStreaming })
+      return
+    }
+
+    console.log('✅ Proceeding with handleSubmit')
 
     const userMessage: Message = {
       id: `user_${Date.now()}`,
@@ -192,6 +200,13 @@ export function StreamingChatInterface({
           ...(imageUrl && { image_url: imageUrl })
         }
       ]
+
+      console.log('🚀 Calling sendStreamingMessage with:', {
+        apiMessages,
+        botId,
+        userId: userId?.toString() || '1',
+        conversationId
+      })
 
       await sendStreamingMessage(apiMessages, {
         botId,
@@ -327,11 +342,15 @@ export function StreamingChatInterface({
 
           // Auto-play voice response if in voice mode
           if (responseModel === 'voice') {
+            console.log('🔊 Auto-playing voice response in voice mode:', completeMsg.content)
             try {
-              await playBotResponse(completeMsg.content)
+              await speak(completeMsg.content)
+              console.log('✅ Voice response played successfully')
             } catch (error) {
-              console.error('Failed to play voice response:', error)
+              console.error('❌ Failed to play voice response:', error)
             }
+          } else {
+            console.log('💬 Chat mode - not auto-playing voice response')
           }
 
           // Handle conversation update
@@ -434,7 +453,7 @@ export function StreamingChatInterface({
                     <span className="inline-block w-0.5 h-4 bg-current ml-1 typing-cursor" />
                   )}
                 </div>
-                {!msg.isUser && msg.content && responseModel === 'voice' && (
+                {msg.role === 'assistant' && msg.content && responseModel !== 'voice' && (
                   <VoicePlayButton text={msg.content} />
                 )}
                 <div className="text-xs opacity-70 mt-1">
@@ -461,6 +480,29 @@ export function StreamingChatInterface({
           </Button>
         </div>
       )}
+
+      {/* Debug: Test Voice Output (only in development) */}
+      {/* {process.env.NODE_ENV === 'development' && responseModel === 'voice' && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-800 text-sm mb-2">Debug: Test voice output</p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={async () => {
+              console.log('🧪 Testing voice output manually')
+              try {
+                await speak("Hello, this is a test voice message")
+                console.log('✅ Test voice output completed')
+              } catch (error) {
+                console.error('❌ Test voice output failed:', error)
+              }
+            }}
+            className="text-xs"
+          >
+            Test Voice Output
+          </Button>
+        </div>
+      )} */}
 
       {/* Input */}
       {responseModel === 'chat' ? (
@@ -596,6 +638,32 @@ function VoiceChatInput({
 }: VoiceChatInputProps) {
   const [transcript, setTranscript] = useState("")
 
+  // Use voice chat hook for automatic voice processing
+  const {
+    startRecording: voiceStartRecording,
+    stopRecording: voiceStopRecording,
+    isRecording: voiceIsRecording,
+    isProcessing: voiceIsProcessing,
+    error: voiceError
+  } = useVoiceChat({
+    onTranscription: (transcribedText: string) => {
+      console.log('🎤 Voice transcript received in VoiceChatInput:', transcribedText)
+      if (transcribedText.trim()) {
+        console.log('📤 Auto-sending voice message in VoiceChatInput:', transcribedText.trim())
+        onTranscript(transcribedText.trim())
+      }
+    },
+    onError: (error: string) => {
+      console.error('❌ Voice error in VoiceChatInput:', error)
+    },
+    onStartRecording: () => {
+      console.log('🎤 Voice recording started in VoiceChatInput')
+    },
+    onStopRecording: () => {
+      console.log('🛑 Voice recording stopped in VoiceChatInput')
+    }
+  })
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (transcript.trim()) {
@@ -610,23 +678,23 @@ function VoiceChatInput({
       <div className="flex items-center justify-center gap-4">
         <Button
           type="button"
-          variant={isRecording ? "destructive" : "default"}
+          variant={voiceIsRecording ? "destructive" : "default"}
           size="lg"
-          onClick={isRecording ? onStopRecording : onStartRecording}
-          disabled={isProcessing}
+          onClick={voiceIsRecording ? voiceStopRecording : voiceStartRecording}
+          disabled={voiceIsProcessing || isProcessing}
           className="w-16 h-16 rounded-full"
         >
-          {isRecording ? (
+          {voiceIsRecording ? (
             <MicOff className="h-6 w-6" />
           ) : (
             <Mic className="h-6 w-6" />
           )}
         </Button>
         
-        {isProcessing && (
+        {(voiceIsProcessing || isProcessing) && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {isRecording ? "Processing..." : "Generating response..."}
+            {voiceIsRecording ? "Listening..." : voiceIsProcessing ? "Processing voice..." : "Generating response..."}
           </div>
         )}
       </div>
@@ -662,9 +730,9 @@ function VoiceChatInput({
       </form>
 
       {/* Error Display */}
-      {error && (
+      {(error || voiceError) && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
+          <p className="text-red-600 text-sm">{error || voiceError}</p>
         </div>
       )}
     </div>

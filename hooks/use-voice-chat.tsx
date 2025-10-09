@@ -114,7 +114,11 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
           const sttResult = await sttResponse.json()
           const transcribedText = sttResult.text?.trim()
           
+          console.log('🔍 STT Result:', sttResult)
+          console.log('📝 Transcribed text:', transcribedText)
+          
           if (!transcribedText) {
+            console.log('⚠️ No speech detected in transcription')
             setState(prev => ({ 
               ...prev, 
               error: 'No speech detected. Please try speaking more clearly.',
@@ -123,6 +127,7 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
             return
           }
 
+          console.log('✅ Setting transcription and calling callback')
           setState(prev => ({ 
             ...prev, 
             lastTranscription: transcribedText,
@@ -131,7 +136,7 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
           
           options.onTranscription?.(transcribedText)
           
-          // Auto-send if enabled
+          // Auto-send if enabled (only for standalone voice chat, not for PrefetchChatInput)
           if (options.autoSend) {
             await processVoiceMessage(transcribedText)
           }
@@ -206,10 +211,12 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
 
   const speak = useCallback(async (text: string) => {
     try {
+      console.log('🔊 speak function called with text:', text)
       clearError()
       setState(prev => ({ ...prev, isSpeaking: true }))
       options.onStartSpeaking?.()
       
+      console.log('🔊 Making TTS request to /api/audio/tts')
       const response = await fetch('/api/audio/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -221,6 +228,8 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
         })
       })
       
+      console.log('🔊 TTS response status:', response.status)
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || `TTS failed: ${response.status}`)
@@ -229,8 +238,11 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
       const audioBlob = await response.blob()
       const audioUrl = URL.createObjectURL(audioBlob)
       
+      console.log('🔊 Audio blob created, size:', audioBlob.size, 'URL:', audioUrl)
+      
       // Stop any existing audio
       if (audioRef.current) {
+        console.log('🔊 Stopping existing audio')
         audioRef.current.pause()
         audioRef.current = null
       }
@@ -238,7 +250,10 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
       const audio = new Audio(audioUrl)
       audioRef.current = audio
       
+      console.log('🔊 Audio element created, attempting to play')
+      
       audio.onended = () => {
+        console.log('🔊 Audio playback ended')
         setState(prev => ({ ...prev, isSpeaking: false }))
         options.onStopSpeaking?.()
         URL.revokeObjectURL(audioUrl)
@@ -246,7 +261,7 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
       }
       
       audio.onerror = (error) => {
-        console.error('Audio playback error:', error)
+        console.error('❌ Audio playback error:', error)
         setState(prev => ({ 
           ...prev, 
           error: 'Failed to play audio response.',
@@ -258,9 +273,10 @@ export function useVoiceChat(options: VoiceChatOptions = {}) {
       }
       
       await audio.play()
+      console.log('✅ Audio playback started successfully')
       
     } catch (error: any) {
-      console.error('TTS failed:', error)
+      console.error('❌ TTS failed:', error)
       setState(prev => ({ 
         ...prev, 
         error: error.message || 'Failed to generate speech.',

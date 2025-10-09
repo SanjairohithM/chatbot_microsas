@@ -63,9 +63,9 @@
         
         <div class="test-info">
             <h3>📋 Test Configuration</h3>
-            <p><strong>Bot ID:</strong> 7 (Your configured bot)</p>
-            <p><strong>API URL:</strong> https://1016271b626b.ngrok-free.app/</p>
-            <p><strong>Voice Features:</strong> Enabled with full configuration</p>
+            <p><strong>Bot ID:</strong> auto (Auto-generated)</p>
+            <p><strong>API URL:</strong> https://68904f022ec3.ngrok-free.app</p>
+            <p><strong>Voice Features:</strong> ✅ Fully implemented with microphone and speaker buttons</p>
         </div>
         
         <div class="voice-settings">
@@ -82,14 +82,17 @@
         </div>
         
         <div class="instructions">
-            <h3>🔍 How to Test</h3>
+            <h3>🔍 How to Test Voice Features</h3>
             <ol>
                 <li><strong>Look for the chatbot widget</strong> in the bottom-right corner</li>
-                <li><strong>Click the microphone icon</strong> (🎤) to start voice input</li>
-                <li><strong>Speak your question</strong> clearly</li>
-                <li><strong>Click the speaker icon</strong> (🔊) to hear responses</li>
-                <li><strong>Check browser console</strong> for debug information</li>
+                <li><strong>Click the chat button</strong> to open the widget</li>
+                <li><strong>Click the microphone button</strong> (🎤) to start voice input</li>
+                <li><strong>Allow microphone access</strong> when prompted by your browser</li>
+                <li><strong>Speak your question</strong> clearly - it will auto-send after you finish</li>
+                <li><strong>Click the speaker button</strong> (🔊) to hear the bot's response</li>
+                <li><strong>Check browser console</strong> for debug information and voice status</li>
             </ol>
+            <p><strong>Note:</strong> Voice features require HTTPS and microphone permissions. The microphone button will turn red while listening, and the speaker button will turn yellow while speaking.</p>
         </div>
         
         <div id="status" class="status info">
@@ -105,9 +108,9 @@
 
     <!-- OmniX Smart Sync Widget with Voice Features -->
     <div id="omnix-chatbot-widget" 
-         data-bot-id="7"
-         data-access-token="debug_token"
-         data-api-url="https://1016271b626b.ngrok-free.app/"
+         data-bot-id="auto"
+         data-access-token="test_token_123"
+         data-api-url="https://68904f022ec3.ngrok-free.app"
          data-theme="default"
          data-position="bottom-right"
          data-auto-open="false"
@@ -125,9 +128,9 @@
     
     <script>
         window.omnixChatbot = {
-            apiUrl: "https://1016271b626b.ngrok-free.app/",
-            botId: "7",
-            accessToken: "debug_token",
+            apiUrl: "https://68904f022ec3.ngrok-free.app",
+            botId: "auto",
+            accessToken: "test_token_123",
             autoOpen: false,
             position: "bottom-right",
             theme: "modern",
@@ -141,7 +144,7 @@
             voiceInterimResults: false
         };
     </script>
-    <script src="https://1016271b626b.ngrok-free.app/public/chatbot-widget.js" defer></script>
+    <script src="https://68904f022ec3.ngrok-free.app/public/chatbot-widget.js" defer></script>
     
     <script>
         // Test voice features

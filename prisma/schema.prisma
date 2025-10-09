@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  password_hash String
-  name          String
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
-  is_active     Boolean        @default(true)
-  role          String         @default("user")
-  bots          Bot[]
-  conversations Conversation[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  password_hash  String
+  name           String
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  is_active      Boolean        @default(true)
+  role           String         @default("user")
+  openai_api_key String?
+  bots           Bot[]
+  conversations  Conversation[]
 
   @@map("users")
 }
