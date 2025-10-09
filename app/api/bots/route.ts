@@ -6,5 +6,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  return BotController.createBot(request)
+  console.log('🚀 POST /api/bots called!')
+  try {
+    const result = await BotController.createBot(request)
+    console.log('✅ BotController.createBot completed')
+    return result
+  } catch (error) {
+    console.error('❌ Error in POST /api/bots:', error)
+    throw error
+  }
 }

@@ -1,22 +1,16 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Sidebar } from "@/components/dashboard/sidebar"
-import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
 import { Bot, Search, Plus } from "lucide-react"
-import type { Bot as BotType } from "@/lib/types"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
-  onCreateBot?: (botData: any, documents?: any[]) => Promise<void>
-  onUpdateBot?: (botData: any) => Promise<void>
-  editingBot?: any
+  onCreateBotClick?: () => void
 }
 
-export function DashboardLayout({ children, onCreateBot, onUpdateBot, editingBot }: DashboardLayoutProps) {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+export function DashboardLayout({ children, onCreateBotClick }: DashboardLayoutProps) {
 
   return (
     <div className="h-screen bg-black overflow-hidden p-4">
@@ -44,13 +38,15 @@ export function DashboardLayout({ children, onCreateBot, onUpdateBot, editingBot
                   className="pl-10 pr-4 py-2 w-64 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              <Button 
-                onClick={() => setIsCreateDialogOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Bot
-              </Button>
+              {onCreateBotClick && (
+                <Button 
+                  onClick={onCreateBotClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Bot
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -62,14 +58,6 @@ export function DashboardLayout({ children, onCreateBot, onUpdateBot, editingBot
         </div>
       </div>
 
-      <CreateBotDialog
-        open={isCreateDialogOpen}
-        onOpenChange={(open) => {
-          setIsCreateDialogOpen(open)
-        }}
-        onSave={onCreateBot || (() => Promise.resolve())}
-        editingBot={editingBot}
-      />
     </div>
   )
 }

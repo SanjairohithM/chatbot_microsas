@@ -8,8 +8,10 @@ export class BotController {
    * Create a new bot
    */
   static async createBot(request: NextRequest) {
+    console.log('🎯 BotController.createBot called!')
     try {
       const body = await request.json()
+      console.log('📦 Request body:', body)
       // Normalize legacy model names to OpenAI defaults before validation
       if (body && typeof body.model === 'string' && body.model.includes('deepseek')) {
         body.model = 'gpt-4o-mini'
@@ -54,6 +56,20 @@ export class BotController {
       return ApiResponse.success('Bot created successfully', bot)
     } catch (error) {
       console.error('BotController.createBot error:', error)
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          return ApiResponse.conflict(error.message)
+        }
+        if (error.message.includes('User not found')) {
+          return ApiResponse.badRequest(error.message)
+        }
+        if (error.message.includes('Bot name is required')) {
+          return ApiResponse.badRequest(error.message)
+        }
+      }
+      
       return ApiResponse.internalServerError(
         error instanceof Error ? error.message : 'Failed to create bot'
       )

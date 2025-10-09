@@ -87,40 +87,75 @@ export class BotService {
         throw new Error('Bot name is required')
       }
 
-      // Check if user exists
-      const user = await db.user.findUnique({
-        where: { id: userId }
+      const trimmedName = botData.name.trim()
+
+      // Use database transaction to prevent race conditions
+      const result = await db.$transaction(async (tx) => {
+        // Check if user exists
+        const user = await tx.user.findUnique({
+          where: { id: userId }
+        })
+
+        if (!user) {
+          throw new Error('User not found')
+        }
+
+        // Check if bot with same name already exists for this user
+        const existingBot = await tx.bot.findUnique({
+          where: {
+            user_id_name: {
+              user_id: userId,
+              name: trimmedName
+            }
+          }
+        })
+
+        if (existingBot) {
+          throw new Error(`Bot with name "${trimmedName}" already exists for this user`)
+        }
+
+        // Create bot
+        const bot = await tx.bot.create({
+          data: {
+            user_id: userId,
+            name: trimmedName,
+            description: botData.description?.trim() || '',
+            system_prompt: botData.system_prompt?.trim() || '',
+            model: ((): string => {
+              const requested = botData.model || 'gpt-4o-mini'
+              if (!requested) return 'gpt-4o-mini'
+              if (requested.includes('deepseek')) return 'gpt-4o-mini'
+              return requested
+            })(),
+            temperature: botData.temperature || 0.7,
+            max_tokens: botData.max_tokens || 1000,
+            status: botData.status || 'draft',
+            is_deployed: botData.is_deployed || false,
+            deployment_url: botData.deployment_url,
+            interaction_mode: botData.interaction_mode || 'chat',
+          },
+        })
+
+        return bot
       })
 
-      if (!user) {
-        throw new Error('User not found')
-      }
-
-      // Create bot
-      const bot = await db.bot.create({
-        data: {
-          user_id: userId,
-          name: botData.name.trim(),
-          description: botData.description?.trim() || '',
-          system_prompt: botData.system_prompt?.trim() || '',
-          model: ((): string => {
-            const requested = botData.model || 'gpt-4o-mini'
-            if (!requested) return 'gpt-4o-mini'
-            if (requested.includes('deepseek')) return 'gpt-4o-mini'
-            return requested
-          })(),
-          temperature: botData.temperature || 0.7,
-          max_tokens: botData.max_tokens || 1000,
-          status: botData.status || 'draft',
-          is_deployed: botData.is_deployed || false,
-          deployment_url: botData.deployment_url,
-          interaction_mode: botData.interaction_mode || 'chat',
-        },
-      })
-
-      return this.mapBotToResponse(bot)
+      return this.mapBotToResponse(result)
     } catch (error) {
       console.error('BotService.createBot error:', error)
+      
+      // Handle specific database errors
+      if (error instanceof Error) {
+        if (error.message.includes('Unique constraint failed')) {
+          throw new Error(`Bot with name "${botData.name}" already exists for this user`)
+        }
+        if (error.message.includes('User not found')) {
+          throw new Error('User not found')
+        }
+        if (error.message.includes('already exists')) {
+          throw error // Re-throw duplicate name errors
+        }
+      }
+      
       throw error
     }
   }

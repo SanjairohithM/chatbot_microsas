@@ -53,6 +53,19 @@ export default function DashboardPage() {
     loadBots()
   }, [user, isLoading, router])
 
+  // Listen for custom event from layout to open create bot dialog
+  useEffect(() => {
+    const handleOpenCreateBotDialog = () => {
+      setIsCreateDialogOpen(true)
+    }
+
+    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    
+    return () => {
+      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    }
+  }, [])
+
   const filteredBots = bots.filter(
     (bot) =>
       bot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,6 +74,9 @@ export default function DashboardPage() {
 
   const handleCreateBot = async (botData: Partial<BotType>, documents?: KnowledgeDocument[]) => {
     try {
+      console.log(`[Dashboard] 🚀 Starting bot creation for user: ${user!.id}`)
+      console.log(`[Dashboard] Bot data:`, botData)
+      
       // First, create the bot
       const response = await fetch('/api/bots', {
         method: 'POST',
@@ -73,9 +89,12 @@ export default function DashboardPage() {
         }),
       })
 
+      console.log(`[Dashboard] API response status: ${response.status}`)
+
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create bot')
+        console.error(`[Dashboard] ❌ API error:`, errorData)
+        throw new Error(errorData.message || errorData.error || 'Failed to create bot')
       }
 
       const result = await response.json()
@@ -181,9 +200,15 @@ export default function DashboardPage() {
       }
 
       setBots([...bots, newBot])
+      console.log(`[Dashboard] ✅ Bot added to local state successfully`)
     } catch (error) {
-      console.error('Error creating bot:', error)
-      // You could show a toast notification here
+      console.error('[Dashboard] ❌ Error creating bot:', error)
+      console.error('[Dashboard] Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      })
+      // Re-throw the error so the dialog can handle it
+      throw error
     }
   }
 
@@ -247,7 +272,7 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDeleteBot = (botId: number) => {
+  const handleDeleteBot = async (botId: number) => {
     const bot = bots.find(b => b.id === botId)
     if (bot) {
       setBotToDelete(bot)
@@ -334,60 +359,85 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
-          {/* Main Content Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bots</h1>
-            <p className="text-gray-600 text-lg">Manage and configure your AI chatbots</p>
-          </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      {/* Main Content Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bots</h1>
+        <p className="text-gray-600 text-lg">Manage and configure your AI chatbots</p>
+      </div>
 
-          {/* Search Bar */}
-          <div className="mb-8">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search bots..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
+      {/* Search Bar */}
+      <div className="mb-8">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search bots..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-4 py-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+      </div>
 
-          {/* Bots Grid */}
-          {filteredBots.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                <Plus className="h-10 w-10 text-blue-600" />
-              </div>
-              <h3 className="text-2xl font-semibold mb-3 text-gray-800">No bots found</h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {searchQuery ? "Try adjusting your search terms." : "Get started by creating your first AI chatbot."}
-              </p>
-              {!searchQuery && (
-                <Button 
-                  onClick={() => setIsCreateDialogOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Bot
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredBots.map((bot) => (
-                <BotCard
-                  key={bot.id}
-                  bot={bot}
-                  onEdit={handleEditBot}
-                  onDelete={handleDeleteBot}
-                  onToggleStatus={handleToggleStatus}
-                  onChat={handleChat}
-                />
-              ))}
-            </div>
+      {/* Bots Grid */}
+      {filteredBots.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+            <Plus className="h-10 w-10 text-blue-600" />
+          </div>
+          <h3 className="text-2xl font-semibold mb-3 text-gray-800">No bots found</h3>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+            {searchQuery ? "Try adjusting your search terms." : "Get started by creating your first AI chatbot."}
+          </p>
+          {!searchQuery && (
+            <Button 
+              onClick={() => {
+                console.log('🎯 Create Bot button clicked!')
+                setIsCreateDialogOpen(true)
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Your First Bot
+            </Button>
           )}
-    </>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredBots.map((bot) => (
+            <BotCard
+              key={bot.id}
+              bot={bot}
+              onEdit={handleEditBot}
+              onDelete={handleDeleteBot}
+              onToggleStatus={handleToggleStatus}
+              onChat={handleChat}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Create Bot Dialog */}
+      <CreateBotDialog
+        open={isCreateDialogOpen}
+        onOpenChange={(open) => {
+          console.log('🔄 Dialog open state changing to:', open)
+          setIsCreateDialogOpen(open)
+          if (!open) {
+            setEditingBot(null)
+          }
+        }}
+        onSave={handleCreateBot}
+        editingBot={editingBot}
+      />
+
+      {/* Delete Bot Dialog */}
+      <DeleteBotDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        onConfirm={handleConfirmDelete}
+        bot={botToDelete}
+      />
+    </div>
   )
 }

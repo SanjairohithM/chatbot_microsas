@@ -118,6 +118,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('📝 Form submitted!')
     setIsCreatingBot(true)
     
     try {
@@ -137,8 +138,13 @@ Be polite, professional, and helpful. If you don't know something, politely say 
         website_content: formData.website_content,
       }
       
-      // Pass both bot data and uploaded documents
-      onSave(botData, uploadedDocuments)
+      // ✅ AWAIT the onSave call to ensure API completes before closing dialog
+      console.log('🔄 About to call onSave with:', { botData, uploadedDocuments })
+      console.log('🔄 onSave function:', onSave)
+      await onSave(botData, uploadedDocuments)
+      console.log('✅ onSave completed successfully')
+      
+      // Only close dialog after successful creation
       onOpenChange(false)
       
       // Reset form if creating new bot
@@ -165,7 +171,14 @@ Be polite, professional, and helpful. If you don't know something, politely say 
         setUploadedDocuments([])
       }
     } catch (error) {
-      console.error('Error creating bot:', error)
+      console.error('❌ Error creating bot:', error)
+      console.error('❌ Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        error
+      })
+      // TODO: Add error state to show error message to user
+      // For now, keep dialog open so user can see the error in console
     } finally {
       setIsCreatingBot(false)
     }
@@ -813,7 +826,16 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isCreatingBot}>
               Cancel
             </Button>
-            <Button type="submit" className="min-w-[120px]" disabled={isCreatingBot}>
+            <Button 
+              type="submit" 
+              className="min-w-[120px]" 
+              disabled={isCreatingBot}
+              onClick={(e) => {
+                console.log('🔘 Create Bot button clicked!')
+                console.log('Form data:', formData)
+                console.log('onSave function:', onSave)
+              }}
+            >
               {isCreatingBot ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
