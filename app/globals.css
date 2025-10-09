@@ -168,12 +168,12 @@
 }
 
 @theme inline {
-  --font-sans: "Inter", "Space Grotesk", system-ui, sans-serif;
+  --font-sans: "Open Sans", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Consolas", monospace;
-  --font-display: "Playfair Display", "Space Grotesk", serif;
-  --font-heading: "Space Grotesk", "Inter", sans-serif;
-  --font-body: "Inter", "Outfit", sans-serif;
-  --font-accent: "Outfit", "Inter", sans-serif;
+  --font-display: "Open Sans", system-ui, sans-serif;
+  --font-heading: "Open Sans", system-ui, sans-serif;
+  --font-body: "Open Sans", system-ui, sans-serif;
+  --font-accent: "Open Sans", system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

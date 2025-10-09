@@ -12,6 +12,7 @@ import { SectionFooter } from "@/components/section-footer"
 import { SectionPricing } from "@/components/section-pricing"
 import { ParticleBackground } from "@/components/particle-background"
 import { ScrollAnimation } from "@/components/scroll-animation"
+import { WebsiteChatWidget } from "@/components/website-chat-widget"
 
 export default function Page() {
   return (

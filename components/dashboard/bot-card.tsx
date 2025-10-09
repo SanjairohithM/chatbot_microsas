@@ -20,6 +20,7 @@ interface BotCardProps {
 export function BotCard({ bot, onEdit, onDelete, onToggleStatus, onChat }: BotCardProps) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [isUrlScraperOpen, setIsUrlScraperOpen] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   
   const getStatusColor = (status: string) => {
     switch (status) {
