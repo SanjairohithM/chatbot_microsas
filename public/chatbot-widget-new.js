@@ -682,30 +682,19 @@
         // Show typing indicator
         showTyping();
         
-        // Check if user is asking for navigation
-        const navigationKeywords = ['go to', 'navigate', 'redirect', 'take me to', 'show me', 'visit', 'open', 'link', 'page', 'section', 'about', 'pricing', 'features', 'contact', 'dashboard', 'admin'];
-        const hasNavigationIntent = navigationKeywords.some(keyword => message.toLowerCase().includes(keyword));
-        
-        // Use navigation API only if user is asking for navigation, otherwise use chat API
-        const apiEndpoint = hasNavigationIntent ? '/api/website-navigation' : '/api/chat';
-        const requestBody = hasNavigationIntent ? {
-            message: message,
-            currentPath: window.location.pathname,
-            botId: botId
-        } : {
-            message: message,
-            botId: botId
-        };
-        
-        // Send to appropriate API
-        fetch(`${apiUrl}${apiEndpoint}`, {
+        // Send to API with navigation support
+        fetch(`${apiUrl}/api/website-navigation`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
                 'ngrok-skip-browser-warning': 'true'
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({
+                message: message,
+                currentPath: window.location.pathname,
+                botId: botId
+            })
         })
         .then(response => response.json())
         .then(data => {
@@ -715,8 +704,8 @@
                 botMessage = data.message;
                 addMessage(botMessage, 'bot');
                 
-                // Add navigation buttons only if user asked for navigation and actions are available
-                if (hasNavigationIntent && data.navigationActions && data.navigationActions.length > 0) {
+                // Add navigation buttons if available and enabled
+                if (navigationEnabled && data.navigationActions && data.navigationActions.length > 0) {
                     addNavigationButtons(data.navigationActions);
                 }
             } else {
@@ -731,9 +720,17 @@
                 }, 500);
             }
             
-            // Auto-navigate only if user asked for navigation and auto-navigate is enabled
-            if (hasNavigationIntent && data.autoNavigate) {
-                handleAutoNavigation(data.autoNavigate);
+            // Auto-navigate if enabled and specified
+            if (navigationEnabled && autoNavigate) {
+                if (data.autoNavigate) {
+                    handleAutoNavigation(data.autoNavigate);
+                } else if (data.navigationActions && data.navigationActions.length > 0) {
+                    // Auto-navigate to first navigation action
+                    const firstAction = data.navigationActions[0];
+                    if (firstAction.action === 'navigate') {
+                        handleAutoNavigation(firstAction);
+                    }
+                }
             }
         })
         .catch(error => {

@@ -247,9 +247,9 @@ export function WebsiteChatWidget({
           element.scrollIntoView({ behavior: 'smooth' })
         }
       } else {
-        // Navigate to different page - ensure clean URL
+        // Internal page navigation - ensure clean URL
         const cleanPath = action.path.startsWith('/') ? action.path : `/${action.path}`
-        console.log('Navigating to clean path:', cleanPath)
+        console.log('Navigating to internal page:', cleanPath)
         
         // Use window.location.assign for better navigation
         window.location.assign(cleanPath)
