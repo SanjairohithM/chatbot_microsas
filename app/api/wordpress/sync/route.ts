@@ -92,40 +92,46 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('WordPress sync error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return NextResponse.json(
-      { error: 'Failed to sync content: ' + error.message },
+      { error: 'Failed to sync content: ' + errorMessage },
       { status: 500 }
     );
   }
 }
 
 async function syncSingleContent(index: any, siteId: string, content: any) {
-  // Use default namespace for wordpress-content index
-  const vectorId = `wp_${siteId}_${content.type}_${content.id}`;
-  
-  const vector = {
-    id: vectorId,
-    values: await generateEmbedding(content.title + ' ' + content.content),
-    metadata: {
-      site_id: siteId,
-      content_id: content.id,
-      type: content.type,
-      title: content.title,
-      url: content.url,
-      date: content.date,
-      modified: content.modified,
-      author: content.author,
-      categories: content.categories || [],
-      tags: content.tags || [],
-      parent: content.parent || null,
-      menu_order: content.menu_order || null,
-      documentId: parseInt(content.id),
-      chunkIndex: 0,
-      totalChunks: 1
-    }
-  };
+  try {
+    // Use default namespace for wordpress-content index
+    const vectorId = `wp_${siteId}_${content.type}_${content.id}`;
+    
+    const vector = {
+      id: vectorId,
+      values: await generateEmbedding(content.title + ' ' + content.content, siteId),
+      metadata: {
+        site_id: siteId,
+        content_id: content.id,
+        type: content.type,
+        title: content.title,
+        url: content.url,
+        date: content.date,
+        modified: content.modified,
+        author: content.author,
+        categories: content.categories || [],
+        tags: content.tags || [],
+        parent: content.parent || null,
+        menu_order: content.menu_order || null,
+        documentId: parseInt(content.id),
+        chunkIndex: 0,
+        totalChunks: 1
+      }
+    };
 
-  await index.upsert([vector]);
+    await index.upsert([vector]);
+  } catch (error) {
+    console.error('Error syncing single content:', error);
+    throw error;
+  }
 }
 
 async function syncAllContent(index: any, siteId: string, content: any) {
@@ -134,122 +140,147 @@ async function syncAllContent(index: any, siteId: string, content: any) {
 
   // Sync site info
   if (content.site_info) {
-    const siteVector = {
-      id: `wp_${siteId}_site_info`,
-      values: await generateEmbedding(content.site_info.name + ' ' + content.site_info.description),
-      metadata: {
-        site_id: siteId,
-        type: 'site_info',
-        name: content.site_info.name,
-        description: content.site_info.description,
-        url: content.site_info.url,
-        admin_email: content.site_info.admin_email,
-        timezone: content.site_info.timezone,
-        language: content.site_info.language,
-        version: content.site_info.version,
-        documentId: 0,
-        chunkIndex: 0,
-        totalChunks: 1
-      }
-    };
-    vectors.push(siteVector);
+    try {
+      const siteVector = {
+        id: `wp_${siteId}_site_info`,
+        values: await generateEmbedding(content.site_info.name + ' ' + content.site_info.description, siteId),
+        metadata: {
+          site_id: siteId,
+          type: 'site_info',
+          name: content.site_info.name,
+          description: content.site_info.description,
+          url: content.site_info.url,
+          admin_email: content.site_info.admin_email,
+          timezone: content.site_info.timezone,
+          language: content.site_info.language,
+          version: content.site_info.version,
+          documentId: 0,
+          chunkIndex: 0,
+          totalChunks: 1
+        }
+      };
+      vectors.push(siteVector);
+    } catch (error) {
+      console.error('Error generating embedding for site info:', error);
+      // Continue with other content even if site info fails
+    }
   }
 
   // Sync posts
   for (const post of content.posts) {
-    const vector = {
-      id: `wp_${siteId}_post_${post.id}`,
-      values: await generateEmbedding(post.title + ' ' + post.content),
-      metadata: {
-        site_id: siteId,
-        content_id: post.id,
-        type: 'post',
-        title: post.title.substring(0, 200), // Limit title
-        content: post.content.substring(0, 1000), // Limit content
-        excerpt: (post.excerpt || '').substring(0, 500), // Limit excerpt
-        url: post.url,
-        date: post.date,
-        modified: post.modified,
-        author: post.author,
-        categories: post.categories || [],
-        tags: post.tags || [],
-        documentId: parseInt(post.id),
-        chunkIndex: 0,
-        totalChunks: 1
-      }
-    };
-    vectors.push(vector);
+    try {
+      const vector = {
+        id: `wp_${siteId}_post_${post.id}`,
+        values: await generateEmbedding(post.title + ' ' + post.content, siteId),
+        metadata: {
+          site_id: siteId,
+          content_id: post.id,
+          type: 'post',
+          title: post.title.substring(0, 200), // Limit title
+          content: post.content.substring(0, 1000), // Limit content
+          excerpt: (post.excerpt || '').substring(0, 500), // Limit excerpt
+          url: post.url,
+          date: post.date,
+          modified: post.modified,
+          author: post.author,
+          categories: post.categories || [],
+          tags: post.tags || [],
+          documentId: parseInt(post.id),
+          chunkIndex: 0,
+          totalChunks: 1
+        }
+      };
+      vectors.push(vector);
+    } catch (error) {
+      console.error(`Error generating embedding for post ${post.id}:`, error);
+      // Continue with other posts even if one fails
+    }
   }
 
   // Sync pages
   for (const page of content.pages) {
-    const vector = {
-      id: `wp_${siteId}_page_${page.id}`,
-      values: await generateEmbedding(page.title + ' ' + page.content),
-      metadata: {
-        site_id: siteId,
-        content_id: page.id,
-        type: 'page',
-        title: page.title.substring(0, 200), // Limit title
-        content: page.content.substring(0, 1000), // Limit content
-        excerpt: (page.excerpt || '').substring(0, 500), // Limit excerpt
-        url: page.url,
-        date: page.date,
-        modified: page.modified,
-        author: page.author,
-        parent: page.parent,
-        menu_order: page.menu_order,
-        documentId: parseInt(page.id),
-        chunkIndex: 0,
-        totalChunks: 1
-      }
-    };
-    vectors.push(vector);
+    try {
+      const vector = {
+        id: `wp_${siteId}_page_${page.id}`,
+        values: await generateEmbedding(page.title + ' ' + page.content, siteId),
+        metadata: {
+          site_id: siteId,
+          content_id: page.id,
+          type: 'page',
+          title: page.title.substring(0, 200), // Limit title
+          content: page.content.substring(0, 1000), // Limit content
+          excerpt: (page.excerpt || '').substring(0, 500), // Limit excerpt
+          url: page.url,
+          date: page.date,
+          modified: page.modified,
+          author: page.author,
+          parent: page.parent,
+          menu_order: page.menu_order,
+          documentId: parseInt(page.id),
+          chunkIndex: 0,
+          totalChunks: 1
+        }
+      };
+      vectors.push(vector);
+    } catch (error) {
+      console.error(`Error generating embedding for page ${page.id}:`, error);
+      // Continue with other pages even if one fails
+    }
   }
 
   // Sync categories
   for (const category of content.categories) {
-    const vector = {
-      id: `wp_${siteId}_category_${category.id}`,
-      values: await generateEmbedding(category.name + ' ' + category.description),
-      metadata: {
-        site_id: siteId,
-        content_id: category.id,
-        type: 'category',
-        name: category.name.substring(0, 100), // Limit name
-        slug: category.slug,
-        description: (category.description || '').substring(0, 500), // Limit description
-        count: category.count,
-        parent: category.parent,
-        url: category.url,
-        documentId: parseInt(category.id),
-        chunkIndex: 0,
-        totalChunks: 1
-      }
-    };
-    vectors.push(vector);
+    try {
+      const vector = {
+        id: `wp_${siteId}_category_${category.id}`,
+        values: await generateEmbedding(category.name + ' ' + category.description, siteId),
+        metadata: {
+          site_id: siteId,
+          content_id: category.id,
+          type: 'category',
+          name: category.name.substring(0, 100), // Limit name
+          slug: category.slug,
+          description: (category.description || '').substring(0, 500), // Limit description
+          count: category.count,
+          parent: category.parent,
+          url: category.url,
+          documentId: parseInt(category.id),
+          chunkIndex: 0,
+          totalChunks: 1
+        }
+      };
+      vectors.push(vector);
+    } catch (error) {
+      console.error(`Error generating embedding for category ${category.id}:`, error);
+      // Continue with other categories even if one fails
+    }
   }
 
   // Sync tags
   for (const tag of content.tags) {
-    const vector = {
-      id: `wp_${siteId}_tag_${tag.id}`,
-      values: await generateEmbedding(tag.name + ' ' + tag.description),
-      metadata: {
-        site_id: siteId,
-        content_id: tag.id,
-        type: 'tag',
-        name: tag.name.substring(0, 100), // Limit name
-        slug: tag.slug,
-        description: (tag.description || '').substring(0, 500), // Limit description
-        count: tag.count,
-        url: tag.url,
-        documentId: parseInt(tag.id),
-        chunkIndex: 0,
-        totalChunks: 1
-      }
-    };
-    vectors.push(vector);
+    try {
+      const vector = {
+        id: `wp_${siteId}_tag_${tag.id}`,
+        values: await generateEmbedding(tag.name + ' ' + tag.description, siteId),
+        metadata: {
+          site_id: siteId,
+          content_id: tag.id,
+          type: 'tag',
+          name: tag.name.substring(0, 100), // Limit name
+          slug: tag.slug,
+          description: (tag.description || '').substring(0, 500), // Limit description
+          count: tag.count,
+          url: tag.url,
+          documentId: parseInt(tag.id),
+          chunkIndex: 0,
+          totalChunks: 1
+        }
+      };
+      vectors.push(vector);
+    } catch (error) {
+      console.error(`Error generating embedding for tag ${tag.id}:`, error);
+      // Continue with other tags even if one fails
+    }
   }
 
   // Batch upsert to Pinecone (default namespace)
@@ -262,12 +293,35 @@ async function syncAllContent(index: any, siteId: string, content: any) {
   }
 }
 
-async function generateEmbedding(text: string): Promise<number[]> {
+async function generateEmbedding(text: string, siteId: string): Promise<number[]> {
+  // Get the user's OpenAI API key from the database through the bot relationship
+  const site = await db.wordPressSite.findUnique({
+    where: { id: siteId },
+    include: { 
+      bots: {
+        include: {
+          user: true
+        }
+      }
+    }
+  });
+
+  if (!site || !site.bots || site.bots.length === 0) {
+    throw new Error('No bots found for this site');
+  }
+
+  const bot = site.bots[0]; // Get the first bot associated with this site
+  if (!bot.user || !bot.user.openai_api_key) {
+    throw new Error('OpenAI API key not found for the user associated with this site');
+  }
+
+  const OPENAI_API_KEY = bot.user.openai_api_key;
+  
   // Use OpenAI to generate embeddings for wordpress-content index (1536 dimensions)
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+      'Authorization': `Bearer ${OPENAI_API_KEY}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -276,6 +330,24 @@ async function generateEmbedding(text: string): Promise<number[]> {
     }),
   });
 
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('OpenAI API error:', response.status, errorText);
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+  }
+
   const data = await response.json();
+  
+  // Check if the response has the expected structure
+  if (!data || !data.data || !Array.isArray(data.data) || data.data.length === 0) {
+    console.error('Invalid OpenAI API response structure:', data);
+    throw new Error('Invalid OpenAI API response structure');
+  }
+
+  if (!data.data[0] || !data.data[0].embedding) {
+    console.error('Missing embedding in OpenAI API response:', data.data[0]);
+    throw new Error('Missing embedding in OpenAI API response');
+  }
+
   return data.data[0].embedding; // Return full 1536 dimensions
 }

@@ -37,7 +37,7 @@ A revolutionary WordPress plugin that automatically syncs your content to OmniX 
 
 ### Basic Settings
 
-- **OmniX Platform URL**: Your OmniX platform URL (default: https://d13cf0272749.ngrok-free.app)
+- **OmniX Platform URL**: Your OmniX platform URL (default:  https://e282694e5c26.ngrok-free.app)
 - **Bot ID**: Optional - will be auto-generated if not provided
 - **Enable Sync**: Toggle content sync on/off
 - **Auto Sync**: Automatically sync new content when published
