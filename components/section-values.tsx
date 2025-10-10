@@ -51,7 +51,7 @@ export function SectionValues() {
     <section id="values" aria-labelledby="values-heading" className="relative sm:py-5">
       <div className="container mx-auto px-4">
         <header className="text-center">
-          <h2 id="values-heading" className="text-4xl sm:text-5xl font-semibold tracking-tight text-balance">
+          <h2 id="values-heading" className="text-4xl sm:text-5xl font-semibold tracking-tight text-balance" style={{ fontFamily: 'var(--font-heading)' }}>
           What makes the best AI Chatbot?
           </h2>
         </header>

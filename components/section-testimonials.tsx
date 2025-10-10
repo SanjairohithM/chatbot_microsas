@@ -43,7 +43,7 @@ export function SectionTestimonials() {
     <section className="py-24 md:py-28">
       <div className="container">
         <div className="mx-auto mb-10 max-w-3xl text-center md:mb-14">
-          <h2 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">Testimonials</h2>
+          <h2 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>Testimonials</h2>
           <p className="mt-3 text-pretty text-muted-foreground">
             Sign up for Benchmark today to stay focused on the reason you’re using email marketing in the first place:
             bringing your vision to life.

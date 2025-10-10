@@ -9,7 +9,7 @@ export function SectionProcess() {
           <span className="inline-block rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground">
             How It Work
           </span>
-          <h2 id="process-title" className="mt-4 text-balance text-3xl font-semibold tracking-tight md:text-5xl">
+          <h2 id="process-title" className="mt-4 text-balance text-3xl font-semibold tracking-tight md:text-5xl" style={{ fontFamily: 'var(--font-heading)' }}>
           Create AI-powered chatbots in minutes 
           
           </h2>
@@ -96,7 +96,7 @@ function Step({
       <div className={["text-4xl font-semibold tracking-tight md:text-5xl", accent ? "text-primary" : ""].join(" ")}>
         {number}
       </div>
-      <h3 className="mt-3 text-xl font-semibold">{title}</h3>
+      <h3 className="mt-3 text-xl font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>{title}</h3>
       <p className="mt-2 max-w-prose text-sm text-muted-foreground">{copy}</p>
     </div>
   )
