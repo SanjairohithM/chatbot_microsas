@@ -28,7 +28,7 @@ class OmniX_Smart_Sync {
     private $sync_enabled;
     
     public function __construct() {
-        $this->api_base_url = get_option('omnix_smart_sync_api_url', 'https://68904f022ec3.ngrok-free.app');
+        $this->api_base_url = get_option('omnix_smart_sync_api_url', 'https://1d4dc51ea0d1.ngrok-free.app');
         $this->bot_id = get_option('omnix_smart_sync_bot_id', '');
         $this->access_token = get_option('omnix_smart_sync_access_token', '');
         $this->sync_enabled = get_option('omnix_smart_sync_enabled', false);
@@ -60,7 +60,7 @@ class OmniX_Smart_Sync {
     
     public function activate() {
         // Set default options
-        add_option('omnix_smart_sync_api_url', 'https://68904f022ec3.ngrok-free.app');
+        add_option('omnix_smart_sync_api_url', 'https://1d4dc51ea0d1.ngrok-free.app');
         add_option('omnix_smart_sync_bot_id', '');
         add_option('omnix_smart_sync_access_token', '');
         add_option('omnix_smart_sync_enabled', false);
@@ -336,7 +336,7 @@ class OmniX_Smart_Sync {
             echo '<div class="updated"><p>Settings saved successfully!</p></div>';
         }
         
-        $api_url = get_option('omnix_smart_sync_api_url', 'https://68904f022ec3.ngrok-free.app');
+        $api_url = get_option('omnix_smart_sync_api_url', 'https://1d4dc51ea0d1.ngrok-free.app');
         $bot_id = get_option('omnix_smart_sync_bot_id', '');
         $enabled = get_option('omnix_smart_sync_enabled', false);
         $auto_sync = get_option('omnix_smart_sync_auto_sync', true);

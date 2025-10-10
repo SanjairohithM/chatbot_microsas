@@ -60,7 +60,7 @@ export class RelevanceChecker {
     const relevanceScore = commonKeywords.length / Math.max(queryKeywords.length, 1)
     
     // If relevance score is high enough, consider it relevant
-    if (relevanceScore > 0.2) { // Lowered threshold to be more lenient when context is available
+    if (relevanceScore > 0.1) { // Further lowered threshold to be more lenient when context is available
       return {
         isRelevant: true,
         confidence: relevanceScore,
@@ -77,7 +77,9 @@ export class RelevanceChecker {
         /^(summarize|summarise|explain|describe|list|show|give)\s+(me\s+)?(the\s+)?(content|information|details)/i,
         /^(what|which|how\s+many|how\s+much)\s+(is|are|was|were|do|does|can|could|will|would)\s+(in|on|about|regarding)/i,
         /^(tell\s+me\s+about|what\s+about|information\s+about)/i,
-        /^(brand|company|business|service|product|products|team|mission|vision|contact|address|phone|email|offer|offers)/i
+        /^(brand|company|business|service|product|products|team|mission|vision|contact|address|phone|email|offer|offers)/i,
+        /^(contact\s+details|contact\s+information|phone\s+number|email\s+address|address|location|where\s+are\s+you|how\s+to\s+contact)/i,
+        /^(give\s+me|show\s+me|tell\s+me|can\s+you\s+give|can\s+you\s+show|can\s+you\s+tell)\s+(contact|details|information|phone|email|address)/i
       ]
       
       const hasDocumentQueryPattern = documentQueryPatterns.some(pattern => pattern.test(queryLower))

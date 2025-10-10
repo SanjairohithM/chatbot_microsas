@@ -3,7 +3,7 @@
     
     // Configuration from window.omnixChatbot
     const config = window.omnixChatbot || {};
-    const apiUrl = config.apiUrl || 'https://68904f022ec3.ngrok-free.app';
+    const apiUrl = config.apiUrl || 'https://1d4dc51ea0d1.ngrok-free.app';
     const botId = config.botId || 'auto';
     const accessToken = config.accessToken;
     const autoOpen = config.autoOpen || false;
@@ -682,8 +682,8 @@
         // Show typing indicator
         showTyping();
         
-        // Check if user is asking for navigation
-        const navigationKeywords = ['go to', 'navigate', 'redirect', 'take me to', 'show me', 'visit', 'open', 'link', 'page', 'section', 'about', 'pricing', 'features', 'contact', 'dashboard', 'admin'];
+        // Check if user is asking for navigation (more specific keywords)
+        const navigationKeywords = ['go to', 'navigate to', 'redirect to', 'take me to', 'visit', 'open page', 'show page', 'go to page', 'navigate', 'redirect'];
         const hasNavigationIntent = navigationKeywords.some(keyword => message.toLowerCase().includes(keyword));
         
         // Use navigation API only if user is asking for navigation, otherwise use chat API

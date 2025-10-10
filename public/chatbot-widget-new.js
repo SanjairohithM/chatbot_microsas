@@ -3,7 +3,7 @@
     
     // Configuration from window.omnixChatbot
     const config = window.omnixChatbot || {};
-    const apiUrl = config.apiUrl || 'https://68904f022ec3.ngrok-free.app';
+    const apiUrl = config.apiUrl || 'https://1d4dc51ea0d1.ngrok-free.app ';
     const botId = config.botId || 'auto';
     const accessToken = config.accessToken;
     const autoOpen = config.autoOpen || false;

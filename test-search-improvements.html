@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Improvements Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-queries { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .query { margin: 5px 0; padding: 5px; background: white; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Search Improvements Test</h1>
+    
+    <div class="test-section">
+        <h2>✅ Fixed Issues:</h2>
+        <ul>
+            <li><strong>Navigation Logic:</strong> Only triggers on specific keywords like "go to", "navigate to", "redirect to"</li>
+            <li><strong>Relevance Checker:</strong> Lowered threshold and added contact-specific patterns</li>
+            <li><strong>Content Cleaning:</strong> HTML entities are now properly decoded</li>
+            <li><strong>Query Enhancement:</strong> Contact queries get enhanced with related terms</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧪 Test Queries (Should work as content search, not navigation):</h2>
+        <div class="test-queries">
+            <div class="query">"give contact details" → Should search for contact information</div>
+            <div class="query">"tell me about your company" → Should search for company information</div>
+            <div class="query">"what is your phone number" → Should search for contact details</div>
+            <div class="query">"show me your address" → Should search for location information</div>
+            <div class="query">"contact information" → Should search for contact details</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🧭 Navigation Queries (Should trigger navigation):</h2>
+        <div class="test-queries">
+            <div class="query">"go to contact page" → Should navigate to contact page</div>
+            <div class="query">"navigate to about us" → Should navigate to about page</div>
+            <div class="query">"redirect to pricing" → Should navigate to pricing</div>
+            <div class="query">"take me to dashboard" → Should navigate to dashboard</div>
+        </div>
+    </div>
+    
+    <!-- Chatbot Configuration -->
+    <script type="text/javascript">
+        window.omnixChatbot = {
+            apiUrl: "https://1d4dc51ea0d1.ngrok-free.app",
+            botId: "27",
+            accessToken: "ox_09034de05e07623c819569a8f1b3d39eda267ddf8df6989136d2d5f6ba7ace0e",
+            autoOpen: false,
+            position: "bottom-right",
+            theme: "modern",
+            enableVoice: true,
+            voiceLanguage: "en-US",
+            autoSpeak: false,
+            botName: "MGS Builders Assistant"
+        };
+    </script>
+    
+    <!-- Load Chatbot Widget -->
+    <script src="https://1d4dc51ea0d1.ngrok-free.app/chatbot-widget.js?v=1760094459" defer></script>
+    
+    <div class="test-section">
+        <h2>📝 Instructions:</h2>
+        <ol>
+            <li>Click the chatbot button in the bottom-right corner</li>
+            <li>Try the test queries above</li>
+            <li>Check the browser console for search logs</li>
+            <li>Verify that contact queries return actual contact information</li>
+            <li>Verify that navigation queries show navigation buttons</li>
+        </ol>
+    </div>
+</body>
+</html>

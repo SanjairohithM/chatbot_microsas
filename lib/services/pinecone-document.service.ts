@@ -111,10 +111,30 @@ export class PineconeDocumentService {
   private static enhanceQueryForCompanySearch(query: string): string {
     const lowerQuery = query.toLowerCase()
     
+    // Add contact-specific terms if the query is about contact information
+    if (lowerQuery.includes('contact') || 
+        lowerQuery.includes('phone') || 
+        lowerQuery.includes('email') ||
+        lowerQuery.includes('address') ||
+        lowerQuery.includes('location') ||
+        lowerQuery.includes('details') ||
+        lowerQuery.includes('information') ||
+        lowerQuery.includes('give me') ||
+        lowerQuery.includes('show me') ||
+        lowerQuery.includes('tell me')) {
+      
+      // Add contact-related terms to improve relevance
+      const contactTerms = [
+        'contact information', 'phone number', 'email address', 'address', 'location',
+        'contact details', 'company contact', 'business contact', 'reach us', 'get in touch'
+      ]
+      
+      return `${query} ${contactTerms.join(' ')}`
+    }
+    
     // Add company-specific terms if the query is about the company
     if (lowerQuery.includes('company') || 
         lowerQuery.includes('about') || 
-        lowerQuery.includes('tell me') ||
         lowerQuery.includes('what') ||
         lowerQuery.includes('who')) {
       
@@ -485,7 +505,7 @@ export class PineconeDocumentService {
       if (searchResponse.matches && searchResponse.matches.length > 0) {
         console.log(`[Pinecone Documents] All results before filtering:`)
         searchResponse.matches.forEach((match, index) => {
-          console.log(`[Pinecone Documents] ${index + 1}. ${match.metadata?.title} (Score: ${match.score?.toFixed(4)}, Chunk: ${match.metadata?.chunkIndex + 1}/${match.metadata?.totalChunks}, Type: ${match.metadata?.type || 'unknown'})`)
+          console.log(`[Pinecone Documents] ${index + 1}. ${match.metadata?.title} (Score: ${match.score?.toFixed(4)}, Chunk: ${(Number(match.metadata?.chunkIndex) || 0) + 1}/${match.metadata?.totalChunks}, Type: ${match.metadata?.type || 'unknown'})`)
         })
       } else {
         console.log(`[Pinecone Documents] No search results found for query: "${query}"`)
@@ -528,6 +548,24 @@ export class PineconeDocumentService {
         if (!result.content || result.content.length < 10) {
           console.log(`[Pinecone Documents] Filtered out short content: ${result.title} (${result.content?.length || 0} chars)`)
           return false
+        }
+        
+        // Clean HTML entities and normalize content
+        if (result.content) {
+          result.content = result.content
+            .replace(/&#8211;/g, '–') // En dash
+            .replace(/&#8212;/g, '—') // Em dash
+            .replace(/&#8216;/g, '\u2018') // Left single quotation mark
+            .replace(/&#8217;/g, '\u2019') // Right single quotation mark
+            .replace(/&#8220;/g, '\u201C') // Left double quotation mark
+            .replace(/&#8221;/g, '\u201D') // Right double quotation mark
+            .replace(/&amp;/g, '&') // Ampersand
+            .replace(/&lt;/g, '<') // Less than
+            .replace(/&gt;/g, '>') // Greater than
+            .replace(/&quot;/g, '"') // Quote
+            .replace(/&#39;/g, "'") // Apostrophe
+            .replace(/\s+/g, ' ') // Normalize whitespace
+            .trim()
         }
         
         // Filter out content that looks like corrupted text (be more specific)
@@ -689,9 +727,7 @@ export class PineconeDocumentService {
       console.log(`[Pinecone Documents] Deleting all documents for bot ${botId} in namespace ${namespace}`)
       
       // Delete all document vectors in the bot's namespace
-      await index.deleteAll({
-        namespace: namespace
-      })
+      await index.deleteAll()
       
       console.log(`[Pinecone Documents] Successfully deleted all documents for bot ${botId}`)
     } catch (error) {
