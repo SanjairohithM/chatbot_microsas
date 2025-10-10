@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { KnowledgeDocumentService } from '@/lib/services/knowledge-document.service'
 import { DocumentProcessorService } from '@/lib/services/document-processor.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
@@ -79,11 +80,23 @@ export async function POST(request: NextRequest) {
     // Store document in Pinecone for vector search
     try {
       console.log(`[Document Processing] Storing document ${documentId} in Pinecone...`)
+      
+      // Get user's API key for embedding generation
+      const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(document.bot_id)
+      if (!userApiKey) {
+        console.warn(`[Document Processing] No API key found for bot ${document.bot_id}, skipping Pinecone storage`)
+        return NextResponse.json({ 
+          success: false, 
+          error: 'No OpenAI API key found for bot. Please configure your API key in settings.' 
+        }, { status: 400 })
+      }
+      
       await PineconeDocumentService.storeDocument(
         document.bot_id,
         documentId,
         document.title,
-        processedContent
+        processedContent,
+        userApiKey
       )
       console.log(`[Document Processing] ✅ Document ${documentId} stored in Pinecone successfully`)
     } catch (pineconeError) {

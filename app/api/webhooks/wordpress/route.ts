@@ -3,6 +3,7 @@ import { ApiResponse } from '@/lib/utils/api-response'
 import { logger } from '@/lib/utils/logger'
 import { KnowledgeDocumentService } from '@/lib/services/knowledge-document.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { db } from '@/lib/db'
 import crypto from 'crypto'
 
@@ -28,6 +29,12 @@ export async function POST(request: NextRequest) {
     }
 
     logger.apiRequest('POST', '/api/webhooks/wordpress', { bot_id, site_url, export_type })
+
+    // Get user's API key for embedding generation
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(bot_id)
+    if (!userApiKey) {
+      return ApiResponse.badRequest('No OpenAI API key found for bot. Please configure your API key in settings.')
+    }
 
     // Process the WordPress data based on export type
     let processedCount = 0
@@ -102,22 +109,13 @@ Tags: ${post.tags?.join(', ') || 'None'}
 
 ${post.content}`
 
-      await PineconeDocumentService.storeDocument({
+      await PineconeDocumentService.storeDocument(
         botId,
-        content: enhancedContent,
-        metadata: {
-          type: 'wordpress_post',
-          source: siteUrl,
-          post_id: post.id,
-          title: post.title,
-          author: post.author,
-          published_date: post.date,
-          categories: post.categories || [],
-          tags: post.tags || [],
-          url: post.url,
-          word_count: post.content.split(' ').length
-        }
-      })
+        post.id,
+        post.title,
+        enhancedContent,
+        userApiKey
+      )
 
       processedCount++
     } catch (error) {
@@ -158,22 +156,13 @@ Menu Order: ${page.menu_order || 0}
 
 ${page.content}`
 
-      await PineconeDocumentService.storeDocument({
+      await PineconeDocumentService.storeDocument(
         botId,
-        content: enhancedContent,
-        metadata: {
-          type: 'wordpress_page',
-          source: siteUrl,
-          page_id: page.id,
-          title: page.title,
-          author: page.author,
-          published_date: page.date,
-          parent: page.parent,
-          menu_order: page.menu_order,
-          url: page.url,
-          word_count: page.content.split(' ').length
-        }
-      })
+        page.id,
+        page.title,
+        enhancedContent,
+        userApiKey
+      )
 
       processedCount++
     } catch (error) {
@@ -211,19 +200,13 @@ Parent: ${category.parent || 'None'}
 
 This category contains ${category.count} posts.`
 
-        await PineconeDocumentService.storeDocument({
+        await PineconeDocumentService.storeDocument(
           botId,
-          content: enhancedContent,
-          metadata: {
-            type: 'wordpress_category',
-            source: siteUrl,
-            category_id: category.id,
-            name: category.name,
-            slug: category.slug,
-            post_count: category.count,
-            parent: category.parent
-          }
-        })
+          category.id,
+          category.name,
+          enhancedContent,
+          userApiKey
+        )
 
         processedCount++
       } catch (error) {
@@ -245,18 +228,13 @@ Post Count: ${tag.count}
 
 This tag is used in ${tag.count} posts.`
 
-        await PineconeDocumentService.storeDocument({
+        await PineconeDocumentService.storeDocument(
           botId,
-          content: enhancedContent,
-          metadata: {
-            type: 'wordpress_tag',
-            source: siteUrl,
-            tag_id: tag.id,
-            name: tag.name,
-            slug: tag.slug,
-            post_count: tag.count
-          }
-        })
+          tag.id,
+          tag.name,
+          enhancedContent,
+          userApiKey
+        )
 
         processedCount++
       } catch (error) {

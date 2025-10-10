@@ -4,6 +4,7 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import { DocumentProcessorService } from '@/lib/services/document-processor.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 
 export async function POST(request: NextRequest) {
   let tempFilePath: string | null = null
@@ -78,11 +79,21 @@ export async function POST(request: NextRequest) {
     console.log(`[Upload to Pinecone] 🌲 Storing in Pinecone vector database...`)
     const pineconeStartTime = Date.now()
     
+    // Get user's API key for embedding generation
+    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(parseInt(botId))
+    if (!userApiKey) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'No OpenAI API key found for bot. Please configure your API key in settings.' 
+      }, { status: 400 })
+    }
+    
     await PineconeDocumentService.storeDocument(
       parseInt(botId),
       documentId,
       file.name,
-      processed.content
+      processed.content,
+      userApiKey
     )
     
     const pineconeTime = Date.now() - pineconeStartTime

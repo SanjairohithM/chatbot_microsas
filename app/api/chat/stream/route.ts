@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openAIAPI, OpenAIAPI } from '@/lib/openai-api'
+import { getOpenAIInstance, OpenAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'

@@ -29,7 +29,7 @@ export class OpenAIAPI {
 
 	constructor(apiKey?: string) {
 		this.client = new OpenAI({ 
-			apiKey: apiKey || process.env.OPENAI_API_KEY || '' 
+			apiKey: apiKey || process.env.OPENAI_API_KEY
 		})
 	}
 
@@ -101,11 +101,8 @@ export class OpenAIAPI {
 		return stream as any
 	}
 
-	async createEmbedding(text: string, model: string = 'text-embedding-3-small', userApiKey?: string): Promise<number[]> {
-		// Create a new client instance with user API key if provided
-		const client = userApiKey ? new OpenAI({ apiKey: userApiKey }) : this.client
-		
-		const res = await client.embeddings.create({
+	async createEmbedding(text: string, model: string = 'text-embedding-3-small'): Promise<number[]> {
+		const res = await this.client.embeddings.create({
 			model,
 			input: text
 		})
@@ -140,10 +137,7 @@ export class OpenAIAPI {
 	}
 }
 
-// Default instance using environment variable
-export const openAIAPI = new OpenAIAPI()
-
-// Helper function to get OpenAI instance with fallback
+// Helper function to get OpenAI instance with user-based API key
 export async function getOpenAIInstance(userId?: string, botId?: number): Promise<OpenAIAPI> {
 	if (userId) {
 		return await OpenAIAPI.createForUser(userId)
@@ -151,7 +145,8 @@ export async function getOpenAIInstance(userId?: string, botId?: number): Promis
 	if (botId) {
 		return await OpenAIAPI.createForBot(botId)
 	}
-	return openAIAPI
+	// If no user or bot ID provided, throw an error to ensure API key is always provided
+	throw new Error('User ID or Bot ID must be provided to create OpenAI instance')
 }
 
 

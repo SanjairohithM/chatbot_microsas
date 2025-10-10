@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openAIAPI } from '@/lib/openai-api'
+import { getOpenAIInstance } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
@@ -402,8 +402,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate response from OpenAI
-    const response = await openAIAPI.generateChat(enhancedMessages as any, {
+    // Generate response from OpenAI using user's API key
+    const openAI = await getOpenAIInstance(userId?.toString(), botId)
+    const response = await openAI.generateChat(enhancedMessages as any, {
       model,
       temperature,
       max_tokens: maxTokens

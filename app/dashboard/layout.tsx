@@ -13,9 +13,8 @@ export default function Layout({
   const router = useRouter()
 
   const handleCreateBotClick = () => {
-    // This will trigger the create bot dialog in the dashboard page
-    // We'll use a custom event to communicate between layout and page
-    window.dispatchEvent(new CustomEvent('openCreateBotDialog'))
+    // Navigate to the new chatbot creation page
+    router.push('/dashboard/create-chatbot')
   }
 
   return (

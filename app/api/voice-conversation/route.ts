@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openAIAPI, OpenAIAPI } from '@/lib/openai-api'
+import { getOpenAIInstance, OpenAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
@@ -45,8 +45,9 @@ export async function POST(request: NextRequest) {
 
     // Step 1: Convert speech to text using STT
     console.log('[Voice Conversation] 🎤 Converting speech to text...')
-    // For STT, we'll use the global API key since we don't have bot context yet
-    const transcribedText = await openAIAPI.transcribeAudio(audioFile)
+    // Use bot's user API key for STT
+    const openAI = await getOpenAIInstance(undefined, botIdNum)
+    const transcribedText = await openAI.transcribeAudio(audioFile)
     
     if (!transcribedText || transcribedText.trim().length === 0) {
       return ApiResponse.badRequest('No speech detected in audio file')

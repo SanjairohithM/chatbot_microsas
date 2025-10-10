@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { extractStructuredContent, generateContentSummary, determineContentType, type ScrapedContent } from '@/lib/website-scraper'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
 import { KnowledgeDocumentService } from '@/lib/services/knowledge-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -128,11 +129,19 @@ Has Contact Info: ${scrapedContent.metadata.hasContactInfo}`
         console.log(`[Scrape Website] 🌲 Storing in Pinecone namespace: bot_${botIdInt}`)
         console.log(`[Scrape Website] Enhanced content length: ${enhancedContent.length} characters`)
 
+        // Get user's API key for embedding generation
+        const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botIdInt)
+        if (!userApiKey) {
+          console.error('[Scrape Website] ❌ No OpenAI API key found for bot, skipping Pinecone storage')
+          throw new Error('No OpenAI API key found for bot. Please configure your API key in settings.')
+        }
+
         await PineconeDocumentService.storeDocument(
           botIdInt,
           document.id,
           scrapedContent.title,
-          enhancedContent
+          enhancedContent,
+          userApiKey
         )
 
         // Update document status to indexed

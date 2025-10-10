@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { BotCard } from "@/components/dashboard/bot-card"
-import { CreateBotDialog } from "@/components/dashboard/create-bot-dialog"
 import { DeleteBotDialog } from "@/components/dashboard/delete-bot-dialog"
 import { useAuth } from "@/hooks/use-auth"
 import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
@@ -16,8 +15,6 @@ import { Plus, Search, Bot } from "lucide-react"
 export default function DashboardPage() {
   const [bots, setBots] = useState<BotType[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [editingBot, setEditingBot] = useState<BotType | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [botToDelete, setBotToDelete] = useState<BotType | null>(null)
   const { user, isLoading } = useAuth()
@@ -53,18 +50,6 @@ export default function DashboardPage() {
     loadBots()
   }, [user, isLoading, router])
 
-  // Listen for custom event from layout to open create bot dialog
-  useEffect(() => {
-    const handleOpenCreateBotDialog = () => {
-      setIsCreateDialogOpen(true)
-    }
-
-    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
-    
-    return () => {
-      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
-    }
-  }, [])
 
   const filteredBots = bots.filter(
     (bot) =>
@@ -213,63 +198,15 @@ export default function DashboardPage() {
   }
 
   const handleEditBot = (bot: BotType) => {
-    setEditingBot(bot)
-    setIsCreateDialogOpen(true)
+    // Navigate to edit page or open edit dialog
+    // For now, we'll just log it - you can implement edit functionality later
+    console.log('Edit bot:', bot)
   }
 
   const handleUpdateBot = async (botData: Partial<BotType>) => {
-    if (!editingBot) return
-
-    try {
-      const response = await fetch(`/api/bots/${editingBot.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(botData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update bot')
-      }
-
-      const result = await response.json()
-      const updatedBot = result.data
-
-      // Handle website scraping if website_url is provided and different from current
-      if ((botData as any).website_url && (botData as any).website_content && (botData as any).website_url !== (editingBot as any).website_url) {
-        try {
-          console.log(`[Dashboard] Scraping website for bot ${editingBot.id}: ${(botData as any).website_url}`)
-          
-          const scrapeResponse = await fetch('/api/scrape-website', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              url: (botData as any).website_url,
-              botId: editingBot.id
-            })
-          })
-
-          if (scrapeResponse.ok) {
-            const scrapeResult = await scrapeResponse.json()
-            console.log(`[Dashboard] Website scraped and stored for bot ${editingBot.id}:`, scrapeResult.data.pineconeStored)
-          } else {
-            console.error('Failed to scrape and store website:', await scrapeResponse.text())
-          }
-        } catch (scrapeError) {
-          console.error('Error scraping website:', scrapeError)
-        }
-      }
-
-      setBots(bots.map((bot) => (bot.id === editingBot.id ? updatedBot : bot)))
-      setEditingBot(null)
-    } catch (error) {
-      console.error('Error updating bot:', error)
-      // You could show a toast notification here
-    }
+    // This function is no longer used since we removed the edit dialog
+    // You can implement edit functionality later if needed
+    console.log('Update bot function called:', botData)
   }
 
   const handleDeleteBot = async (botId: number) => {
@@ -343,12 +280,12 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <div className="p-6 bg-blue-100 rounded-3xl w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent"></div>
+          <div className="flex justify-center items-center p-6 mx-auto mb-6 w-20 h-20 bg-blue-100 rounded-3xl">
+            <div className="w-8 h-8 rounded-full border-2 border-blue-500 animate-spin border-t-transparent"></div>
           </div>
-          <p className="text-gray-600 text-lg">Loading your dashboard...</p>
+          <p className="text-lg text-gray-600">Loading your dashboard...</p>
         </div>
       </div>
     )
@@ -359,51 +296,51 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="p-6 min-h-screen bg-gray-50">
       {/* Main Content Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bots</h1>
-        <p className="text-gray-600 text-lg">Manage and configure your AI chatbots</p>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">My Bots</h1>
+        <p className="text-lg text-gray-600">Manage and configure your AI chatbots</p>
       </div>
 
       {/* Search Bar */}
       <div className="mb-8">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 w-4 h-4 text-gray-400 transform -translate-y-1/2" />
           <Input
             placeholder="Search bots..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="py-2 pr-4 pl-10 rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
 
       {/* Bots Grid */}
       {filteredBots.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="p-6 bg-blue-100 rounded-3xl w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-            <Plus className="h-10 w-10 text-blue-600" />
+        <div className="py-16 text-center">
+          <div className="flex justify-center items-center p-6 mx-auto mb-6 w-24 h-24 bg-blue-100 rounded-3xl">
+            <Plus className="w-10 h-10 text-blue-600" />
           </div>
-          <h3 className="text-2xl font-semibold mb-3 text-gray-800">No bots found</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          <h3 className="mb-3 text-2xl font-semibold text-gray-800">No bots found</h3>
+          <p className="mx-auto mb-6 max-w-md text-gray-600">
             {searchQuery ? "Try adjusting your search terms." : "Get started by creating your first AI chatbot."}
           </p>
           {!searchQuery && (
             <Button 
               onClick={() => {
                 console.log('🎯 Create Bot button clicked!')
-                setIsCreateDialogOpen(true)
+                router.push('/dashboard/create-chatbot')
               }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+              className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 w-4 h-4" />
               Create Your First Bot
             </Button>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-6">
           {filteredBots.map((bot) => (
             <BotCard
               key={bot.id}
@@ -417,19 +354,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Create Bot Dialog */}
-      <CreateBotDialog
-        open={isCreateDialogOpen}
-        onOpenChange={(open) => {
-          console.log('🔄 Dialog open state changing to:', open)
-          setIsCreateDialogOpen(open)
-          if (!open) {
-            setEditingBot(null)
-          }
-        }}
-        onSave={handleCreateBot}
-        editingBot={editingBot}
-      />
 
       {/* Delete Bot Dialog */}
       <DeleteBotDialog

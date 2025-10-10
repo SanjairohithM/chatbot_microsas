@@ -4,6 +4,7 @@ import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { DocumentProcessorService } from '@/lib/services/document-processor.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
@@ -88,12 +89,19 @@ export class KnowledgeDocumentController {
         }
 
         if (processedContent) {
-          await PineconeDocumentService.storeDocument(
-            bot_id,
-            document.id,
-            title,
-            processedContent
-          )
+          // Get user's API key for embedding generation
+          const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(bot_id)
+          if (userApiKey) {
+            await PineconeDocumentService.storeDocument(
+              bot_id,
+              document.id,
+              title,
+              processedContent,
+              userApiKey
+            )
+          } else {
+            console.warn(`[KnowledgeDocumentController] No API key found for bot ${bot_id}, skipping Pinecone storage`)
+          }
         }
       } catch (procErr) {
         console.error('[KnowledgeDocumentController] Auto-process/store failed:', procErr)

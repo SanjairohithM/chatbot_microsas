@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openAIAPI } from '@/lib/openai-api'
+import { getOpenAIInstance } from '@/lib/openai-api'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
 
 export async function POST(request: NextRequest) {
@@ -94,8 +94,9 @@ For general questions or information requests, provide helpful answers without n
       { role: 'user' as const, content: message }
     ]
 
-    // Get response from OpenAI
-    const response = await openAIAPI.generateChat(messages, {
+    // Get response from OpenAI using bot's user API key
+    const openAI = await getOpenAIInstance(undefined, parseInt(botId))
+    const response = await openAI.generateChat(messages, {
       model: 'gpt-4o-mini',
       temperature: 0.7,
       max_tokens: 500
