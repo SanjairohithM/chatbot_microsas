@@ -121,14 +121,6 @@ class OmniX_Smart_Sync {
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_auto_speak');
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_continuous');
         register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_voice_interim_results');
-        
-        // Navigation settings
-        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_navigation_enabled');
-        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_auto_navigate');
-        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_navigation_delay');
-        
-        // Bot settings
-        register_setting('omnix_smart_sync_settings', 'omnix_smart_sync_bot_name');
     }
     
     public function admin_page() {
@@ -320,19 +312,6 @@ class OmniX_Smart_Sync {
             update_option('omnix_smart_sync_voice_continuous', isset($_POST['voice_continuous']));
             update_option('omnix_smart_sync_voice_interim_results', isset($_POST['voice_interim_results']));
             
-            // Bot settings
-            if (isset($_POST['bot_name'])) {
-                $bot_name = sanitize_text_field($_POST['bot_name']);
-                if (!empty($bot_name)) {
-                    update_option('omnix_smart_sync_bot_name', $bot_name);
-                }
-            }
-            
-            // Navigation settings
-            update_option('omnix_smart_sync_navigation_enabled', isset($_POST['navigation_enabled']));
-            update_option('omnix_smart_sync_auto_navigate', isset($_POST['auto_navigate']));
-            update_option('omnix_smart_sync_navigation_delay', intval($_POST['navigation_delay']));
-            
             echo '<div class="updated"><p>Settings saved successfully!</p></div>';
         }
         
@@ -350,11 +329,6 @@ class OmniX_Smart_Sync {
         $auto_speak = get_option('omnix_smart_sync_auto_speak', false);
         $voice_continuous = get_option('omnix_smart_sync_voice_continuous', false);
         $voice_interim_results = get_option('omnix_smart_sync_voice_interim_results', false);
-        
-        // Navigation settings
-        $navigation_enabled = get_option('omnix_smart_sync_navigation_enabled', true);
-        $auto_navigate = get_option('omnix_smart_sync_auto_navigate', true);
-        $navigation_delay = get_option('omnix_smart_sync_navigation_delay', 3);
         
         ?>
         <div class="wrap">
@@ -478,49 +452,6 @@ class OmniX_Smart_Sync {
                                 <input type="checkbox" name="voice_interim_results" <?php checked($voice_interim_results); ?>>
                                 Show interim speech recognition results
                             </label>
-                        </td>
-                    </tr>
-                </table>
-                
-                <h2>🤖 Bot Settings</h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Bot Name</th>
-                        <td>
-                            <input type="text" name="bot_name" value="<?php echo esc_attr($bot_name); ?>" class="regular-text">
-                            <p class="description">The name displayed in the chatbot interface (e.g., "Smart Assistant", "Customer Support Bot")</p>
-                        </td>
-                    </tr>
-                </table>
-                
-                <h2>🧭 Navigation Settings</h2>
-                <table class="form-table">
-                    <tr>
-                        <th scope="row">Enable Navigation</th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="navigation_enabled" <?php checked($navigation_enabled); ?>>
-                                Enable smart navigation features
-                            </label>
-                            <p class="description">Allow the chatbot to provide navigation buttons and auto-redirect users</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Auto Navigate</th>
-                        <td>
-                            <label>
-                                <input type="checkbox" name="auto_navigate" <?php checked($auto_navigate); ?>>
-                                Automatically redirect users without clicking
-                            </label>
-                            <p class="description">When users ask for navigation, automatically redirect them after a delay</p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th scope="row">Navigation Delay</th>
-                        <td>
-                            <input type="number" name="navigation_delay" value="<?php echo esc_attr($navigation_delay); ?>" min="1" max="10" class="small-text">
-                            <span>seconds</span>
-                            <p class="description">Delay before auto-navigation (1-10 seconds)</p>
                         </td>
                     </tr>
                 </table>
@@ -838,11 +769,6 @@ class OmniX_Smart_Sync {
         $voice_continuous = get_option('omnix_smart_sync_voice_continuous', false);
         $voice_interim_results = get_option('omnix_smart_sync_voice_interim_results', false);
         
-        // Navigation settings
-        $navigation_enabled = get_option('omnix_smart_sync_navigation_enabled', true);
-        $auto_navigate = get_option('omnix_smart_sync_auto_navigate', true);
-        $navigation_delay = get_option('omnix_smart_sync_navigation_delay', 3);
-        
         ?>
         <div id="omnix-chatbot-widget" 
              data-bot-id="<?php echo esc_attr($bot_id); ?>"
@@ -874,19 +800,12 @@ class OmniX_Smart_Sync {
             theme: "modern",
             enableVoice: true, // Force enable voice
             voiceLanguage: "<?php echo esc_js($voice_language); ?>",
-            // Navigation settings
-            navigationEnabled: <?php echo $navigation_enabled ? 'true' : 'false'; ?>,
-            autoNavigate: <?php echo $auto_navigate ? 'true' : 'false'; ?>,
-            navigationDelay: <?php echo intval($navigation_delay); ?>,
             voiceRate: <?php echo esc_js($voice_rate); ?>,
             voicePitch: <?php echo esc_js($voice_pitch); ?>,
             voiceVolume: <?php echo esc_js($voice_volume); ?>,
             autoSpeak: <?php echo $auto_speak ? 'true' : 'false'; ?>,
             voiceContinuous: <?php echo $voice_continuous ? 'true' : 'false'; ?>,
-            voiceInterimResults: <?php echo $voice_interim_results ? 'true' : 'false'; ?>,
-            
-            // Bot settings
-            botName: '<?php echo esc_js(get_option('omnix_smart_sync_bot_name', 'Smart Assistant')); ?>'
+            voiceInterimResults: <?php echo $voice_interim_results ? 'true' : 'false'; ?>
         };
         
         console.log('🎤 OmniX Smart Sync: Voice configuration loaded', window.omnixChatbot);
