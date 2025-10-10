@@ -89,7 +89,7 @@ export function SectionFooter() {
 
           {/* Product */}
           <nav aria-label="Product" className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Product</h3>
+            <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-heading)' }}>Product</h3>
             <ul className="space-y-3 text-muted-foreground">
               <li>
                 <Link href="#" className="hover:text-primary transition-colors duration-300">
@@ -121,7 +121,7 @@ export function SectionFooter() {
 
           {/* Company */}
           <nav aria-label="Company" className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Company</h3>
+            <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-heading)' }}>Company</h3>
             <ul className="space-y-3 text-muted-foreground">
               <li>
                 <Link href="#" className="hover:text-primary transition-colors duration-300">
@@ -153,7 +153,7 @@ export function SectionFooter() {
 
           {/* Support */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-foreground">Support</h3>
+            <h3 className="text-lg font-semibold text-foreground" style={{ fontFamily: 'var(--font-heading)' }}>Support</h3>
             <div className="space-y-3 text-muted-foreground">
               <p className="mb-4">
                 <span className="text-primary font-semibold">+1 (555) 123-4567</span>

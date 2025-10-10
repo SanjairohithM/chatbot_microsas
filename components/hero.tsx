@@ -22,15 +22,21 @@ export function Hero() {
 
         {/* Headline */}
         <div className="mx-auto mt-8 max-w-5xl text-center">
-          <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-foreground animate-slide-up" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-foreground animate-slide-up leading-tight" style={{ fontFamily: 'var(--font-heading)' }}>
             <span className="block animate-fade-in" style={{ animationDelay: '0.2s' }}>Meet AI-Powered</span>
-            <span className="block gradient-text animate-text-shimmer" style={{ 
+            <span className="block gradient-text animate-text-shimmer leading-tight" style={{ 
               animationDelay: '0.4s',
               background: 'linear-gradient(135deg, #8b5cf6, #06b6d4, #8b5cf6)',
               backgroundSize: '200% 200%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
+              backgroundClip: 'text',
+              color: 'transparent',
+              display: 'inline-block',
+              position: 'relative',
+              zIndex: 10,
+              lineHeight: '1.1',
+              paddingBottom: '0.1em'
             }}>Intelligent Chatbot</span>
             <span className="block text-4xl md:text-5xl mt-4 text-muted-foreground font-medium animate-fade-in" style={{ animationDelay: '0.6s', fontFamily: 'var(--font-body)' }}>Built for Your Sites</span>
           </h1>

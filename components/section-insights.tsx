@@ -32,6 +32,7 @@ export function SectionInsights() {
             <h2
               id="insights-heading"
               className="text-balance text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl"
+              style={{ fontFamily: 'var(--font-heading)' }}
             >
               Transform Customer
               Support with

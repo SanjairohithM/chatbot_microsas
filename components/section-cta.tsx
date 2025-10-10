@@ -95,7 +95,7 @@ export function SectionCta() {
             <div className="h-24 md:h-40" />
 
             <div className="flex flex-col items-start gap-6">
-              <h2 id="cta-title" className="text-pretty text-2xl font-semibold leading-tight md:text-4xl">
+              <h2 id="cta-title" className="text-pretty text-2xl font-semibold leading-tight md:text-4xl" style={{ fontFamily: 'var(--font-heading)' }}>
                 <span className="text-primary-foreground/90">Build Stronger </span>
                 <span className="font-extrabold text-primary-foreground">Customer</span>
                 <span className="text-primary-foreground/90"> Relationships With </span>
