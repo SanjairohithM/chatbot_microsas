@@ -24,14 +24,14 @@ function PricingCard({
       className={[
         "group relative flex flex-col rounded-2xl border text-foreground transition-all duration-300",
         "bg-card border-border",
-        plan.featured ? "border-primary shadow-lg" : "hover:border-primary/50 hover:shadow-md",
+        plan.featured ? "border-purple-300 shadow-lg" : "hover:border-purple-200 hover:shadow-md",
       ].join(" ")}
     >
       {/* Header bar */}
-      <div className="relative rounded-t-2xl bg-primary px-6 pt-6 pb-4 text-primary-foreground">
+      <div className="relative rounded-t-2xl bg-purple-200 px-6 pt-6 pb-4 text-purple-900">
         <div className="flex items-baseline justify-between">
           <div className="text-lg font-semibold" style={{ fontFamily: 'var(--font-heading)' }}>{plan.name}</div>
-          <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-medium" style={{ fontFamily: 'var(--font-accent)' }}>
+          <span className="rounded-full bg-purple-300/30 px-3 py-1 text-sm font-medium" style={{ fontFamily: 'var(--font-accent)' }}>
             {plan.period}
           </span>
         </div>
@@ -49,7 +49,7 @@ function PricingCard({
         <div className="space-y-3">
           {plan.features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
-              <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <CheckCircle2 aria-hidden className="mt-0.5 size-4 shrink-0 text-purple-400" />
               <p className="text-sm text-muted-foreground leading-relaxed">{f.label}</p>
             </div>
           ))}
@@ -60,8 +60,8 @@ function PricingCard({
             className={[
               "w-full rounded-lg py-3 text-base font-medium transition-all duration-200",
               plan.featured 
-                ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
-                : "bg-secondary hover:bg-secondary/80 text-secondary-foreground",
+                ? "bg-purple-300 hover:bg-purple-400 text-purple-900" 
+                : "bg-purple-100 hover:bg-purple-200 text-purple-800",
             ].join(" ")}
             variant={plan.featured ? "default" : "secondary"}
           >
