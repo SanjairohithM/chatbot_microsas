@@ -21,6 +21,7 @@ import {
   Volume2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 interface Message {
   id: string
@@ -326,7 +327,15 @@ export function WebsiteChatWidget({
         )}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 sm:p-5 bg-blue-600 text-white rounded-t-lg">
             <div className="flex items-center space-x-3">
-              <Bot className="h-6 w-6" />
+              <div className="relative w-8 h-8 rounded-full overflow-hidden bg-white/20 flex items-center justify-center">
+                <Image
+                  src="/images/chatbot1.jpg"
+                  alt="Chatbot Assistant"
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
+              </div>
               <CardTitle className="text-base font-medium">Website Assistant</CardTitle>
               {isTyping && (
                 <Badge variant="secondary" className="text-xs">
@@ -381,8 +390,14 @@ export function WebsiteChatWidget({
                         )}
                       >
                         {msg.role === 'assistant' && (
-                          <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Bot className="h-4 w-4 text-blue-600" />
+                          <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center">
+                            <Image
+                              src="/images/chatbot1.jpg"
+                              alt="Chatbot Assistant"
+                              width={32}
+                              height={32}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                         )}
                         <div
@@ -429,8 +444,14 @@ export function WebsiteChatWidget({
                     ))}
                     {isLoading && (
                       <div className="flex items-start space-x-3">
-                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <Bot className="h-4 w-4 text-blue-600" />
+                        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full overflow-hidden flex items-center justify-center">
+                          <Image
+                            src="/images/chatbot1.jpg"
+                            alt="Chatbot Assistant"
+                            width={32}
+                            height={32}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="bg-gray-100 rounded-lg px-4 py-3 text-sm">
                           <div className="flex space-x-2">
