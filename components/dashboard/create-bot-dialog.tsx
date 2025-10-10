@@ -186,7 +186,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-1/2 max-w-none h-[95vh] overflow-y-auto">
+      <DialogContent className="w-1/2 max-w-none h-[95vh] overflow-y-auto bg-white text-black">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
@@ -201,7 +201,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
         <form onSubmit={handleSubmit} className="space-y-6 h-full flex flex-col">
           <Tabs defaultValue="basic" className="w-full flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-5 gap-2 p-1">
+            <TabsList className="grid w-full grid-cols-5 gap-2 p-1 bg-white">
               <TabsTrigger value="basic" className="flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium">
                 <Bot className="h-4 w-4" />
                 Basic
@@ -225,65 +225,67 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsList>
 
             {/* Basic Configuration */}
-            <TabsContent value="basic" className="space-y-6 flex-1 overflow-y-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <TabsContent value="basic" className="space-y-6 flex-1 overflow-y-auto bg-white text-black">
+              <Card className="bg-white text-black border-gray-200">
+                <CardHeader className="bg-white text-black">
+                  <CardTitle className="flex items-center gap-2 text-black">
                     <Bot className="h-5 w-5" />
                     Basic Configuration
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Set up the fundamental settings for your chatbot
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 bg-white text-black">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Bot Name</Label>
+                      <Label htmlFor="name" className="text-black">Bot Name</Label>
                       <Input
                         id="name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         placeholder="Customer Support Bot"
                         required
+                        className="bg-white text-black border-gray-300"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="model">AI Model</Label>
+                      <Label htmlFor="model" className="text-black">AI Model</Label>
                       <Select value={formData.model} onValueChange={(value) => setFormData({ ...formData, model: value })}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white text-black border-gray-300">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gpt-4o">GPT-4o</SelectItem>
-                          <SelectItem value="gpt-4o-mini">GPT-4o Mini</SelectItem>
-                          <SelectItem value="o3-mini">o3-mini</SelectItem>
-                          <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                        <SelectContent className="bg-white text-black border-gray-300">
+                          <SelectItem value="gpt-4o" className="text-black">GPT-4o</SelectItem>
+                          <SelectItem value="gpt-4o-mini" className="text-black">GPT-4o Mini</SelectItem>
+                          <SelectItem value="o3-mini" className="text-black">o3-mini</SelectItem>
+                          <SelectItem value="gpt-3.5-turbo" className="text-black">GPT-3.5 Turbo</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-black">Description</Label>
                     <Input
                       id="description"
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Brief description of what this bot does"
                       required
+                      className="bg-white text-black border-gray-300"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Response Mode</Label>
+                    <Label className="text-black">Response Mode</Label>
                     <div className="grid grid-cols-2 gap-4">
                       <div 
                         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                           formData.interaction_mode === 'chat' 
                             ? 'border-blue-500 bg-blue-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                         onClick={() => setFormData({ ...formData, interaction_mode: 'chat' })}
                       >
@@ -297,7 +299,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           </div>
                           <div>
                             <h4 className={`font-medium ${
-                              formData.interaction_mode === 'chat' ? 'text-blue-900' : 'text-gray-900'
+                              formData.interaction_mode === 'chat' ? 'text-blue-900' : 'text-black'
                             }`}>
                               Chat Response
                             </h4>
@@ -312,7 +314,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                           formData.interaction_mode === 'voice' 
                             ? 'border-blue-500 bg-blue-50' 
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
                         }`}
                         onClick={() => setFormData({ ...formData, interaction_mode: 'voice' })}
                       >
@@ -326,7 +328,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           </div>
                           <div>
                             <h4 className={`font-medium ${
-                              formData.interaction_mode === 'voice' ? 'text-blue-900' : 'text-gray-900'
+                              formData.interaction_mode === 'voice' ? 'text-blue-900' : 'text-black'
                             }`}>
                               Voice Response
                             </h4>
@@ -337,14 +339,14 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         </div>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-600">
                       Choose how your bot will respond to users. Voice mode includes speech-to-text input and text-to-speech output.
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <Label>Temperature: {formData.temperature}</Label>
+                      <Label className="text-black">Temperature: {formData.temperature}</Label>
                       <Slider
                         value={[formData.temperature]}
                         onValueChange={([value]) => setFormData({ ...formData, temperature: value })}
@@ -353,13 +355,13 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         step={0.1}
                         className="w-full"
                       />
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-gray-600">
                         Controls randomness. Lower = more focused, Higher = more creative
                       </p>
                     </div>
 
                     <div className="space-y-3">
-                      <Label>Max Tokens: {formData.max_tokens}</Label>
+                      <Label className="text-black">Max Tokens: {formData.max_tokens}</Label>
                       <Slider
                         value={[formData.max_tokens]}
                         onValueChange={([value]) => setFormData({ ...formData, max_tokens: value })}
@@ -368,7 +370,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         step={100}
                         className="w-full"
                       />
-                      <p className="text-xs text-muted-foreground">Maximum length of bot responses</p>
+                      <p className="text-xs text-gray-600">Maximum length of bot responses</p>
                     </div>
                   </div>
                 </CardContent>
@@ -376,20 +378,20 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Website Integration */}
-            <TabsContent value="website" className="space-y-6 flex-1 overflow-y-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <TabsContent value="website" className="space-y-6 flex-1 overflow-y-auto bg-white text-black">
+              <Card className="bg-white text-black border-gray-200">
+                <CardHeader className="bg-white text-black">
+                  <CardTitle className="flex items-center gap-2 text-black">
                     <Globe className="h-5 w-5" />
                     Website Integration
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Connect your chatbot to your website for automatic knowledge extraction
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 bg-white text-black">
                   <div className="space-y-2">
-                    <Label htmlFor="website_url">Website URL</Label>
+                    <Label htmlFor="website_url" className="text-black">Website URL</Label>
                     <div className="flex gap-2">
                       <Input
                         id="website_url"
@@ -397,6 +399,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         onChange={(e) => setFormData({ ...formData, website_url: e.target.value })}
                         placeholder="https://your-website.com"
                         type="url"
+                        className="bg-white text-black border-gray-300"
                       />
                       <Button 
                         type="button" 
@@ -437,13 +440,13 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       checked={formData.auto_scrape}
                       onCheckedChange={(checked) => setFormData({ ...formData, auto_scrape: checked })}
                     />
-                    <Label htmlFor="auto_scrape">Auto-update content when website changes</Label>
+                    <Label htmlFor="auto_scrape" className="text-black">Auto-update content when website changes</Label>
                   </div>
 
                   {formData.website_content && (
                     <div className="space-y-2">
-                      <Label>Extracted Content Preview</Label>
-                      <div className="p-3 bg-muted rounded-lg max-h-32 overflow-y-auto text-sm">
+                      <Label className="text-black">Extracted Content Preview</Label>
+                      <div className="p-3 bg-gray-100 rounded-lg max-h-32 overflow-y-auto text-sm text-black">
                         {formData.website_content.substring(0, 300)}...
                       </div>
                     </div>
@@ -453,20 +456,20 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Knowledge Base */}
-            <TabsContent value="knowledge" className="space-y-6 flex-1 overflow-y-auto w-full">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <TabsContent value="knowledge" className="space-y-6 flex-1 overflow-y-auto w-full bg-white text-black">
+              <Card className="bg-white text-black border-gray-200">
+                <CardHeader className="bg-white text-black">
+                  <CardTitle className="flex items-center gap-2 text-black">
                     <FileText className="h-5 w-5" />
                     Knowledge Base
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Configure how your bot understands and responds to questions
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 bg-white text-black">
                   <div className="space-y-2">
-                    <Label htmlFor="system_prompt">System Prompt</Label>
+                    <Label htmlFor="system_prompt" className="text-black">System Prompt</Label>
                     <Textarea
                       id="system_prompt"
                       value={formData.system_prompt}
@@ -474,8 +477,9 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       placeholder="You are a helpful customer support assistant..."
                       rows={4}
                       required
+                      className="bg-white text-black border-gray-300"
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-600">
                       This defines your bot's personality and behavior. Include website content here for context.
                     </p>
                   </div>
@@ -483,14 +487,14 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                   {/* Document Upload Section - Moved up for better visibility */}
                   <div className="space-y-4 w-full">
                     <div className="space-y-2">
-                      <Label>Upload Documents</Label>
-                      <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                        <FileText className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground mb-2">Add documents to enhance your bot's knowledge</p>
+                      <Label className="text-black">Upload Documents</Label>
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
+                        <FileText className="h-6 w-6 text-gray-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 mb-2">Add documents to enhance your bot's knowledge</p>
                         <Input
                           type="file"
                           accept=".txt,.pdf,.docx,.md"
-                          className="max-w-xs mx-auto"
+                          className="max-w-xs mx-auto bg-white text-black border-gray-300"
                         onChange={async (e) => {
                           const file = e.target.files?.[0]
                           if (file) {
@@ -574,16 +578,17 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                         }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">Supported: TXT, PDF, DOCX, MD (Max 10MB)</p>
+                      <p className="text-xs text-gray-600">Supported: TXT, PDF, DOCX, MD (Max 10MB)</p>
                     </div>
 
                     {/* Direct Content Input */}
                     <div className="space-y-2">
-                      <Label htmlFor="document_content">Or paste content directly</Label>
+                      <Label htmlFor="document_content" className="text-black">Or paste content directly</Label>
                       <Textarea
                         id="document_content"
                         placeholder="Paste your document content here..."
                         rows={3}
+                        className="bg-white text-black border-gray-300"
                         onChange={(e) => {
                           let content = e.target.value
                           if (content.trim()) {
@@ -613,32 +618,32 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="response_style">Response Style</Label>
+                      <Label htmlFor="response_style" className="text-black">Response Style</Label>
                       <Select value={formData.response_style} onValueChange={(value) => setFormData({ ...formData, response_style: value })}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white text-black border-gray-300">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="friendly">Friendly</SelectItem>
-                          <SelectItem value="casual">Casual</SelectItem>
-                          <SelectItem value="formal">Formal</SelectItem>
+                        <SelectContent className="bg-white text-black border-gray-300">
+                          <SelectItem value="professional" className="text-black">Professional</SelectItem>
+                          <SelectItem value="friendly" className="text-black">Friendly</SelectItem>
+                          <SelectItem value="casual" className="text-black">Casual</SelectItem>
+                          <SelectItem value="formal" className="text-black">Formal</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="language">Language</Label>
+                      <Label htmlFor="language" className="text-black">Language</Label>
                       <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white text-black border-gray-300">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="en">English</SelectItem>
-                          <SelectItem value="es">Spanish</SelectItem>
-                          <SelectItem value="fr">French</SelectItem>
-                          <SelectItem value="de">German</SelectItem>
-                          <SelectItem value="zh">Chinese</SelectItem>
+                        <SelectContent className="bg-white text-black border-gray-300">
+                          <SelectItem value="en" className="text-black">English</SelectItem>
+                          <SelectItem value="es" className="text-black">Spanish</SelectItem>
+                          <SelectItem value="fr" className="text-black">French</SelectItem>
+                          <SelectItem value="de" className="text-black">German</SelectItem>
+                          <SelectItem value="zh" className="text-black">Chinese</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -646,13 +651,13 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
                   {/* Document Preview */}
                   {uploadedDocuments.length > 0 && (
-                    <div className="mt-4 p-3 bg-muted/30 rounded-lg">
-                      <p className="text-sm font-medium mb-2">
+                    <div className="mt-4 p-3 bg-gray-100 rounded-lg">
+                      <p className="text-sm font-medium mb-2 text-black">
                         Documents to be saved with bot: {uploadedDocuments.length}
                       </p>
                       <div className="space-y-1">
                         {uploadedDocuments.map((doc) => (
-                          <div key={doc.id} className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div key={doc.id} className="flex items-center gap-2 text-sm text-gray-600">
                             <FileText className="h-3 w-3" />
                             <span>{doc.title}</span>
                             <Badge variant="outline" className="text-xs">
@@ -675,31 +680,32 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Appearance */}
-            <TabsContent value="appearance" className="space-y-6 flex-1 overflow-y-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <TabsContent value="appearance" className="space-y-6 flex-1 overflow-y-auto bg-white text-black">
+              <Card className="bg-white text-black border-gray-200">
+                <CardHeader className="bg-white text-black">
+                  <CardTitle className="flex items-center gap-2 text-black">
                     <Palette className="h-5 w-5" />
                     Appearance & Branding
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Customize how your chatbot looks and feels
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 bg-white text-black">
                   <div className="space-y-2">
-                    <Label htmlFor="bot_avatar">Bot Avatar URL</Label>
+                    <Label htmlFor="bot_avatar" className="text-black">Bot Avatar URL</Label>
                     <Input
                       id="bot_avatar"
                       value={formData.bot_avatar}
                       onChange={(e) => setFormData({ ...formData, bot_avatar: e.target.value })}
                       placeholder="https://example.com/bot-avatar.png"
+                      className="bg-white text-black border-gray-300"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="primary_color">Primary Color</Label>
+                      <Label htmlFor="primary_color" className="text-black">Primary Color</Label>
                       <div className="flex gap-2">
                         <Input
                           id="primary_color"
@@ -712,13 +718,13 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           value={formData.primary_color}
                           onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
                           placeholder="#3b82f6"
-                          className="flex-1"
+                          className="flex-1 bg-white text-black border-gray-300"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="secondary_color">Secondary Color</Label>
+                      <Label htmlFor="secondary_color" className="text-black">Secondary Color</Label>
                       <div className="flex gap-2">
                         <Input
                           id="secondary_color"
@@ -731,14 +737,14 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           value={formData.secondary_color}
                           onChange={(e) => setFormData({ ...formData, secondary_color: e.target.value })}
                           placeholder="#1e40af"
-                          className="flex-1"
+                          className="flex-1 bg-white text-black border-gray-300"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 border rounded-lg bg-muted/30">
-                    <h4 className="font-medium mb-2">Preview</h4>
+                  <div className="p-4 border rounded-lg bg-gray-100">
+                    <h4 className="font-medium mb-2 text-black">Preview</h4>
                     <div className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
                       <div 
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium"
@@ -766,29 +772,29 @@ Be polite, professional, and helpful. If you don't know something, politely say 
             </TabsContent>
 
             {/* Advanced Settings */}
-            <TabsContent value="advanced" className="space-y-6 flex-1 overflow-y-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+            <TabsContent value="advanced" className="space-y-6 flex-1 overflow-y-auto bg-white text-black">
+              <Card className="bg-white text-black border-gray-200">
+                <CardHeader className="bg-white text-black">
+                  <CardTitle className="flex items-center gap-2 text-black">
                     <Settings className="h-5 w-5" />
                     Advanced Settings
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-gray-600">
                     Fine-tune advanced behavior and performance settings
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 bg-white text-black">
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="enable_memory"
                       checked={formData.enable_memory}
                       onCheckedChange={(checked) => setFormData({ ...formData, enable_memory: checked })}
                     />
-                    <Label htmlFor="enable_memory">Enable conversation memory</Label>
+                    <Label htmlFor="enable_memory" className="text-black">Enable conversation memory</Label>
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Max Conversation Length: {formData.max_conversation_length}</Label>
+                    <Label className="text-black">Max Conversation Length: {formData.max_conversation_length}</Label>
                     <Slider
                       value={[formData.max_conversation_length]}
                       onValueChange={([value]) => setFormData({ ...formData, max_conversation_length: value })}
@@ -797,7 +803,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                       step={5}
                       className="w-full"
                     />
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-gray-600">
                       Maximum number of messages to keep in conversation history
                     </p>
                   </div>
@@ -805,15 +811,15 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                   <Separator />
 
                   <div className="space-y-2">
-                    <Label>Deployment Options</Label>
+                    <Label className="text-black">Deployment Options</Label>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 border rounded-lg">
-                        <h4 className="font-medium text-sm">Website Widget</h4>
-                        <p className="text-xs text-muted-foreground">Embed as chat widget</p>
+                      <div className="p-3 border rounded-lg bg-white">
+                        <h4 className="font-medium text-sm text-black">Website Widget</h4>
+                        <p className="text-xs text-gray-600">Embed as chat widget</p>
                       </div>
-                      <div className="p-3 border rounded-lg">
-                        <h4 className="font-medium text-sm">API Integration</h4>
-                        <p className="text-xs text-muted-foreground">Use via REST API</p>
+                      <div className="p-3 border rounded-lg bg-white">
+                        <h4 className="font-medium text-sm text-black">API Integration</h4>
+                        <p className="text-xs text-gray-600">Use via REST API</p>
                       </div>
                     </div>
                   </div>

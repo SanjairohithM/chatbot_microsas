@@ -2899,20 +2899,20 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex gap-2 items-center">
+      <DialogContent className="w-[95vw] max-w-none h-[95vh] overflow-y-auto bg-white text-black">
+        <DialogHeader className="bg-white text-black">
+          <DialogTitle className="flex gap-2 items-center text-black">
             <ExternalLink className="w-5 h-5" />
             Export {bot.name} Widget
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-gray-600">
             Export your chatbot as an embeddable widget for external websites
           </DialogDescription>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-6 bg-white text-black">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-7 gap-1 p-1 w-full">
+            <TabsList className="grid grid-cols-7 gap-1 p-1 w-full bg-white">
               <TabsTrigger value="widget" className="flex gap-2 items-center">
                 <Code className="w-4 h-4" />
                 Widget
@@ -2943,38 +2943,38 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="customize" className="space-y-4 w-full">
+            <TabsContent value="customize" className="space-y-4 w-full bg-white text-black">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Primary Color</label>
+                  <label className="text-sm font-medium text-black">Primary Color</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={customization.primaryColor}
                       onChange={(e) => setCustomization(prev => ({ ...prev, primaryColor: e.target.value }))}
-                      className="w-12 h-10 rounded border"
+                      className="w-12 h-10 rounded border border-gray-300"
                     />
                     <Input
                       value={customization.primaryColor}
                       onChange={(e) => setCustomization(prev => ({ ...prev, primaryColor: e.target.value }))}
-                      className="flex-1"
+                      className="flex-1 bg-white text-black border-gray-300"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Secondary Color</label>
+                  <label className="text-sm font-medium text-black">Secondary Color</label>
                   <div className="flex gap-2">
                     <input
                       type="color"
                       value={customization.secondaryColor}
                       onChange={(e) => setCustomization(prev => ({ ...prev, secondaryColor: e.target.value }))}
-                      className="w-12 h-10 rounded border"
+                      className="w-12 h-10 rounded border border-gray-300"
                     />
                     <Input
                       value={customization.secondaryColor}
                       onChange={(e) => setCustomization(prev => ({ ...prev, secondaryColor: e.target.value }))}
-                      className="flex-1"
+                      className="flex-1 bg-white text-black border-gray-300"
                     />
                   </div>
                 </div>
@@ -3138,10 +3138,10 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="widget" className="space-y-4 w-full">
+            <TabsContent value="widget" className="space-y-4 w-full bg-white text-black">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium">JavaScript Widget Code</label>
+                  <label className="text-sm font-medium text-black">JavaScript Widget Code</label>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -3163,19 +3163,19 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                     </Button>
                   </div>
                 </div>
-                <ScrollArea className="p-3 w-full h-48 rounded border">
-                  <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                <ScrollArea className="p-3 w-full h-48 rounded border bg-gray-50">
+                  <pre className="text-xs whitespace-pre-wrap text-black">
                     {generateWidgetScript()}
                   </pre>
                 </ScrollArea>
               </div>
             </TabsContent>
 
-            <TabsContent value="iframe" className="space-y-4 w-full">
+            <TabsContent value="iframe" className="space-y-4 w-full bg-white text-black">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium">Standard Iframe Embed</label>
+                    <label className="text-sm font-medium text-black">Standard Iframe Embed</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
@@ -3188,8 +3188,8 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="p-3 w-full h-32 rounded border">
-                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                  <ScrollArea className="p-3 w-full h-32 rounded border bg-gray-50">
+                    <pre className="text-xs whitespace-pre-wrap text-black">
                       {generateIframeEmbed()}
                     </pre>
                   </ScrollArea>
@@ -3210,12 +3210,12 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                       </Button>
                     </div>
                   </div>
-                  <ScrollArea className="p-3 w-full h-32 rounded border">
-                    <pre className="text-xs whitespace-pre-wrap text-muted-foreground">
+                  <ScrollArea className="p-3 w-full h-32 rounded border bg-gray-50">
+                    <pre className="text-xs whitespace-pre-wrap text-black">
                       {generateMobileIframeEmbed()}
                     </pre>
                   </ScrollArea>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-gray-600">
                     This version shows a floating chat button that opens a chat window in the center of the screen when clicked. The button stays in the bottom-right corner, but the chat opens in the center. Perfect for embedding on external websites.
                   </p>
                 </div>
@@ -3255,11 +3255,11 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="wordpress" className="space-y-4 w-full">
+            <TabsContent value="wordpress" className="space-y-4 w-full bg-white text-black">
               <div className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium">WordPress Shortcode</label>
+                    <label className="text-sm font-medium text-black">WordPress Shortcode</label>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
