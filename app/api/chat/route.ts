@@ -6,7 +6,6 @@ import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
-import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -106,12 +105,6 @@ export async function POST(request: NextRequest) {
       return ApiResponse.notFound('Bot not found')
     }
 
-    // Get user's API key for this bot
-    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
-    if (!userApiKey) {
-      return ApiResponse.badRequest('No OpenAI API key found. Please configure your API key in settings.')
-    }
-
     // Use bot configuration or provided config
     let model = botConfig?.model || bot.model
     const temperature = botConfig?.temperature || bot.temperature
@@ -151,7 +144,7 @@ export async function POST(request: NextRequest) {
         console.log(`[Chat API] 🔍 Searching documents in Pinecone for bot ${botId} with message: "${messageText}"`)
         
         // Search documents using Pinecone vector search
-        const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3, userApiKey)
+        const pineconeResults = await PineconeDocumentService.searchDocuments(botId, messageText, 3)
         
         if (pineconeResults.length > 0) {
           console.log(`[Chat API] ✅ Found ${pineconeResults.length} relevant document chunks in Pinecone`)
@@ -402,6 +395,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Log the enhanced messages for debugging
+    console.log(`[Chat API] 🤖 Generating response with ${enhancedMessages.length} messages`)
+    console.log(`[Chat API] 📝 System prompt length: ${enhancedMessages[0]?.content?.length || 0} characters`)
+    console.log(`[Chat API] 📄 Document context length: ${documentContext?.length || 0} characters`)
+    console.log(`[Chat API] 💬 Conversation context length: ${conversationContext?.length || 0} characters`)
+    console.log(`[Chat API] 🔍 Search results: ${searchResults?.results?.length || 0} matches`)
+    
+    // Log conversation context details
+    if (conversationContext) {
+      console.log(`[Chat API] 💬 Conversation context preview: ${conversationContext.substring(0, 200)}...`)
+    }
+    
     // Generate response from OpenAI
     const response = await openAIAPI.generateChat(enhancedMessages as any, {
       model,

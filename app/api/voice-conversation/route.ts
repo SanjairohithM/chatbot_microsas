@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { openAIAPI, OpenAIAPI } from '@/lib/openai-api'
+import { openAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
 import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
-import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -41,11 +40,10 @@ export async function POST(request: NextRequest) {
       return ApiResponse.badRequest('Invalid bot ID format')
     }
 
-    logger.apiRequest('POST', '/api/voice-conversation', userId ? parseInt(userId, 10) : undefined)
+    logger.apiRequest('POST', '/api/voice-conversation', userId)
 
     // Step 1: Convert speech to text using STT
     console.log('[Voice Conversation] 🎤 Converting speech to text...')
-    // For STT, we'll use the global API key since we don't have bot context yet
     const transcribedText = await openAIAPI.transcribeAudio(audioFile)
     
     if (!transcribedText || transcribedText.trim().length === 0) {
@@ -60,12 +58,6 @@ export async function POST(request: NextRequest) {
       return ApiResponse.notFound('Bot not found')
     }
 
-    // Get user's API key for this bot
-    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botIdNum)
-    if (!userApiKey) {
-      return ApiResponse.badRequest('No OpenAI API key found. Please configure your API key in settings.')
-    }
-
     // Step 3: Get enhanced document context
     let documentContext = ''
     let searchResults = null
@@ -74,7 +66,7 @@ export async function POST(request: NextRequest) {
     try {
       console.log(`[Voice Conversation] 🔍 Searching documents in Pinecone for bot ${botIdNum}`)
       
-      const pineconeResults = await PineconeDocumentService.searchDocuments(botIdNum, transcribedText, 3, userApiKey)
+      const pineconeResults = await PineconeDocumentService.searchDocuments(botIdNum, transcribedText, 3)
       
       if (pineconeResults.length > 0) {
         console.log(`[Voice Conversation] ✅ Found ${pineconeResults.length} relevant document chunks`)
@@ -186,10 +178,9 @@ export async function POST(request: NextRequest) {
       content: enhancedPrompt
     })
 
-    // Step 6: Generate response from OpenAI using user's API key
+    // Step 6: Generate response from OpenAI
     console.log('[Voice Conversation] 🤖 Generating AI response...')
-    const userOpenAI = new OpenAIAPI(userApiKey)
-    const response = await userOpenAI.generateChat(enhancedMessages as any, {
+    const response = await openAIAPI.generateChat(enhancedMessages as any, {
       model: bot.model === 'deepseek-chat' || bot.model === 'deepseek-coder' ? 'gpt-4o-mini' : bot.model,
       temperature: bot.temperature,
       max_tokens: bot.max_tokens
@@ -198,9 +189,9 @@ export async function POST(request: NextRequest) {
     const assistantMessage = response.message || 'Sorry, I could not generate a response.'
     console.log(`[Voice Conversation] 💬 AI Response: "${assistantMessage}"`)
 
-    // Step 7: Convert response to speech using TTS with user's API key
+    // Step 7: Convert response to speech using TTS
     console.log('[Voice Conversation] 🔊 Converting response to speech...')
-    const audioBuffer = await userOpenAI.synthesizeSpeech(assistantMessage, {
+    const audioBuffer = await openAIAPI.synthesizeSpeech(assistantMessage, {
       voice: voice || 'alloy',
       model: 'tts-1',
       format: 'mp3'

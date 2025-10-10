@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
-import { Bot, MessageSquare, Database, BarChart3, Settings, LogOut, Menu, X, Rocket, Key } from "lucide-react"
+import { Bot, MessageSquare, Database, BarChart3, Settings, LogOut, Menu, X, Rocket } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -14,8 +14,6 @@ const navigation = [
   { name: "Chat & Test", href: "/dashboard/chat", icon: MessageSquare },
   // { name: "Knowledge Base", href: "/dashboard/knowledge", icon: Database },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
-  { name: "API Keys", href: "/dashboard/api-keys", icon: Key },
-
   // { name: "Deployment", href: "/dashboard/deployment", icon: Rocket },
   // { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ]
@@ -28,24 +26,24 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="fixed top-4 left-4 z-50 lg:hidden">
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button variant="outline" size="sm" onClick={() => setIsMobileOpen(!isMobileOpen)}>
-          {isMobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          {isMobileOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </Button>
       </div>
 
       {/* Sidebar */}
       <div
         className={cn(
-          "w-64 h-full bg-black rounded-xl shadow-2xl",
+          "w-64 bg-black rounded-xl shadow-2xl h-full",
           isMobileOpen ? "block" : "hidden lg:block",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex justify-between items-center p-2 border-b border-gray-700">
+          <div className="flex items-center justify-between p-2 border-b border-gray-700">
             <div className="space-y-1">
-              <div className="flex gap-3 items-center w-full h-full">
+              <div className="flex items-center gap-3 w-full h-full">
                 <Image
                   src="/Logo.png"
                   alt="Logo"
@@ -68,14 +66,14 @@ export function Sidebar() {
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   className={cn(
-                    "flex gap-3 items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group",
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
                     isActive
-                      ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg"
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
                       : "text-gray-300 hover:bg-gray-800 hover:text-white",
                   )}
                 >
                   <item.icon className={cn(
-                    "w-5 h-5 transition-colors duration-200",
+                    "h-5 w-5 transition-colors duration-200",
                     isActive ? "text-white" : "text-gray-400 group-hover:text-white"
                   )} />
                   {item.name}
@@ -86,12 +84,12 @@ export function Sidebar() {
 
           {/* Pro Plan Card */}
           <div className="p-4">
-            <div className="p-4 text-white bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl">
-              <h3 className="mb-1 text-sm font-semibold">Pro Plan</h3>
-              <p className="mb-3 text-xs text-white/80">Strengthen artificial intelligence</p>
-              <div className="flex justify-between items-center">
+            <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl p-4 text-white">
+              <h3 className="font-semibold text-sm mb-1">Pro Plan</h3>
+              <p className="text-xs text-white/80 mb-3">Strengthen artificial intelligence</p>
+              <div className="flex items-center justify-between">
                 <span className="text-lg font-bold">$10 / mo</span>
-                <Button size="sm" className="px-3 py-1 text-xs text-orange-500 bg-white hover:bg-gray-100">
+                <Button size="sm" className="bg-white text-orange-500 hover:bg-gray-100 text-xs px-3 py-1">
                   Get
                 </Button>
               </div>
@@ -103,9 +101,9 @@ export function Sidebar() {
             <Button
               variant="ghost"
               onClick={signOut}
-              className="justify-start w-full text-gray-300 rounded-xl transition-all duration-200 hover:bg-red-900 hover:text-red-300"
+              className="w-full justify-start text-gray-300 hover:bg-red-900 hover:text-red-300 transition-all duration-200 rounded-xl"
             >
-              <LogOut className="mr-2 w-4 h-4" />
+              <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
           </div>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { OpenAIService } from '@/lib/services/openai.service'
-import { UserApiKeyService } from '@/lib/services/user-api-key.service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,23 +33,14 @@ Key information about Convox:
 
 Keep responses concise but informative. If you don't know something specific, suggest they contact our support team or visit our dashboard for more details.`
 
-    // Get user's API key for this bot
-    const userApiKey = await UserApiKeyService.getApiKeyByBotWithFallback(botId)
-    if (!userApiKey) {
-      return NextResponse.json(
-        { error: 'No OpenAI API key found. Please configure your API key in settings.' },
-        { status: 400 }
-      )
-    }
-
-    // Call OpenAI API using the service with user's API key
+    // Call OpenAI API using the service
     const response = await OpenAIService.generateResponse([
       { role: 'system', content: systemPrompt },
       { role: 'user', content: message }
     ], {
       temperature: 0.7,
       max_tokens: 500
-    }, userApiKey)
+    })
 
     console.log(`[Website Chat] Generated response:`, response)
 
