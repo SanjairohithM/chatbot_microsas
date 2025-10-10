@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Sidebar } from "@/components/dashboard/sidebar"
 import { KnowledgeDocumentCard } from "@/components/dashboard/knowledge-document-card"
 import { AddDocumentDialog } from "@/components/dashboard/add-document-dialog"
 import { useAuth } from "@/hooks/use-auth"
@@ -45,6 +44,20 @@ export default function KnowledgeBasePage() {
       setSelectedBotId(botId)
     }
   }, [user, isLoading, router, searchParams])
+
+  // Listen for custom event from layout to open create bot dialog
+  useEffect(() => {
+    const handleOpenCreateBotDialog = () => {
+      // Navigate to dashboard page to create bot
+      router.push("/dashboard")
+    }
+
+    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    
+    return () => {
+      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    }
+  }, [router])
 
   const filteredDocuments = documents.filter((doc) => {
     const matchesBot = selectedBotId === "all" || doc.bot_id === Number.parseInt(selectedBotId)
@@ -114,11 +127,7 @@ export default function KnowledgeBasePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-
-      <div className="lg:pl-64">
-        <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
@@ -230,6 +239,5 @@ export default function KnowledgeBasePage() {
         editingDocument={editingDocument}
         botId={selectedBotId !== "all" ? Number.parseInt(selectedBotId) : bots[0]?.id || 1}
       />
-    </div>
   )
 }

@@ -35,13 +35,13 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "w-64 bg-black rounded-xl shadow-2xl h-full",
+          "w-64 bg-white border border-gray-200 rounded-xl shadow-2xl h-full",
           isMobileOpen ? "block" : "hidden lg:block",
         )}
       >
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between p-2 border-b border-gray-700">
+          <div className="flex items-center justify-between p-2 border-b border-gray-200">
             <div className="space-y-1">
               <div className="flex items-center gap-3 w-full h-full">
                 <Image
@@ -52,7 +52,7 @@ export function Sidebar() {
                   className="object-contain"
                 />
               </div>
-              <p className="px-8 text-sm text-gray-300">Welcome back, {user?.name}</p>
+              <p className="px-8 text-sm text-gray-600">Welcome back, {user?.name}</p>
             </div>
           </div>
 
@@ -69,12 +69,12 @@ export function Sidebar() {
                     "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group",
                     isActive
                       ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white",
+                      : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
                   )}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 transition-colors duration-200",
-                    isActive ? "text-white" : "text-gray-400 group-hover:text-white"
+                    isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700"
                   )} />
                   {item.name}
                 </Link>
@@ -97,11 +97,11 @@ export function Sidebar() {
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-700">
+          <div className="p-4 border-t border-gray-200">
             <Button
               variant="ghost"
               onClick={signOut}
-              className="w-full justify-start text-gray-300 hover:bg-red-900 hover:text-red-300 transition-all duration-200 rounded-xl"
+              className="w-full justify-start text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 rounded-xl"
             >
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out

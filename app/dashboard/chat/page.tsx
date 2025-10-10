@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Sidebar } from "@/components/dashboard/sidebar"
 import { ConversationSidebar } from "@/components/dashboard/conversation-sidebar"
 import { ChatMessage } from "@/components/dashboard/chat-message"
 import { ChatInput } from "@/components/dashboard/chat-input"
@@ -139,6 +138,20 @@ export default function ChatPage() {
     // Scroll to bottom when messages change
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
+
+  // Listen for custom event from layout to open create bot dialog
+  useEffect(() => {
+    const handleOpenCreateBotDialog = () => {
+      // Navigate to dashboard page to create bot
+      router.push("/dashboard")
+    }
+
+    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    
+    return () => {
+      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    }
+  }, [router])
 
   const selectedBot = bots.find((bot) => bot.id === Number.parseInt(selectedBotId))
   const selectedConversation = conversations.find((conv) => conv.id === selectedConversationId)
@@ -335,38 +348,6 @@ export default function ChatPage() {
 
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col bg-white">
-          {/* Header */}
-          <div className="p-6 border-b border-gray-200 bg-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-gray-900">Chat & Test</h1>
-                    <p className="text-sm text-gray-600">Test your bots in real-time</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                {selectedBot && (
-                  <Badge className="bg-green-100 text-green-800 border-green-200 px-3 py-1">
-                    {selectedBot.model}
-                  </Badge>
-                )}
-                {/* <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
-                  <Play className="h-4 w-4 mr-2" />
-                  Test
-                </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                  <Settings className="h-4 w-4" />
-                </Button> */}
-              </div>
-            </div>
-          </div>
-
           {/* Chat Content */}
           {!selectedBot ? (
             <div className="flex-1 flex items-center justify-center bg-gray-50">

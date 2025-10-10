@@ -2921,22 +2921,22 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                 <Globe className="w-4 h-4" />
                 Iframe
               </TabsTrigger>
-              <TabsTrigger value="react" className="flex gap-2 items-center">
+              {/* <TabsTrigger value="react" className="flex gap-2 items-center">
                 <Settings className="w-4 h-4" />
                 React
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger value="wordpress" className="flex gap-2 items-center">
                 <FileText className="w-4 h-4" />
                 WordPress
               </TabsTrigger>
-              <TabsTrigger value="database" className="flex gap-2 items-center">
+              {/* <TabsTrigger value="database" className="flex gap-2 items-center">
                 <Database className="w-4 h-4" />
                 Database
-              </TabsTrigger>
-              <TabsTrigger value="tokens" className="flex gap-2 items-center">
+              </TabsTrigger> */}
+              {/* <TabsTrigger value="tokens" className="flex gap-2 items-center">
                 <Key className="w-4 h-4" />
                 Tokens
-              </TabsTrigger>
+              </TabsTrigger> */}
               <TabsTrigger value="customize" className="flex gap-2 items-center">
                 <Settings className="w-4 h-4" />
                 Customize
@@ -3279,7 +3279,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   </ScrollArea>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <label className="text-sm font-medium">WordPress Plugin Files (Legacy)</label>
                     <div className="flex gap-2">
@@ -3297,7 +3297,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   <p className="text-xs text-muted-foreground">
                     Download the complete WordPress plugin with all necessary files for installation.
                   </p>
-                </div>
+                </div> */}
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -3546,7 +3546,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
               </div>
             </TabsContent>
 
-            <TabsContent value="database" className="space-y-4 w-full">
+            {/* <TabsContent value="database" className="space-y-4 w-full">
               <div className="space-y-4">
                 <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
                   <h4 className="flex gap-2 items-center mb-2 text-lg font-semibold text-blue-800">
@@ -3728,7 +3728,7 @@ export default ${bot.name.replace(/\s+/g, '')}Chatbot;`
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </TabsContent> */}
           </Tabs>
           
           <div className="p-4 mt-6 rounded-lg bg-muted">

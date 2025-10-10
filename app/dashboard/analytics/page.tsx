@@ -105,6 +105,20 @@ export default function AnalyticsPage() {
     }
   }, [selectedBotId, timeRange, bots])
 
+  // Listen for custom event from layout to open create bot dialog
+  useEffect(() => {
+    const handleOpenCreateBotDialog = () => {
+      // Navigate to dashboard page to create bot
+      router.push("/dashboard")
+    }
+
+    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    
+    return () => {
+      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    }
+  }, [router])
+
   // Calculate aggregate metrics from real data
   const totalConversations = analytics.reduce((sum, analytics) => sum + analytics.total_conversations, 0)
   const totalMessages = analytics.reduce((sum, analytics) => sum + analytics.total_messages, 0)
@@ -198,7 +212,7 @@ export default function AnalyticsPage() {
       }}></div>
       
       <div className="relative z-10">
-        {/* Analytics Header */}
+        {/* Analytics Controls */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

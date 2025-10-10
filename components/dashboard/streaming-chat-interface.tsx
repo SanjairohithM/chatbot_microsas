@@ -380,12 +380,12 @@ export function StreamingChatInterface({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Header */}
-      <Card className="mb-4">
+      <Card className="mb-4 bg-gray-50 border-gray-200">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Response Mode:</span>
+              <Settings className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-600">Response Mode:</span>
               <div className="flex items-center gap-2">
                 {responseModel === 'voice' ? (
                   <Volume2 className="h-4 w-4 text-blue-600" />
@@ -397,12 +397,12 @@ export function StreamingChatInterface({
                 }`}>
                   {responseModel === 'voice' ? 'Voice Response' : 'Chat Response'}
                 </span>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs bg-white text-gray-700 border-gray-300">
                   {bot?.name || 'Bot'}
                 </Badge>
               </div>
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-400">
               Mode set during bot creation
             </div>
           </div>

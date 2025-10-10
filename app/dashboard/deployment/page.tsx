@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Sidebar } from "@/components/dashboard/sidebar"
 import { DeploymentCard } from "@/components/dashboard/deployment-card"
 import { DeploymentSettingsDialog } from "@/components/dashboard/deployment-settings-dialog"
 import { WidgetEmbedCode } from "@/components/dashboard/chatbot-widget"
@@ -39,6 +38,20 @@ export default function DeploymentPage() {
     const userBots = mockBots.filter((bot) => bot.user_id === user?.id)
     setBots(userBots)
   }, [user, isLoading, router])
+
+  // Listen for custom event from layout to open create bot dialog
+  useEffect(() => {
+    const handleOpenCreateBotDialog = () => {
+      // Navigate to dashboard page to create bot
+      router.push("/dashboard")
+    }
+
+    window.addEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    
+    return () => {
+      window.removeEventListener('openCreateBotDialog', handleOpenCreateBotDialog)
+    }
+  }, [router])
 
   const filteredBots = bots.filter((bot) => {
     const matchesSearch =
@@ -141,11 +154,7 @@ export default function DeploymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Sidebar />
-
-      <div className="lg:pl-64">
-        <div className="p-6 lg:p-8">
+    <div className="p-6 lg:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
             <div>
@@ -454,6 +463,5 @@ export default function DeploymentPage() {
         bot={selectedBot}
         onSave={handleSaveSettings}
       />
-    </div>
   )
 }

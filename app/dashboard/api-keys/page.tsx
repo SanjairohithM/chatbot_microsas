@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Sidebar } from "@/components/dashboard/sidebar"
 import { useAuth } from "@/hooks/use-auth"
 import { Key, Eye, EyeOff, Settings, Save } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
@@ -102,10 +101,7 @@ export default function ApiKeysPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* <Sidebar /> */}
-
-      <div className="lg:pl-64">
+    <div>
         {/* Top Header Bar */}
         <div className="px-6 py-4 bg-white border-b border-gray-200">
           <div className="flex gap-4 items-center">
@@ -191,7 +187,5 @@ export default function ApiKeysPage() {
             </Card>
           </div>
         </div>
-      </div>
-    </div>
   )
 }

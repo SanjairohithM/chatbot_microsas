@@ -238,7 +238,7 @@ export function PrefetchChatInput({
       )}
 
       {/* Debug: Test Voice Transcript (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* {process.env.NODE_ENV === 'development' && (
         <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
           <p className="text-yellow-800 mb-2">Debug: Test voice transcript callback</p>
           <Button
@@ -256,7 +256,7 @@ export function PrefetchChatInput({
             Test Voice Transcript
           </Button>
         </div>
-      )}
+      )} */}
 
       {/* Image Preview */}
       {imageUrl && (
