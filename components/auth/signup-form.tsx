@@ -32,7 +32,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
   }
 
   return (
-    <div className="h-screen relative overflow-hidden">
+    <div className="h-screen relative overflow-hidden dashboard-page">
       {/* Full Background Image with Slanting */}
       <div className="absolute inset-0">
         <img 
