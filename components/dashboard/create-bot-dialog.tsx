@@ -186,7 +186,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-1/2 max-w-none h-[95vh] overflow-y-auto bg-white text-black">
+      <DialogContent className="w-1/2 max-w-none h-[95vh] overflow-y-auto bg-white text-black dashboard-page">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-5 w-5" />
