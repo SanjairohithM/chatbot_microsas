@@ -35,7 +35,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
       {/* Full Background Image with Slanting */}
       <div className="absolute inset-0">
         <img 
-          src="/images/loginrobo.jpg" 
+          src="/images/full-shot-adult-posing-with-light.jpg" 
           alt="AI Chatbot Background" 
           className="w-full h-full object-cover"
         />
@@ -54,7 +54,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
               {/* Background Image */}
               <div className="absolute inset-0">
                 <img 
-                  src="/images/loginrobo.jpg" 
+                  src="/images/full-shot-adult-posing-with-light.jpg" 
                   alt="AI Chatbot Background" 
                   className="w-full h-full object-cover"
                 />
