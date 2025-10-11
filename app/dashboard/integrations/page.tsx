@@ -33,7 +33,6 @@ import {
   Clock
 } from 'lucide-react'
 import { WordPressSite } from '@/lib/types'
-import { DashboardLayout } from '@/components/dashboard/dashboard-layout'
 
 export default function IntegrationsPage() {
   const [sites, setSites] = useState<WordPressSite[]>([])
@@ -157,7 +156,7 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <>
+    <div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -322,6 +321,6 @@ export default function IntegrationsPage() {
           )}
         </CardContent>
       </Card>
-    </>
+    </div>
   )
 }
