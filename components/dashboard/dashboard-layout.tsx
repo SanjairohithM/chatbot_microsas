@@ -13,7 +13,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, onCreateBotClick }: DashboardLayoutProps) {
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden p-4">
+    <div className="h-screen bg-gray-50 overflow-hidden p-4 dashboard-page">
       <div className="flex h-full gap-4">
         <Sidebar />
 
