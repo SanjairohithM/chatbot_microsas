@@ -1577,7 +1577,7 @@ For technical support or questions about the Database Chatbot API, please refer 
   }
 
   const downloadSmartSyncPlugin = async () => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://1d4dc51ea0d1.ngrok-free.app '
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://72d0939e1715.ngrok-free.app '
     
     try {
       // Import JSZip dynamically to avoid SSR issues

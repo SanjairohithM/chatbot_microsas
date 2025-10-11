@@ -131,43 +131,44 @@ export function UrlScraper({ botId, onScrapingComplete }: UrlScraperProps) {
   }, [botId]);
 
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader>
-        <CardTitle>URL Scraper</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-4xl bg-white border-gray-200">
+      <CardHeader className="bg-white">
+        <CardTitle className="text-gray-900">URL Scraper</CardTitle>
+        <CardDescription className="text-gray-600">
           Enter URLs to scrape content and store in your bot's knowledge base
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 bg-white">
         {error && (
-          <Alert variant="destructive">
-            <XCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="bg-red-50 border-red-200">
+            <XCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">URLs to Scrape</label>
+          <label className="text-sm font-medium text-gray-700">URLs to Scrape</label>
           {urls.map((url, index) => (
             <div key={index} className="flex gap-2">
               <Input
                 value={url}
                 onChange={(e) => updateUrl(index, e.target.value)}
                 placeholder="https://example.com/page"
-                className={url && !isValidUrl(url) ? 'border-red-500' : ''}
+                className={`bg-white border-gray-300 text-gray-900 placeholder-gray-500 ${url && !isValidUrl(url) ? 'border-red-500' : ''}`}
               />
               {urls.length > 1 && (
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => removeUrl(index)}
+                  className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               )}
             </div>
           ))}
-          <Button variant="outline" onClick={addUrl} className="w-full">
+          <Button variant="outline" onClick={addUrl} className="w-full bg-white border-gray-300 text-gray-700 hover:bg-gray-50">
             <Plus className="h-4 w-4 mr-2" />
             Add URL
           </Button>
@@ -176,7 +177,7 @@ export function UrlScraper({ botId, onScrapingComplete }: UrlScraperProps) {
         <Button 
           onClick={scrapeUrls} 
           disabled={isScraping || urls.every(url => !url.trim())}
-          className="w-full"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
         >
           {isScraping ? (
             <>
@@ -191,31 +192,32 @@ export function UrlScraper({ botId, onScrapingComplete }: UrlScraperProps) {
         {/* Existing Scraped URLs */}
         {!isLoadingExisting && existingUrls.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-700">
+            <h3 className="text-sm font-medium text-gray-600">
               Already Scraped URLs ({existingUrls.length})
             </h3>
-            <div className="space-y-2 max-h-40 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+            <div className="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-gray-50">
               {existingUrls.map((url, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-2 bg-white rounded border"
+                  className="flex items-center justify-between p-2 bg-white rounded border border-gray-200 shadow-sm"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-medium truncate">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <span className="text-sm font-medium text-gray-800 truncate">
                         {url.title}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{url.url}</p>
+                    <p className="text-xs text-gray-600 truncate">{url.url}</p>
                     {url.vectorId && (
-                      <p className="text-xs text-blue-600 font-mono">{url.vectorId}</p>
+                      <p className="text-xs text-blue-700 font-mono">{url.vectorId}</p>
                     )}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => window.open(url.url, '_blank')}
+                    className="text-gray-600 hover:text-gray-800 hover:bg-gray-100"
                   >
                     <ExternalLink className="h-4 w-4" />
                   </Button>
@@ -227,29 +229,29 @@ export function UrlScraper({ botId, onScrapingComplete }: UrlScraperProps) {
 
         {results.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">
+            <h3 className="text-sm font-medium text-gray-600">
               New Scraping Results ({successCount}/{totalCount} successful)
             </h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {results.map((result, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg bg-white shadow-sm"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       {result.success ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-4 w-4 text-green-600" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
+                        <XCircle className="h-4 w-4 text-red-600" />
                       )}
-                      <span className="text-sm font-medium truncate">
+                      <span className="text-sm font-medium text-gray-800 truncate">
                         {result.title || result.url}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{result.url}</p>
+                    <p className="text-xs text-gray-600 truncate">{result.url}</p>
                     {result.error && (
-                      <p className="text-xs text-red-500">{result.error}</p>
+                      <p className="text-xs text-red-600">{result.error}</p>
                     )}
                   </div>
                 </div>
