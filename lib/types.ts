@@ -78,3 +78,16 @@ export interface DailySummary {
   generated_at: string
   method: 'keyword' | 'ai'
 }
+
+export interface WordPressSite {
+  id: string
+  site_url: string
+  site_name: string
+  admin_email?: string
+  wordpress_version?: string
+  access_token: string
+  created_at: string
+  last_sync?: string
+  is_active: boolean
+  bots?: Bot[]
+}

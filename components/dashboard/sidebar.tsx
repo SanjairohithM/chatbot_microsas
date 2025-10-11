@@ -6,12 +6,13 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/use-auth"
-import { Bot, MessageSquare, Database, BarChart3, Settings, LogOut, Menu, X, Rocket } from "lucide-react"
+import { Bot, MessageSquare, Database, BarChart3, Settings, LogOut, Menu, X, Rocket, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
   { name: "Bots", href: "/dashboard", icon: Bot },
   { name: "Chat & Test", href: "/dashboard/chat", icon: MessageSquare },
+  { name: "Integrations", href: "/dashboard/integrations", icon: Globe },
   // { name: "Knowledge Base", href: "/dashboard/knowledge", icon: Database },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   // { name: "Deployment", href: "/dashboard/deployment", icon: Rocket },
