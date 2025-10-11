@@ -106,7 +106,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
                   </div>
                   
                   <div className="mb-6">
-                    <h2 className="text-3xl font-bold text-slate-900 mb-2">Hi Designer.</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-2">Welcome to omnixchat.</h2>
                     <p className="text-slate-600">Welcome to omnixchat.</p>
                   </div>
                 </div>
