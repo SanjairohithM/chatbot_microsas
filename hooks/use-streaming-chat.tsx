@@ -6,6 +6,7 @@ export interface StreamingMessage {
   content: string
   isStreaming?: boolean
   timestamp: Date
+  imageUrl?: string
 }
 
 export interface StreamingChatOptions {
@@ -108,13 +109,26 @@ export function useStreamingChat() {
                   setCurrentMessage(updatedMessage)
                   options.onMessageUpdate?.(updatedMessage)
                   break
+
+                case 'image':
+                  // Handle image generation response
+                  const imageMessage: StreamingMessage = {
+                    ...streamingMessage,
+                    content: data.data.content,
+                    imageUrl: data.data.imageUrl || data.data.image_url, // Support both formats
+                    isStreaming: false,
+                    timestamp: new Date(),
+                  }
+                  setCurrentMessage(imageMessage)
+                  options.onMessageUpdate?.(imageMessage)
+                  break
                   
                 case 'complete':
                   messageId = data.data.messageId?.toString() || `msg_${Date.now()}`
                   const completeMessage: StreamingMessage = {
-                    id: messageId,
+                    id: messageId || `msg_${Date.now()}`,
                     role: 'assistant',
-                    content: data.data.fullResponse,
+                    content: data.data.fullResponse || '',
                     isStreaming: false,
                     timestamp: new Date(),
                   }

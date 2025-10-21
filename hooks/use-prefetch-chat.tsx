@@ -205,6 +205,19 @@ export function usePrefetchChat() {
                   setCurrentMessage(updatedMessage)
                   options.onMessageUpdate?.(updatedMessage)
                   break
+
+                case 'image':
+                  // Handle image generation response
+                  const imageMessage = {
+                    ...streamingMessage,
+                    content: data.data.content,
+                    imageUrl: data.data.imageUrl || data.data.image_url, // Support both formats
+                    isStreaming: false,
+                    timestamp: new Date(),
+                  }
+                  setCurrentMessage(imageMessage)
+                  options.onMessageUpdate?.(imageMessage)
+                  break
                   
                 case 'complete':
                   messageId = data.data.messageId?.toString() || `msg_${Date.now()}`

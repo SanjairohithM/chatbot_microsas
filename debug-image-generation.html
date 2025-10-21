@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Image Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .chat-interface {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .assistant-message.image-mode {
+            border-color: #8b5cf6;
+            background-color: #f3f4f6;
+        }
+        .assistant-message.error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #2563eb;
+        }
+        .chat-input button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .debug-info {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .image-result {
+            margin-top: 10px;
+        }
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Debug Image Generation</h1>
+        <p>This page helps debug why image generation isn't working in your chatbot.</p>
+
+        <div class="test-section">
+            <h3>Test Image Generation</h3>
+            <p>Try sending a message to see what happens in the console and network requests.</p>
+            
+            <div class="chat-interface">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message image-mode">
+                        <strong>Debug Bot:</strong> I'm in Image Generation mode. Send me a message and check the browser console for debug logs.
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type a message to test image generation..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="chatBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Debug Information</h3>
+            <p>Check the browser console (F12) for detailed logs. Here's what to look for:</p>
+            <div class="debug-info" id="debugInfo">
+Waiting for debug information...
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Quick Test Prompts</h3>
+            <p>Try these prompts to test different scenarios:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                <button onclick="testPrompt('a cute cat')" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">a cute cat</button>
+                <button onclick="testPrompt('sunset over mountains')" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">sunset over mountains</button>
+                <button onclick="testPrompt('abstract art')" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">abstract art</button>
+                <button onclick="testPrompt('create a image A cute panda eating bamboo in a bamboo forest')" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">create a image A cute panda eating bamboo in a bamboo forest</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = [];
+
+        function addDebugLog(message) {
+            debugLog.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            document.getElementById('debugInfo').textContent = debugLog.join('\n');
+        }
+
+        function testPrompt(prompt) {
+            document.getElementById('chatInput').value = prompt;
+            sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const btn = document.getElementById('chatBtn');
+            const messagesDiv = document.getElementById('chatMessages');
+
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            addDebugLog(`Sending message: "${message}"`);
+
+            try {
+                // Test the streaming API
+                const response = await fetch('/api/chat/stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        botId: 33, // Use your bot ID
+                        userId: 'debug-user',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                addDebugLog(`Response status: ${response.status}`);
+                addDebugLog(`Response headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Handle streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let result = '';
+                let eventCount = 0;
+
+                addDebugLog('Starting to read stream...');
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        addDebugLog('Stream ended');
+                        break;
+                    }
+                    
+                    const chunk = decoder.decode(value);
+                    addDebugLog(`Received chunk: ${chunk.substring(0, 100)}...`);
+                    
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            eventCount++;
+                            addDebugLog(`Event ${eventCount}: ${line}`);
+                            
+                            try {
+                                const data = JSON.parse(line.substring(6));
+                                addDebugLog(`Parsed event: ${JSON.stringify(data, null, 2)}`);
+                                
+                                if (data.type === 'image') {
+                                    addChatMessage('assistant', data.data.content, true, data.data.imageUrl);
+                                    addDebugLog('✅ IMAGE GENERATED SUCCESSFULLY!');
+                                    return;
+                                } else if (data.type === 'error') {
+                                    addChatMessage('assistant', data.data.content, false, null, true);
+                                    addDebugLog(`❌ ERROR: ${data.data.content}`);
+                                    return;
+                                } else if (data.type === 'metadata') {
+                                    addDebugLog(`Metadata: ${JSON.stringify(data.data)}`);
+                                }
+                            } catch (e) {
+                                addDebugLog(`Failed to parse event: ${e.message}`);
+                            }
+                        }
+                    }
+                }
+
+                // If we get here, no image was generated
+                addChatMessage('assistant', 'No image was generated. Check debug logs for details.');
+                addDebugLog('⚠️ No image was generated - check logs above for issues');
+
+            } catch (error) {
+                addChatMessage('assistant', 'Network error: ' + error.message, false, null, true);
+                addDebugLog(`❌ NETWORK ERROR: ${error.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            }
+        }
+
+        function addChatMessage(role, content, isImageResponse = false, imageUrl = null, isError = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+            
+            if (isImageResponse) {
+                messageDiv.classList.add('image-mode');
+            }
+            if (isError) {
+                messageDiv.classList.add('error');
+            }
+            
+            let html = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content}`;
+            if (imageUrl) {
+                html += `<div class="image-result">
+                    <img src="${imageUrl}" alt="Generated image">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Generated image</p>
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Check bot configuration on load
+        async function checkBotConfig() {
+            try {
+                const response = await fetch('/api/debug/bot-config?botId=33');
+                const data = await response.json();
+                addDebugLog(`Bot configuration: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.bot && data.bot.interaction_mode !== 'image') {
+                    addDebugLog(`⚠️ WARNING: Bot is not in image mode! Current mode: ${data.bot.interaction_mode}`);
+                } else if (data.bot && data.bot.interaction_mode === 'image') {
+                    addDebugLog(`✅ Bot is correctly configured for image generation`);
+                }
+            } catch (error) {
+                addDebugLog(`❌ Failed to check bot config: ${error.message}`);
+            }
+        }
+
+        // Initial debug log
+        addDebugLog('Debug page loaded. Checking bot configuration...');
+        checkBotConfig();
+    </script>
+</body>
+</html>

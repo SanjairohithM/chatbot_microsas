@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Image Generation Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .image-container {
+            margin: 10px 0;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Generation Fix Test</h1>
+    
+    <div class="test-section info">
+        <h3>Fix Applied</h3>
+        <p>✅ Updated streaming chat interface to properly handle imageUrl in onMessageUpdate and onComplete callbacks</p>
+        <p>✅ Added imageUrl field to message updates in both regular and voice submit handlers</p>
+        <p>✅ API now sends both imageUrl and image_url fields for compatibility</p>
+    </div>
+
+    <div class="test-section">
+        <h3>Test Image Generation</h3>
+        <p>Go to your chat interface and try generating an image with a bot set to "Image Generation" mode.</p>
+        <p>Send a message like: "create a cat image" or "generate a dog picture"</p>
+        <p>The image should now display properly in the chat interface.</p>
+    </div>
+
+    <div class="test-section">
+        <h3>What Was Fixed</h3>
+        <ul>
+            <li><strong>Streaming Chat Interface:</strong> Added imageUrl handling in onMessageUpdate and onComplete callbacks</li>
+            <li><strong>API Response:</strong> Added both imageUrl and image_url fields for backward compatibility</li>
+            <li><strong>Streaming Hook:</strong> Updated to handle both field name formats</li>
+            <li><strong>Adaptive Interface:</strong> Added support for both imageUrl and image_url fields</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>Expected Behavior</h3>
+        <p>When you send an image generation request:</p>
+        <ol>
+            <li>The API will generate the image successfully (this was already working)</li>
+            <li>The image URL will be properly passed from the API to the frontend</li>
+            <li>The image will be displayed in the chat interface</li>
+            <li>Both streaming and adaptive chat interfaces will show the generated image</li>
+        </ol>
+    </div>
+
+    <script>
+        console.log('Image generation fix test page loaded');
+        console.log('The fix has been applied to handle imageUrl in streaming chat interface');
+    </script>
+</body>
+</html>

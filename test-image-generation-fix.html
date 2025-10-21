@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .chat-interface {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .assistant-message.image-mode {
+            border-color: #8b5cf6;
+            background-color: #f3f4f6;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #2563eb;
+        }
+        .chat-input button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .mode-indicator {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .mode-indicator.image {
+            background-color: #ede9fe;
+            color: #6b21a8;
+        }
+        .image-result {
+            margin-top: 10px;
+        }
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-info h4 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Generation Fix Test</h1>
+        
+        <div class="test-info">
+            <h4>🔧 What This Test Does:</h4>
+            <p>This test verifies that the image generation fix is working correctly. The bot should now:</p>
+            <ul>
+                <li>✅ Always generate images when in "Image Generation" mode</li>
+                <li>✅ Handle any message as an image generation request in image mode</li>
+                <li>✅ Not fall back to text responses when in image mode</li>
+                <li>✅ Properly extract and enhance prompts for image generation</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Image Generation Mode</h3>
+            <p>Try sending any message - the bot should generate an image instead of responding with text.</p>
+            
+            <div class="mode-indicator image">
+                Response Mode: Image Generation
+            </div>
+            
+            <div class="chat-interface">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message image-mode">
+                        <strong>Bot:</strong> I'm now in Image Generation mode! Send me any message and I'll create an image for you. Try messages like "sunset", "cat", "abstract art", or anything else you'd like to see!
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type any message to generate an image..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="chatBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults">
+                <p>Send a message above to test the image generation fix.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const btn = document.getElementById('chatBtn');
+            const messagesDiv = document.getElementById('chatMessages');
+            const testResults = document.getElementById('testResults');
+
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                // Simulate API call to your chat endpoint
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        botId: 31, // Replace with your bot ID
+                        userId: 'test-user',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success !== false) {
+                    // Check if it's an image generation response
+                    if (data.imageUrl) {
+                        addChatMessage('assistant', data.message, true, data.imageUrl);
+                        testResults.innerHTML = `
+                            <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb;">
+                                <h4 style="color: #155724; margin-top: 0;">✅ SUCCESS!</h4>
+                                <p><strong>Image Generated:</strong> ${data.message}</p>
+                                <p><strong>Prompt Used:</strong> ${data.revisedPrompt || 'Original message'}</p>
+                                <p style="color: #155724; font-weight: bold;">The image generation fix is working correctly!</p>
+                            </div>
+                        `;
+                    } else {
+                        addChatMessage('assistant', data.message);
+                        testResults.innerHTML = `
+                            <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                                <h4 style="color: #721c24; margin-top: 0;">❌ ISSUE DETECTED</h4>
+                                <p><strong>Response:</strong> ${data.message}</p>
+                                <p style="color: #721c24; font-weight: bold;">The bot responded with text instead of generating an image. The fix may not be working properly.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    addChatMessage('assistant', data.message || 'Error occurred');
+                    testResults.innerHTML = `
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                            <h4 style="color: #721c24; margin-top: 0;">❌ ERROR</h4>
+                            <p><strong>Error:</strong> ${data.message}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                addChatMessage('assistant', 'Network error: ' + error.message);
+                testResults.innerHTML = `
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ NETWORK ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            }
+        }
+
+        function addChatMessage(role, content, isImageResponse = false, imageUrl = null) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+            
+            if (isImageResponse) {
+                messageDiv.classList.add('image-mode');
+            }
+            
+            let html = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content}`;
+            if (imageUrl) {
+                html += `<div class="image-result">
+                    <img src="${imageUrl}" alt="Generated image">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Generated image</p>
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+    </script>
+</body>
+</html>

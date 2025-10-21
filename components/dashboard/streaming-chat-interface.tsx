@@ -16,7 +16,8 @@ import {
   Bot,
   User,
   Settings,
-  Loader2
+  Loader2,
+  Image
 } from "lucide-react"
 import { ResponseModelSelector, ResponseModel } from "./response-model-selector"
 import { useVoiceChat } from "@/hooks/use-voice-chat"
@@ -34,6 +35,7 @@ interface Message {
   timestamp: Date
   audioUrl?: string
   isStreaming?: boolean
+  imageUrl?: string
 }
 
 interface StreamingChatInterfaceProps {
@@ -67,7 +69,7 @@ export function StreamingChatInterface({
     speak,
     isRecording,
     isProcessing,
-    voiceError
+    error: voiceError
   } = useVoiceChat()
 
   // Prefetch streaming chat hook
@@ -123,6 +125,7 @@ export function StreamingChatInterface({
           newMessages[lastIndex] = {
             ...newMessages[lastIndex],
             content: currentMessage.content,
+            imageUrl: currentMessage.imageUrl,
             isStreaming: true
           }
         }
@@ -137,6 +140,7 @@ export function StreamingChatInterface({
           newMessages[lastIndex] = {
             ...newMessages[lastIndex],
             content: currentMessage.content,
+            imageUrl: currentMessage.imageUrl,
             isStreaming: false
           }
         }
@@ -221,6 +225,7 @@ export function StreamingChatInterface({
               newMessages[lastIndex] = {
                 ...newMessages[lastIndex],
                 content: streamingMsg.content,
+                imageUrl: streamingMsg.imageUrl,
                 isStreaming: true
               }
             }
@@ -236,6 +241,7 @@ export function StreamingChatInterface({
               newMessages[lastIndex] = {
                 ...newMessages[lastIndex],
                 content: completeMsg.content,
+                imageUrl: completeMsg.imageUrl,
                 isStreaming: false
               }
             }
@@ -318,6 +324,7 @@ export function StreamingChatInterface({
               newMessages[lastIndex] = {
                 ...newMessages[lastIndex],
                 content: streamingMsg.content,
+                imageUrl: streamingMsg.imageUrl,
                 isStreaming: true
               }
             }
@@ -333,6 +340,7 @@ export function StreamingChatInterface({
               newMessages[lastIndex] = {
                 ...newMessages[lastIndex],
                 content: completeMsg.content,
+                imageUrl: completeMsg.imageUrl,
                 isStreaming: false
               }
             }
@@ -373,7 +381,10 @@ export function StreamingChatInterface({
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      handleSubmit(e)
+      const messageText = (e.target as HTMLTextAreaElement).value
+      if (messageText.trim()) {
+        handleSubmit(messageText)
+      }
     }
   }
 
@@ -389,13 +400,17 @@ export function StreamingChatInterface({
               <div className="flex items-center gap-2">
                 {responseModel === 'voice' ? (
                   <Volume2 className="h-4 w-4 text-blue-600" />
+                ) : responseModel === 'image' ? (
+                  <Image className="h-4 w-4 text-purple-600" />
                 ) : (
                   <MessageCircle className="h-4 w-4 text-green-600" />
                 )}
                 <span className={`text-sm font-medium ${
-                  responseModel === 'voice' ? 'text-blue-600' : 'text-green-600'
+                  responseModel === 'voice' ? 'text-blue-600' : 
+                  responseModel === 'image' ? 'text-purple-600' : 'text-green-600'
                 }`}>
-                  {responseModel === 'voice' ? 'Voice Response' : 'Chat Response'}
+                  {responseModel === 'voice' ? 'Voice Response' : 
+                   responseModel === 'image' ? 'Image Generation' : 'Chat Response'}
                 </span>
                 <Badge variant="outline" className="text-xs bg-white text-gray-700 border-gray-300">
                   {bot?.name || 'Bot'}
@@ -447,6 +462,15 @@ export function StreamingChatInterface({
                     : "bg-gray-100 text-gray-900"
                 )}
               >
+                {msg.imageUrl && (
+                  <div className="mb-2">
+                    <img 
+                      src={msg.imageUrl} 
+                      alt="Generated image" 
+                      className="max-w-xs max-h-64 rounded-lg object-cover"
+                    />
+                  </div>
+                )}
                 <div className="whitespace-pre-wrap">
                   {msg.content}
                   {msg.isStreaming && (
@@ -512,7 +536,7 @@ export function StreamingChatInterface({
           disabled={isLoading || isStreaming}
           placeholder="Type your message..."
           botId={botId}
-          userId={userId}
+          userId={userId || 1}
           conversationId={conversationId}
           className="w-full"
         />

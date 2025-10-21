@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Response Mode Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .response-mode {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .mode-button {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+        .mode-button.active {
+            border-color: #3b82f6;
+            background-color: #3b82f6;
+            color: white;
+        }
+        .mode-button.chat {
+            border-color: #10b981;
+        }
+        .mode-button.chat.active {
+            background-color: #10b981;
+        }
+        .mode-button.voice {
+            border-color: #3b82f6;
+        }
+        .mode-button.voice.active {
+            background-color: #3b82f6;
+        }
+        .mode-button.image {
+            border-color: #8b5cf6;
+        }
+        .mode-button.image.active {
+            background-color: #8b5cf6;
+        }
+        .chat-interface {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .assistant-message.image-mode {
+            border-color: #8b5cf6;
+            background-color: #f3f4f6;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #2563eb;
+        }
+        .chat-input button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .mode-indicator {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .mode-indicator.chat {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .mode-indicator.voice {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .mode-indicator.image {
+            background-color: #ede9fe;
+            color: #6b21a8;
+        }
+        .image-result {
+            margin-top: 10px;
+        }
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Response Mode Test</h1>
+        <p>Test the new "Image Generation" response mode option in the bot creation dialog.</p>
+
+        <!-- Response Mode Selection -->
+        <div class="test-section">
+            <h3>1. Response Mode Selection</h3>
+            <p>Test switching between different response modes:</p>
+            
+            <div class="response-mode">
+                <div class="mode-button chat active" onclick="setResponseMode('chat')">
+                    <div>💬 Chat Response</div>
+                    <small>Text messages</small>
+                </div>
+                <div class="mode-button voice" onclick="setResponseMode('voice')">
+                    <div>🎤 Voice Response</div>
+                    <small>Natural speech</small>
+                </div>
+                <div class="mode-button image" onclick="setResponseMode('image')">
+                    <div>🖼️ Image Generation</div>
+                    <small>Visual content</small>
+                </div>
+            </div>
+            
+            <div id="modeStatus" class="mode-indicator chat">
+                Current mode: Chat Response
+            </div>
+        </div>
+
+        <!-- Chat Interface Test -->
+        <div class="test-section">
+            <h3>2. Chat Interface Test</h3>
+            <p>Test how the chat interface behaves with different response modes:</p>
+            
+            <div class="chat-interface">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message">
+                        <strong>Bot:</strong> Hi! I'm ready to help. Try different types of requests based on the selected response mode.
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="chatBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Creation Simulation -->
+        <div class="test-section">
+            <h3>3. Bot Creation Dialog Simulation</h3>
+            <p>Simulate the bot creation dialog with the new Image Generation option:</p>
+            
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #f9f9f9;">
+                <h4>Create AI Chatbot - Response Mode Selection</h4>
+                <p style="color: #666; margin-bottom: 20px;">Choose how your bot will respond to users. Voice mode includes speech-to-text input and text-to-speech output. Image mode generates visual content from text descriptions.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                    <div class="mode-button chat active" onclick="setBotMode('chat')">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <div style="padding: 8px; background: #dbeafe; border-radius: 6px;">
+                                💬
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Chat Response</div>
+                                <div style="font-size: 12px; color: #666;">Bot responds with text messages</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mode-button voice" onclick="setBotMode('voice')">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <div style="padding: 8px; background: #dbeafe; border-radius: 6px;">
+                                🎤
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Voice Response</div>
+                                <div style="font-size: 12px; color: #666;">Bot responds with natural speech</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mode-button image" onclick="setBotMode('image')">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                            <div style="padding: 8px; background: #ede9fe; border-radius: 6px;">
+                                🖼️
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Image Generation</div>
+                                <div style="font-size: 12px; color: #666;">Bot generates images from descriptions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="botModeStatus" style="margin-top: 15px; padding: 8px; background: #d1fae5; color: #065f46; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                    Selected: Chat Response
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Overview -->
+        <div class="test-section">
+            <h3>4. Image Generation Features</h3>
+            <p>When Image Generation mode is selected, the bot will:</p>
+            <ul>
+                <li>✅ Automatically detect image generation requests from user messages</li>
+                <li>✅ Generate high-quality images using DALL-E 3</li>
+                <li>✅ Support multiple image sizes (square, landscape, portrait)</li>
+                <li>✅ Offer different quality settings (standard, HD)</li>
+                <li>✅ Provide style options (vivid, natural)</li>
+                <li>✅ Display generated images in the chat interface</li>
+                <li>✅ Handle content policy violations gracefully</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentResponseMode = 'chat';
+        let currentBotMode = 'chat';
+        let chatMessages = [];
+
+        // Response Mode Functions
+        function setResponseMode(mode) {
+            currentResponseMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.mode-button.${mode}`).classList.add('active');
+            
+            // Update status
+            const status = document.getElementById('modeStatus');
+            const modeNames = {
+                'chat': 'Chat Response',
+                'voice': 'Voice Response', 
+                'image': 'Image Generation'
+            };
+            status.textContent = `Current mode: ${modeNames[mode]}`;
+            status.className = `mode-indicator ${mode}`;
+        }
+
+        function setBotMode(mode) {
+            currentBotMode = mode;
+            
+            // Update button states
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.mode-button.${mode}`).classList.add('active');
+            
+            // Update status
+            const status = document.getElementById('botModeStatus');
+            const modeNames = {
+                'chat': 'Chat Response',
+                'voice': 'Voice Response', 
+                'image': 'Image Generation'
+            };
+            status.textContent = `Selected: ${modeNames[mode]}`;
+            status.className = `mode-indicator ${mode}`;
+        }
+
+        // Chat Functions
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Simulate bot response based on mode
+            setTimeout(() => {
+                let response = '';
+                let isImageResponse = false;
+                
+                if (currentResponseMode === 'image') {
+                    if (message.toLowerCase().includes('image') || message.toLowerCase().includes('picture') || message.toLowerCase().includes('draw') || message.toLowerCase().includes('create')) {
+                        response = `I've generated an image for you: "${message}"`;
+                        isImageResponse = true;
+                    } else {
+                        response = `I'm in Image Generation mode. Try asking me to create an image, like "draw a sunset" or "create a picture of a cat".`;
+                    }
+                } else if (currentResponseMode === 'voice') {
+                    response = `[Voice Response] I heard: "${message}". In voice mode, I would speak this response back to you.`;
+                } else {
+                    response = `I received your message: "${message}". This is a text response in chat mode.`;
+                }
+                
+                addChatMessage('assistant', response, isImageResponse);
+            }, 1000);
+        }
+
+        function addChatMessage(role, content, isImageResponse = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+            
+            if (isImageResponse) {
+                messageDiv.classList.add('image-mode');
+            }
+            
+            let html = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content}`;
+            if (isImageResponse) {
+                html += `<div class="image-result">
+                    <img src="https://via.placeholder.com/400x300/8b5cf6/ffffff?text=Generated+Image" alt="Generated image">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Generated image placeholder</p>
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Initialize
+        setResponseMode('chat');
+        setBotMode('chat');
+    </script>
+</body>
+</html>

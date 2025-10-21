@@ -1,4 +1,4 @@
-import { db } from '../db'
+import { db, DatabaseTransaction } from '../db'
 import type { Bot } from '../types'
 
 export interface CreateBotRequest {
@@ -11,7 +11,7 @@ export interface CreateBotRequest {
   status?: 'draft' | 'active' | 'inactive'
   is_deployed?: boolean
   deployment_url?: string
-  interaction_mode?: 'chat' | 'voice'
+  interaction_mode?: 'chat' | 'voice' | 'image'
 }
 
 export interface UpdateBotRequest {
@@ -24,7 +24,7 @@ export interface UpdateBotRequest {
   status?: 'draft' | 'active' | 'inactive'
   is_deployed?: boolean
   deployment_url?: string
-  interaction_mode?: 'chat' | 'voice'
+  interaction_mode?: 'chat' | 'voice' | 'image'
 }
 
 export interface BotFilters {
@@ -89,8 +89,8 @@ export class BotService {
 
       const trimmedName = botData.name.trim()
 
-      // Use database transaction to prevent race conditions
-      const result = await db.$transaction(async (tx) => {
+      // Use enhanced database transaction to prevent race conditions
+      const result = await DatabaseTransaction.execute(async (tx) => {
         // Check if user exists
         const user = await tx.user.findUnique({
           where: { id: userId }

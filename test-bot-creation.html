@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Creation Test - Image Mode</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .response-mode {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .mode-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .mode-option.active {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+        .mode-option.chat.active {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        .mode-option.voice.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .mode-option.image.active {
+            border-color: #8b5cf6;
+            background-color: #faf5ff;
+        }
+        .mode-option h4 {
+            margin: 0 0 5px 0;
+            font-size: 14px;
+        }
+        .mode-option p {
+            margin: 0;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bot Creation Test - Image Mode</h1>
+        <p>Test creating a bot with the new "Image Generation" interaction mode.</p>
+
+        <div class="test-section">
+            <h3>Create Bot with Image Generation Mode</h3>
+            
+            <form id="botForm">
+                <div class="form-group">
+                    <label for="botName">Bot Name:</label>
+                    <input type="text" id="botName" value="Image Generator Bot" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description:</label>
+                    <textarea id="description" rows="2">A bot that generates images from text descriptions using DALL-E 3</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="systemPrompt">System Prompt:</label>
+                    <textarea id="systemPrompt" rows="4">You are an AI assistant specialized in generating images. When users describe what they want to see, you will create high-quality images using DALL-E 3. Be creative and helpful in interpreting their requests.</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Response Mode:</label>
+                    <div class="response-mode">
+                        <div class="mode-option chat" onclick="selectMode('chat')">
+                            <h4>💬 Chat Response</h4>
+                            <p>Text messages</p>
+                        </div>
+                        <div class="mode-option voice" onclick="selectMode('voice')">
+                            <h4>🎤 Voice Response</h4>
+                            <p>Natural speech</p>
+                        </div>
+                        <div class="mode-option image active" onclick="selectMode('image')">
+                            <h4>🖼️ Image Generation</h4>
+                            <p>Visual content</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="model">AI Model:</label>
+                    <select id="model">
+                        <option value="gpt-4o-mini">GPT-4o Mini</option>
+                        <option value="gpt-4o">GPT-4o</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="temperature">Temperature: <span id="tempValue">0.7</span></label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" oninput="updateTempValue()">
+                </div>
+
+                <div class="form-group">
+                    <label for="maxTokens">Max Tokens: <span id="tokenValue">1000</span></label>
+                    <input type="range" id="maxTokens" min="100" max="4000" step="100" value="1000" oninput="updateTokenValue()">
+                </div>
+
+                <button type="button" onclick="createBot()" id="createBtn">Create Bot</button>
+            </form>
+
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults">
+                <p>Click "Create Bot" to test the image generation mode.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedMode = 'image';
+
+        function selectMode(mode) {
+            selectedMode = mode;
+            
+            // Update visual selection
+            document.querySelectorAll('.mode-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector(`.mode-option.${mode}`).classList.add('active');
+        }
+
+        function updateTempValue() {
+            document.getElementById('tempValue').textContent = document.getElementById('temperature').value;
+        }
+
+        function updateTokenValue() {
+            document.getElementById('tokenValue').textContent = document.getElementById('maxTokens').value;
+        }
+
+        async function createBot() {
+            const btn = document.getElementById('createBtn');
+            const result = document.getElementById('result');
+            const testResults = document.getElementById('testResults');
+
+            // Get form data
+            const botData = {
+                userId: 'test-user-123', // You'll need to replace this with a real user ID
+                name: document.getElementById('botName').value,
+                description: document.getElementById('description').value,
+                system_prompt: document.getElementById('systemPrompt').value,
+                model: document.getElementById('model').value,
+                temperature: parseFloat(document.getElementById('temperature').value),
+                max_tokens: parseInt(document.getElementById('maxTokens').value),
+                interaction_mode: selectedMode,
+                status: 'draft',
+                is_deployed: false
+            };
+
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+            showResult(result, 'Creating bot...', 'loading');
+
+            try {
+                const response = await fetch('/api/bots', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(botData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(result, `✅ Bot created successfully! ID: ${data.data.id}`, 'success');
+                    testResults.innerHTML = `
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb;">
+                            <h4 style="color: #155724; margin-top: 0;">✅ Success!</h4>
+                            <p><strong>Bot ID:</strong> ${data.data.id}</p>
+                            <p><strong>Name:</strong> ${data.data.name}</p>
+                            <p><strong>Interaction Mode:</strong> ${data.data.interaction_mode}</p>
+                            <p><strong>Model:</strong> ${data.data.model}</p>
+                            <p><strong>Temperature:</strong> ${data.data.temperature}</p>
+                            <p><strong>Max Tokens:</strong> ${data.data.max_tokens}</p>
+                            <p style="color: #155724; font-weight: bold;">The image generation mode is working correctly!</p>
+                        </div>
+                    `;
+                } else {
+                    showResult(result, `❌ Error: ${data.message}`, 'error');
+                    testResults.innerHTML = `
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                            <h4 style="color: #721c24; margin-top: 0;">❌ Error</h4>
+                            <p><strong>Message:</strong> ${data.message}</p>
+                            ${data.errors ? `<p><strong>Validation Errors:</strong></p><pre>${JSON.stringify(data.errors, null, 2)}</pre>` : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                showResult(result, `❌ Network Error: ${error.message}`, 'error');
+                testResults.innerHTML = `
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ Network Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Create Bot';
+            }
+        }
+
+        function showResult(element, message, type) {
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Initialize
+        updateTempValue();
+        updateTokenValue();
+    </script>
+</body>
+</html>

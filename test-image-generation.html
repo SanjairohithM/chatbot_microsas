@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .image-result {
+            margin-top: 15px;
+        }
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .chat-test {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            margin: 0;
+        }
+        .chat-input button {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Generation Test</h1>
+        <p>Test the image generation functionality in your chatbot.</p>
+
+        <!-- Direct API Test -->
+        <div class="test-section">
+            <h3>1. Direct API Test</h3>
+            <p>Test the image generation API directly.</p>
+            
+            <div class="form-group">
+                <label for="prompt">Image Prompt:</label>
+                <textarea id="prompt" rows="3" placeholder="Enter a description for the image you want to generate...">A beautiful sunset over mountains with a lake in the foreground</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="size">Image Size:</label>
+                <select id="size">
+                    <option value="1024x1024">1024x1024 (Square)</option>
+                    <option value="1792x1024">1792x1024 (Landscape)</option>
+                    <option value="1024x1792">1024x1792 (Portrait)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="quality">Quality:</label>
+                <select id="quality">
+                    <option value="standard">Standard</option>
+                    <option value="hd">HD</option>
+                </select>
+            </div>
+            
+            <button onclick="testDirectAPI()" id="directApiBtn">Generate Image</button>
+            
+            <div id="directApiResult" class="result" style="display: none;"></div>
+            <div id="directApiImage" class="image-result"></div>
+        </div>
+
+        <!-- Chat Integration Test -->
+        <div class="test-section">
+            <h3>2. Chat Integration Test</h3>
+            <p>Test image generation through the chat interface.</p>
+            
+            <div class="chat-test">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message">
+                        <strong>Bot:</strong> Hi! I can help you generate images. Try saying something like "create an image of a cat" or "generate a picture of a sunset".
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type your message..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="chatBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Model Test -->
+        <div class="test-section">
+            <h3>3. Response Model Test</h3>
+            <p>Test switching between different response models.</p>
+            
+            <div class="form-group">
+                <label>Response Model:</label>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button onclick="setResponseModel('chat')" id="chatModelBtn">Chat</button>
+                    <button onclick="setResponseModel('voice')" id="voiceModelBtn">Voice</button>
+                    <button onclick="setResponseModel('image')" id="imageModelBtn">Image</button>
+                </div>
+            </div>
+            
+            <div id="modelStatus" class="result success">
+                Current model: <strong>Chat</strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentResponseModel = 'chat';
+        let chatMessages = [];
+
+        // Direct API Test
+        async function testDirectAPI() {
+            const prompt = document.getElementById('prompt').value;
+            const size = document.getElementById('size').value;
+            const quality = document.getElementById('quality').value;
+            const btn = document.getElementById('directApiBtn');
+            const result = document.getElementById('directApiResult');
+            const imageDiv = document.getElementById('directApiImage');
+
+            if (!prompt.trim()) {
+                showResult(result, 'Please enter a prompt', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            showResult(result, 'Generating image...', 'loading');
+
+            try {
+                const response = await fetch('/api/generate-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt.trim(),
+                        size: size,
+                        quality: quality
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.image) {
+                    showResult(result, `Success! Generated image: "${data.image.prompt}"`, 'success');
+                    imageDiv.innerHTML = `
+                        <img src="${data.image.url}" alt="Generated image">
+                        <p><strong>Revised Prompt:</strong> ${data.image.revised_prompt || 'N/A'}</p>
+                    `;
+                } else {
+                    showResult(result, `Error: ${data.message || 'Failed to generate image'}`, 'error');
+                    imageDiv.innerHTML = '';
+                }
+            } catch (error) {
+                showResult(result, `Error: ${error.message}`, 'error');
+                imageDiv.innerHTML = '';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Image';
+            }
+        }
+
+        // Chat Integration Test
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Send to chat API
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        botId: 1,
+                        userId: 1
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.isImageGeneration && data.imageUrl) {
+                    addChatMessage('assistant', data.message, data.imageUrl);
+                } else {
+                    addChatMessage('assistant', data.message);
+                }
+            } catch (error) {
+                addChatMessage('assistant', `Error: ${error.message}`);
+            }
+        }
+
+        function addChatMessage(role, content, imageUrl = null) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+            
+            let html = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content}`;
+            if (imageUrl) {
+                html += `<div class="image-result"><img src="${imageUrl}" alt="Generated image"></div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // Response Model Test
+        function setResponseModel(model) {
+            currentResponseModel = model;
+            
+            // Update button states
+            document.getElementById('chatModelBtn').style.backgroundColor = model === 'chat' ? '#28a745' : '#6c757d';
+            document.getElementById('voiceModelBtn').style.backgroundColor = model === 'voice' ? '#28a745' : '#6c757d';
+            document.getElementById('imageModelBtn').style.backgroundColor = model === 'image' ? '#28a745' : '#6c757d';
+            
+            // Update status
+            const status = document.getElementById('modelStatus');
+            status.innerHTML = `Current model: <strong>${model.charAt(0).toUpperCase() + model.slice(1)}</strong>`;
+            status.className = 'result success';
+        }
+
+        function showResult(element, message, type) {
+            element.textContent = message;
+            element.className = `result ${type}`;
+            element.style.display = 'block';
+        }
+
+        // Initialize
+        setResponseModel('chat');
+    </script>
+</body>
+</html>

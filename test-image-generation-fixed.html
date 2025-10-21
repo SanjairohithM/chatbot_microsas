@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Generation Fix Test - Content Policy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .chat-interface {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #3b82f6;
+            color: white;
+            margin-left: auto;
+        }
+        .assistant-message {
+            background-color: white;
+            border: 1px solid #ddd;
+        }
+        .assistant-message.image-mode {
+            border-color: #8b5cf6;
+            background-color: #f3f4f6;
+        }
+        .assistant-message.error {
+            border-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 16px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background-color: #2563eb;
+        }
+        .chat-input button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .mode-indicator {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .mode-indicator.image {
+            background-color: #ede9fe;
+            color: #6b21a8;
+        }
+        .image-result {
+            margin-top: 10px;
+        }
+        .image-result img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-info {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-info h4 {
+            margin-top: 0;
+            color: #0066cc;
+        }
+        .test-prompts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .test-prompt {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+        }
+        .test-prompt:hover {
+            background-color: #e9ecef;
+        }
+        .test-prompt.problematic {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        .test-prompt.safe {
+            background-color: #d1fae5;
+            border-color: #a7f3d0;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Image Generation Fix Test - Content Policy</h1>
+        
+        <div class="test-info">
+            <h4>🔧 What This Test Does:</h4>
+            <p>This test verifies that the image generation fix handles content policy violations properly:</p>
+            <ul>
+                <li>✅ Cleans up typos and unclear prompts (like "iimage")</li>
+                <li>✅ Provides better error messages for content policy violations</li>
+                <li>✅ Attempts fallback prompts when the first attempt fails</li>
+                <li>✅ Handles various types of problematic prompts gracefully</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Image Generation with Various Prompts</h3>
+            <p>Try these test prompts to see how the system handles different types of input:</p>
+            
+            <div class="test-prompts">
+                <div class="test-prompt problematic" onclick="testPrompt('generate a iimage')">
+                    <strong>Problematic:</strong><br>
+                    "generate a iimage"
+                </div>
+                <div class="test-prompt problematic" onclick="testPrompt('create image')">
+                    <strong>Unclear:</strong><br>
+                    "create image"
+                </div>
+                <div class="test-prompt safe" onclick="testPrompt('a beautiful sunset')">
+                    <strong>Safe:</strong><br>
+                    "a beautiful sunset"
+                </div>
+                <div class="test-prompt safe" onclick="testPrompt('a cute cat')">
+                    <strong>Safe:</strong><br>
+                    "a cute cat"
+                </div>
+                <div class="test-prompt safe" onclick="testPrompt('abstract art')">
+                    <strong>Safe:</strong><br>
+                    "abstract art"
+                </div>
+                <div class="test-prompt problematic" onclick="testPrompt('hi')">
+                    <strong>Too Short:</strong><br>
+                    "hi"
+                </div>
+            </div>
+            
+            <div class="mode-indicator image">
+                Response Mode: Image Generation
+            </div>
+            
+            <div class="chat-interface">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message assistant-message image-mode">
+                        <strong>Bot:</strong> I'm now in Image Generation mode with improved error handling! Try the test prompts above or type your own message. The system will now clean up typos and handle content policy violations gracefully.
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type any message to generate an image..." onkeypress="handleChatKeyPress(event)">
+                    <button onclick="sendChatMessage()" id="chatBtn">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="testResults">
+                <p>Click a test prompt above or send your own message to test the image generation fix.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testPrompt(prompt) {
+            document.getElementById('chatInput').value = prompt;
+            await sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            const btn = document.getElementById('chatBtn');
+            const messagesDiv = document.getElementById('chatMessages');
+            const testResults = document.getElementById('testResults');
+
+            // Add user message
+            addChatMessage('user', message);
+            input.value = '';
+
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+
+            try {
+                // Simulate API call to your chat endpoint
+                const response = await fetch('/api/chat/stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        botId: 31, // Replace with your bot ID
+                        userId: 'test-user',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Handle streaming response
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let result = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.substring(6));
+                                if (data.type === 'image') {
+                                    addChatMessage('assistant', data.data.content, true, data.data.imageUrl);
+                                    testResults.innerHTML = `
+                                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border: 1px solid #c3e6cb;">
+                                            <h4 style="color: #155724; margin-top: 0;">✅ SUCCESS!</h4>
+                                            <p><strong>Image Generated:</strong> ${data.data.content}</p>
+                                            <p><strong>Prompt Used:</strong> ${data.data.prompt}</p>
+                                            <p><strong>Revised Prompt:</strong> ${data.data.revisedPrompt || 'N/A'}</p>
+                                            <p style="color: #155724; font-weight: bold;">The image generation fix is working correctly!</p>
+                                        </div>
+                                    `;
+                                    return;
+                                } else if (data.type === 'error') {
+                                    addChatMessage('assistant', data.data.content, false, null, true);
+                                    testResults.innerHTML = `
+                                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                                            <h4 style="color: #721c24; margin-top: 0;">❌ ERROR</h4>
+                                            <p><strong>Error:</strong> ${data.data.content}</p>
+                                            <p style="color: #721c24; font-weight: bold;">The image generation failed. This might be due to content policy or other issues.</p>
+                                        </div>
+                                    `;
+                                    return;
+                                }
+                            } catch (e) {
+                                // Ignore parsing errors for non-JSON lines
+                            }
+                        }
+                    }
+                }
+
+                // If we get here, no image was generated
+                addChatMessage('assistant', 'No image was generated. Please try again.');
+                testResults.innerHTML = `
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7;">
+                        <h4 style="color: #856404; margin-top: 0;">⚠️ NO IMAGE</h4>
+                        <p>No image was generated. This might indicate an issue with the streaming response.</p>
+                    </div>
+                `;
+
+            } catch (error) {
+                addChatMessage('assistant', 'Network error: ' + error.message, false, null, true);
+                testResults.innerHTML = `
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                        <h4 style="color: #721c24; margin-top: 0;">❌ NETWORK ERROR</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Send';
+            }
+        }
+
+        function addChatMessage(role, content, isImageResponse = false, imageUrl = null, isError = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'assistant-message'}`;
+            
+            if (isImageResponse) {
+                messageDiv.classList.add('image-mode');
+            }
+            if (isError) {
+                messageDiv.classList.add('error');
+            }
+            
+            let html = `<strong>${role === 'user' ? 'You' : 'Bot'}:</strong> ${content}`;
+            if (imageUrl) {
+                html += `<div class="image-result">
+                    <img src="${imageUrl}" alt="Generated image">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Generated image</p>
+                </div>`;
+            }
+            
+            messageDiv.innerHTML = html;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+    </script>
+</body>
+</html>

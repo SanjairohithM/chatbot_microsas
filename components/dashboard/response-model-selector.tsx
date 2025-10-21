@@ -10,11 +10,12 @@ import {
   Mic, 
   Bot, 
   CheckCircle,
-  Settings
+  Settings,
+  Image
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export type ResponseModel = 'voice' | 'chat'
+export type ResponseModel = 'voice' | 'chat' | 'image'
 
 interface ResponseModelSelectorProps {
   selectedModel: ResponseModel
@@ -51,6 +52,17 @@ export function ResponseModelSelector({
       textColor: 'text-green-600', 
       borderColor: 'border-green-200',
       bgColor: 'bg-green-50'
+    },
+    {
+      id: 'image' as ResponseModel,
+      name: 'Image Generation',
+      description: 'Bot generates images from text descriptions',
+      icon: Image,
+      features: ['DALL-E Integration', 'High-Quality Images', 'Creative Prompts', 'Visual Content'],
+      color: 'bg-purple-500',
+      textColor: 'text-purple-600',
+      borderColor: 'border-purple-200',
+      bgColor: 'bg-purple-50'
     }
   ]
 

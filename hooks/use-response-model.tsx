@@ -2,13 +2,14 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
 
-export type ResponseModel = 'voice' | 'chat'
+export type ResponseModel = 'voice' | 'chat' | 'image'
 
 interface ResponseModelContextType {
   responseModel: ResponseModel
   setResponseModel: (model: ResponseModel) => void
   isVoiceMode: boolean
   isChatMode: boolean
+  isImageMode: boolean
 }
 
 const ResponseModelContext = createContext<ResponseModelContextType | undefined>(undefined)
@@ -27,7 +28,7 @@ export function ResponseModelProvider({
   // Persist model selection to localStorage
   useEffect(() => {
     const saved = localStorage.getItem('response-model')
-    if (saved && (saved === 'voice' || saved === 'chat')) {
+    if (saved && (saved === 'voice' || saved === 'chat' || saved === 'image')) {
       setResponseModel(saved)
     }
   }, [])
@@ -40,7 +41,8 @@ export function ResponseModelProvider({
     responseModel,
     setResponseModel,
     isVoiceMode: responseModel === 'voice',
-    isChatMode: responseModel === 'chat'
+    isChatMode: responseModel === 'chat',
+    isImageMode: responseModel === 'image'
   }
 
   return (
@@ -60,16 +62,23 @@ export function useResponseModel() {
 
 // Hook for components that need to know about response model
 export function useResponseModelState() {
-  const { responseModel, setResponseModel, isVoiceMode, isChatMode } = useResponseModel()
+  const { responseModel, setResponseModel, isVoiceMode, isChatMode, isImageMode } = useResponseModel()
   
   return {
     responseModel,
     setResponseModel,
     isVoiceMode,
     isChatMode,
+    isImageMode,
     // Helper functions
     switchToVoice: () => setResponseModel('voice'),
     switchToChat: () => setResponseModel('chat'),
-    toggleModel: () => setResponseModel(prev => prev === 'voice' ? 'chat' : 'voice')
+    switchToImage: () => setResponseModel('image'),
+    toggleModel: () => {
+      const models: ResponseModel[] = ['voice', 'chat', 'image']
+      const currentIndex = models.indexOf(responseModel)
+      const nextIndex = (currentIndex + 1) % models.length
+      setResponseModel(models[nextIndex])
+    }
   }
 }

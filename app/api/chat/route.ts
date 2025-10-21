@@ -6,6 +6,7 @@ import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { ImageGenerationService } from '@/lib/services/image-generation.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -117,8 +118,75 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now()
 
-    // Get enhanced document context for the user's query
+    // Check if bot is in image generation mode or if user is requesting image generation
     const lastUserMessage = validMessages.filter(msg => msg.role === 'user').pop()
+    if (lastUserMessage && typeof lastUserMessage.content === 'string') {
+      // If bot is in image mode, always try to generate images
+      // Otherwise, check if the message is requesting image generation
+      const shouldGenerateImage = bot.interaction_mode === 'image' || 
+        ImageGenerationService.isImageGenerationRequest(lastUserMessage.content)
+      
+      if (shouldGenerateImage) {
+        const imageResult = await ImageGenerationService.processMessage(lastUserMessage.content, bot.interaction_mode === 'image')
+        
+        if (imageResult.response) {
+          if (imageResult.response.success && imageResult.response.image) {
+            // Create conversation if it doesn't exist
+            let currentConversationId = conversationId
+            if (!currentConversationId) {
+              const conversation = await ConversationService.createConversation({
+                botId,
+                userId: userId,
+                title: 'Image Generation',
+                isTest: false
+              })
+              currentConversationId = conversation.id
+            }
+
+            // Save user message
+            await ConversationService.createMessage({
+              conversationId: currentConversationId,
+              role: 'user',
+              content: lastUserMessage.content
+            })
+
+            // Save assistant response with image
+            const assistantMessage = `I've generated an image for you: "${imageResult.response.image.prompt}"`
+            await ConversationService.createMessage({
+              conversationId: currentConversationId,
+              role: 'assistant',
+              content: assistantMessage,
+              imageUrl: imageResult.response.image.url
+            })
+
+            return NextResponse.json({
+              message: assistantMessage,
+              imageUrl: imageResult.response.image.url,
+              revisedPrompt: imageResult.response.image.revised_prompt,
+              messageId: Date.now(),
+              conversationId: currentConversationId,
+              usage: { total_tokens: 0 },
+              response_time_ms: Date.now() - startTime,
+              isImageGeneration: true
+            })
+          } else {
+            // Image generation failed, return error message
+            return NextResponse.json({
+              message: imageResult.response.message,
+              messageId: Date.now(),
+              conversationId: conversationId,
+              usage: { total_tokens: 0 },
+              response_time_ms: Date.now() - startTime,
+              isImageGeneration: true,
+              error: true
+            })
+          }
+        }
+      }
+    }
+
+    // Get enhanced document context for the user's query
+    // lastUserMessage is already defined above
     let documentContext = ''
     let imageAnalysis = ''
     let searchResults = null

@@ -93,4 +93,25 @@ export class OpenAIService {
       throw new Error('Failed to transcribe audio')
     }
   }
+
+  /**
+   * Generate images using DALL-E
+   */
+  static async generateImage(
+    prompt: string,
+    options?: { 
+      model?: string
+      size?: '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792'
+      quality?: 'standard' | 'hd'
+      style?: 'vivid' | 'natural'
+      n?: number
+    }
+  ): Promise<{ url: string; revised_prompt?: string }[]> {
+    try {
+      return await this.client.generateImage(prompt, options)
+    } catch (error) {
+      console.error('OpenAI Image Generation error:', error)
+      throw new Error('Failed to generate image')
+    }
+  }
 }

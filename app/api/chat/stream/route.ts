@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { openAIAPI } from '@/lib/openai-api'
 import { config } from '@/lib/config'
 import { ConversationService } from '@/lib/services/conversation.service'
@@ -6,6 +6,7 @@ import { BotService } from '@/lib/services/bot.service'
 import { DocumentSearchService } from '@/lib/services/document-search.service'
 import { PineconeService } from '@/lib/services/pinecone.service'
 import { PineconeDocumentService } from '@/lib/services/pinecone-document.service'
+import { ImageGenerationService } from '@/lib/services/image-generation.service'
 import { ApiResponse } from '@/lib/utils/api-response'
 import { validateRequest } from '@/lib/middleware/validation'
 import { logger } from '@/lib/utils/logger'
@@ -116,11 +117,158 @@ export async function POST(request: NextRequest) {
 
     const startTime = Date.now()
 
-    // Get enhanced document context for the user's query
+    // Check if bot is in image generation mode or if user is requesting image generation
     const lastUserMessage = validMessages.filter(msg => msg.role === 'user').pop()
+    if (lastUserMessage && typeof lastUserMessage.content === 'string') {
+      // If bot is in image mode, always try to generate images
+      // Otherwise, check if the message is requesting image generation
+      const shouldGenerateImage = bot.interaction_mode === 'image' || 
+        ImageGenerationService.isImageGenerationRequest(lastUserMessage.content)
+      
+      if (shouldGenerateImage) {
+        console.log('[Stream Chat API] Attempting image generation for:', lastUserMessage.content)
+        const imageResult = await ImageGenerationService.processMessage(lastUserMessage.content, bot.interaction_mode === 'image')
+        console.log('[Stream Chat API] Image generation result:', imageResult)
+        
+        if (imageResult.response) {
+          // Create conversation if it doesn't exist
+          let currentConversationId = conversationId
+          if (!currentConversationId) {
+            const conversation = await ConversationService.createConversation({
+              botId,
+              userId: userId,
+              title: 'Image Generation',
+              isTest: false
+            })
+            currentConversationId = conversation.id
+          }
+
+          // Save user message
+          await ConversationService.createMessage({
+            conversationId: currentConversationId,
+            role: 'user',
+            content: lastUserMessage.content
+          })
+
+          // Create a streaming response for image generation
+          const stream = new ReadableStream({
+            async start(controller) {
+              try {
+                // Send initial metadata
+                const metadata = {
+                  type: 'metadata',
+                  data: {
+                    conversationId: currentConversationId,
+                    model: 'dall-e-3',
+                    startTime: Date.now(),
+                    isImageGeneration: true
+                  }
+                }
+                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(metadata)}\n\n`))
+
+                if (imageResult.response?.success && imageResult.response.image) {
+                  // Send image generation success message
+                  const assistantMessage = `I've generated an image for you: "${imageResult.response.image.prompt}"`
+                  
+                  // Save assistant response with image
+                  await ConversationService.createMessage({
+                    conversationId: currentConversationId,
+                    role: 'assistant',
+                    content: assistantMessage,
+                    imageUrl: imageResult.response.image.url
+                  })
+
+                  // Send the image response
+                  const imageResponse = {
+                    type: 'image',
+                    data: {
+                      content: assistantMessage,
+                      imageUrl: imageResult.response.image.url,
+                      image_url: imageResult.response.image.url, // Add both formats for compatibility
+                      revisedPrompt: imageResult.response.image.revised_prompt,
+                      prompt: imageResult.response.image.prompt
+                    }
+                  }
+                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(imageResponse)}\n\n`))
+
+                  // Send completion
+                  const completion = {
+                    type: 'done',
+                    data: {
+                      conversationId: currentConversationId,
+                      messageId: Date.now(),
+                      usage: { total_tokens: 0 },
+                      response_time_ms: Date.now() - startTime
+                    }
+                  }
+                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(completion)}\n\n`))
+                } else {
+                  // Send error message
+                  const errorMessage = imageResult.response?.message || 'Failed to generate image'
+                  
+                  // Save assistant response
+                  await ConversationService.createMessage({
+                    conversationId: currentConversationId,
+                    role: 'assistant',
+                    content: errorMessage
+                  })
+
+                  const errorResponse = {
+                    type: 'error',
+                    data: {
+                      content: errorMessage,
+                      error: true
+                    }
+                  }
+                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(errorResponse)}\n\n`))
+
+                  // Send completion
+                  const completion = {
+                    type: 'done',
+                    data: {
+                      conversationId: currentConversationId,
+                      messageId: Date.now(),
+                      usage: { total_tokens: 0 },
+                      response_time_ms: Date.now() - startTime,
+                      error: true
+                    }
+                  }
+                  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(completion)}\n\n`))
+                }
+              } catch (error) {
+                console.error('[Stream Chat API] Image generation error:', error)
+                const errorResponse = {
+                  type: 'error',
+                  data: {
+                    content: 'Failed to generate image. Please try again.',
+                    error: true
+                  }
+                }
+                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(errorResponse)}\n\n`))
+              } finally {
+                controller.close()
+              }
+            }
+          })
+
+          return new Response(stream, {
+            headers: {
+              'Content-Type': 'text/plain; charset=utf-8',
+              'Cache-Control': 'no-cache',
+              'Connection': 'keep-alive',
+            },
+          })
+        } else {
+          console.log('[Stream Chat API] No image response received, falling back to regular chat')
+        }
+      }
+    }
+
+    // Get enhanced document context for the user's query
+    // lastUserMessage is already defined above
     let documentContext = ''
     let imageAnalysis = ''
-    let searchResults = null
+    let searchResults: any = null
     let conversationContext = ''
     
     if (lastUserMessage) {

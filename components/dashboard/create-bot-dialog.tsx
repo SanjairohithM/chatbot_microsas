@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle, X, Volume2, MessageCircle } from "lucide-react"
+import { Globe, Bot, Settings, Palette, FileText, Zap, CheckCircle, AlertCircle, X, Volume2, MessageCircle, Image } from "lucide-react"
 import type { Bot as BotType, KnowledgeDocument } from "@/lib/types"
 
 interface CreateBotDialogProps {
@@ -280,7 +280,7 @@ Be polite, professional, and helpful. If you don't know something, politely say 
 
                   <div className="space-y-2">
                     <Label className="text-black">Response Mode</Label>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       <div 
                         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                           formData.interaction_mode === 'chat' 
@@ -338,9 +338,38 @@ Be polite, professional, and helpful. If you don't know something, politely say 
                           </div>
                         </div>
                       </div>
+
+                      <div 
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                          formData.interaction_mode === 'image' 
+                            ? 'border-purple-500 bg-purple-50' 
+                            : 'border-gray-200 hover:border-gray-300 bg-white'
+                        }`}
+                        onClick={() => setFormData({ ...formData, interaction_mode: 'image' })}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${
+                            formData.interaction_mode === 'image' ? 'bg-purple-100' : 'bg-gray-100'
+                          }`}>
+                            <Image className={`h-5 w-5 ${
+                              formData.interaction_mode === 'image' ? 'text-purple-600' : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <h4 className={`font-medium ${
+                              formData.interaction_mode === 'image' ? 'text-purple-900' : 'text-black'
+                            }`}>
+                              Image Generation
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              Bot generates images from descriptions
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <p className="text-xs text-gray-600">
-                      Choose how your bot will respond to users. Voice mode includes speech-to-text input and text-to-speech output.
+                      Choose how your bot will respond to users. Voice mode includes speech-to-text input and text-to-speech output. Image mode generates visual content from text descriptions.
                     </p>
                   </div>
 

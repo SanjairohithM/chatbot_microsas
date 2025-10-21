@@ -103,6 +103,32 @@ export class OpenAIAPI {
 		})
 		return (resp as any).text || (resp as any).results?.[0]?.text || ''
 	}
+
+	// Image Generation: generates images using DALL-E
+	async generateImage(
+		prompt: string,
+		options?: { 
+			model?: string
+			size?: '256x256' | '512x512' | '1024x1024' | '1792x1024' | '1024x1792'
+			quality?: 'standard' | 'hd'
+			style?: 'vivid' | 'natural'
+			n?: number
+		}
+	): Promise<{ url: string; revised_prompt?: string }[]> {
+		const resp = await this.client.images.generate({
+			model: options?.model || 'dall-e-3',
+			prompt,
+			size: options?.size || '1024x1024',
+			quality: options?.quality || 'standard',
+			style: options?.style || 'vivid',
+			n: options?.n || 1
+		})
+
+		return resp.data.map((image: any) => ({
+			url: image.url,
+			revised_prompt: image.revised_prompt
+		}))
+	}
 }
 
 export const openAIAPI = new OpenAIAPI()

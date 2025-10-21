@@ -15,7 +15,8 @@ import {
   MessageCircle,
   Bot,
   User,
-  Settings
+  Settings,
+  Image
 } from "lucide-react"
 import { ResponseModelSelector, ResponseModel } from "./response-model-selector"
 import { useVoiceChat } from "@/hooks/use-voice-chat"
@@ -27,6 +28,8 @@ interface Message {
   content: string
   timestamp: Date
   audioUrl?: string
+  image_url?: string
+  imageUrl?: string // Support both formats for compatibility
 }
 
 interface AdaptiveChatInterfaceProps {
@@ -235,13 +238,17 @@ export function AdaptiveChatInterface({
             <div className="flex items-center gap-2">
               {responseModel === 'voice' ? (
                 <Volume2 className="h-4 w-4 text-blue-600" />
+              ) : responseModel === 'image' ? (
+                <Image className="h-4 w-4 text-purple-600" />
               ) : (
                 <MessageCircle className="h-4 w-4 text-green-600" />
               )}
               <span className={`text-sm font-medium ${
-                responseModel === 'voice' ? 'text-blue-600' : 'text-green-600'
+                responseModel === 'voice' ? 'text-blue-600' : 
+                responseModel === 'image' ? 'text-purple-600' : 'text-green-600'
               }`}>
-                {responseModel === 'voice' ? 'Voice Response' : 'Chat Response'}
+                {responseModel === 'voice' ? 'Voice Response' : 
+                 responseModel === 'image' ? 'Image Generation' : 'Chat Response'}
               </span>
               <Badge variant="outline" className="text-xs">
                 {bot?.name || 'Bot'}
@@ -301,6 +308,15 @@ export function AdaptiveChatInterface({
                     ? "bg-blue-500 text-white"
                     : "bg-gray-100 text-gray-900"
                 )}>
+                  {(msg.image_url || (msg as any).imageUrl) && (
+                    <div className="mb-2">
+                      <img 
+                        src={msg.image_url || (msg as any).imageUrl} 
+                        alt="Generated image" 
+                        className="max-w-xs max-h-64 rounded-lg object-cover"
+                      />
+                    </div>
+                  )}
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 </div>
                 

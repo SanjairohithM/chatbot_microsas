@@ -41,7 +41,7 @@ export class BotController {
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
         is_deployed: { type: 'boolean' },
         deployment_url: { type: 'string', maxLength: 500 },
-        interaction_mode: { type: 'string', enum: ['chat', 'voice'] }
+        interaction_mode: { type: 'string', enum: ['chat', 'voice', 'image'] }
       }, { ...body, userId })
 
       if (!validation.isValid) {
@@ -165,7 +165,7 @@ export class BotController {
         status: { type: 'string', enum: ['draft', 'active', 'inactive'] },
         is_deployed: { type: 'boolean' },
         deployment_url: { type: 'string', maxLength: 500 },
-        interaction_mode: { type: 'string', enum: ['chat', 'voice'] }
+        interaction_mode: { type: 'string', enum: ['chat', 'voice', 'image'] }
       }, updates)
 
       if (!validation.isValid) {
